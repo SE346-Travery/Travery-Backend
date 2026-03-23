@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: travery
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  web:
+    resources:
+      add-mappings: true
+      static-locations: classpath:/static/
+  config:
+    import: optional:file:.env[.properties]
