@@ -30,7 +30,13 @@ public enum AuthErrorCode implements AppErrorCode {
 
   // === CREDENTIALS & STATUS ===
   BAD_CREDENTIALS("AUTH_301", "Wrong email or password", HttpStatus.UNAUTHORIZED),
-  USER_NOT_VERIFIED("AUTH_302", "Email not verified", HttpStatus.FORBIDDEN);
+  USER_NOT_VERIFIED("AUTH_302", "Email not verified", HttpStatus.FORBIDDEN),
+  INVALID_CURRENT_PASSWORD("AUTH_303", "Current password is incorrect", HttpStatus.BAD_REQUEST),
+  NEW_PASSWORD_SAME_AS_CURRENT(
+      "AUTH_304",
+      "New password must be different from the current password",
+      HttpStatus.BAD_REQUEST),
+  PASSWORDS_DO_NOT_MATCH("AUTH_305", "Passwords do not match", HttpStatus.BAD_REQUEST);
 
   private final String errorCode;
   private final String message;
