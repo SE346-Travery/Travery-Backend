@@ -66,6 +66,7 @@ public class JwtServiceImpl implements JwtService {
             user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
         .issuedAt(new Date(now))
         .expiration(new Date(now + expiration))
+        .signWith(signingKey)
         .compact();
   }
 
