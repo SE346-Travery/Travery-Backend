@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # Không dùng none, ép buộc entity phải khớp với flyway
+      ddl-auto: validate  # Không dùng none, ép buộc entity phải khớp với flyway
     show-sql: false # Sử dụng log bên dưới nên tắt ở đây
     properties:
       hibernate:
