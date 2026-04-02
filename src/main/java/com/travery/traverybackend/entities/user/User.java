@@ -27,7 +27,6 @@ public class User extends AbstractBaseEntity {
   @Column(name = "password_hashed", nullable = false)
   private String passwordHashed;
 
-  @Indexed
   @Column(name = "email")
   private String email;
 
@@ -36,14 +35,14 @@ public class User extends AbstractBaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
-  private UserStatus status = UserStatus.ACTIVE;
+  private UserStatus status = UserStatus.PENDING;
 
   @Column(name = "role")
   @Enumerated(EnumType.STRING)
   private UserRoles role;
 
-  @Column(name = "comet_uid")
-  private String cometUID;
+  @Column(name = "cometchat_uid")
+  private String cometchatUID;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
