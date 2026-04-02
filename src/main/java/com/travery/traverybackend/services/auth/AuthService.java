@@ -17,17 +17,16 @@ import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -67,14 +66,16 @@ public class AuthService {
       return;
     }
 
-    User user = User.builder()
-        .email(request.getEmail())
-        .fullName(request.getFullName())
-        .role(UserRoles.TOURIST) // Only tourists may self-register; other roles are admin-created
-        .passwordHashed(passwordEncoder.encode(request.getPassword()))
-        .authProvider(AuthProvider.LOCAL)
-        .status(UserStatus.PENDING)
-        .build();
+    User user =
+        User.builder()
+            .email(request.getEmail())
+            .fullName(request.getFullName())
+            .role(
+                UserRoles.TOURIST) // Only tourists may self-register; other roles are admin-created
+            .passwordHashed(passwordEncoder.encode(request.getPassword()))
+            .authProvider(AuthProvider.LOCAL)
+            .status(UserStatus.PENDING)
+            .build();
 
     // Save user with PENDING status
     userRepository.save(user);
@@ -83,10 +84,11 @@ public class AuthService {
   }
 
   public void verifyOtp(VerifyOtpRequest request) {
-    User user = userRepository
-        .findByEmail(request.getEmail())
-        .orElseThrow(
-            () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
+    User user =
+        userRepository
+            .findByEmail(request.getEmail())
+            .orElseThrow(
+                () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
 
     if (user.getStatus() == UserStatus.ACTIVE) {
       throw new BaseAppException(UserErrorCode.USER_ALREADY_ACTIVE);
@@ -115,8 +117,9 @@ public class AuthService {
     // Tạo `UsernamePasswordAuthenticationToken`-> gửi vào AuthenticationManager ->
     // Gọi
     // DaoAuthenticationProvider -> loadUserByUsername + so sánh password
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    Authentication authentication =
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
     // ===== BUSINESS CHECK =====
     CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -149,9 +152,10 @@ public class AuthService {
       throw new BaseAppException(AuthErrorCode.TOKEN_TYPE_INVALID);
     }
 
-    RefreshToken refreshToken = refreshTokenRepository
-        .findByToken(token)
-        .orElseThrow(() -> new BaseAppException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
+    RefreshToken refreshToken =
+        refreshTokenRepository
+            .findByToken(token)
+            .orElseThrow(() -> new BaseAppException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
     if (refreshToken.isRevoked()) {
       throw new BaseAppException(AuthErrorCode.REFRESH_TOKEN_REVOKED);
@@ -205,9 +209,10 @@ public class AuthService {
       throw new BaseAppException(AuthErrorCode.TOKEN_TYPE_INVALID);
     }
 
-    RefreshToken refreshToken = refreshTokenRepository
-        .findByToken(refreshTokenStr)
-        .orElseThrow(() -> new BaseAppException(AuthErrorCode.TOKEN_INVALID));
+    RefreshToken refreshToken =
+        refreshTokenRepository
+            .findByToken(refreshTokenStr)
+            .orElseThrow(() -> new BaseAppException(AuthErrorCode.TOKEN_INVALID));
 
     // Ownership check - Prevent revoking other users' tokens
     if (refreshToken.getUser() == null || !refreshToken.getUser().getId().equals(accessUserId)) {
@@ -241,10 +246,11 @@ public class AuthService {
 
   @Transactional
   public void confirmReset(ResetPasswordRequest request) {
-    User user = userRepository
-        .findByEmail(request.getEmail())
-        .orElseThrow(
-            () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
+    User user =
+        userRepository
+            .findByEmail(request.getEmail())
+            .orElseThrow(
+                () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
 
     if (!otpService.verifyPasswordResetOtp(user.getEmail(), request.getOtp())) {
       throw new BaseAppException(AuthErrorCode.OTP_INVALID);

@@ -10,13 +10,13 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table (name = "tourists")
+@Table(name = "tourists")
 @SuperBuilder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tourist extends User {
-    @Column(name = "gender")
-    private String gender;
+  @Column(name = "gender")
+  private String gender;
 }

@@ -25,32 +25,28 @@ public class EmailService {
   /**
    * Sends an HTML account verification OTP email.
    *
-   * <p>
-   * Template: templates/email/register-otp.html
+   * <p>Template: templates/email/register-otp.html
    */
   @Async
   public void sendOtp(String toEmail, String otp) {
-    String html = templateLoader.load(
-        "register-otp.html",
-        Map.of(
-            "otpCode", otp,
-            "expirationMinutes", String.valueOf(otpTtlMinutes)));
+    String html =
+        templateLoader.load(
+            "register-otp.html",
+            Map.of("otpCode", otp, "expirationMinutes", String.valueOf(otpTtlMinutes)));
     sendHtml(toEmail, "Travery — Verify your account", html);
   }
 
   /**
    * Sends an HTML password-reset OTP email.
    *
-   * <p>
-   * Template: templates/email/password-reset-otp.html
+   * <p>Template: templates/email/password-reset-otp.html
    */
   @Async
   public void sendResetPasswordOtp(String toEmail, String otp) {
-    String html = templateLoader.load(
-        "password-reset-otp.html",
-        Map.of(
-            "otpCode", otp,
-            "expirationMinutes", String.valueOf(otpTtlMinutes)));
+    String html =
+        templateLoader.load(
+            "password-reset-otp.html",
+            Map.of("otpCode", otp, "expirationMinutes", String.valueOf(otpTtlMinutes)));
     sendHtml(toEmail, "Travery — Reset your password", html);
   }
 

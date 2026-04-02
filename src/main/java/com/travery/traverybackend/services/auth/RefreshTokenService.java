@@ -8,10 +8,9 @@ import com.travery.traverybackend.repositories.RefreshTokenRepository;
 import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import io.jsonwebtoken.Claims;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

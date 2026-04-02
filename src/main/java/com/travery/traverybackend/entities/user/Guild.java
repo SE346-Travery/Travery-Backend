@@ -17,6 +17,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Guild extends User {
-    @Column(name = "experience_year")
-    private int experienceYear;
+  @Column(name = "experience_year")
+  private int experienceYear;
 }

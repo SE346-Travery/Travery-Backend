@@ -1,6 +1,5 @@
 package com.travery.traverybackend.entities.user;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -18,6 +17,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Receptionist extends User {
-    @Column(name = "experience_year")
-    private int experienceYear;
+  @Column(name = "experience_year")
+  private int experienceYear;
 }

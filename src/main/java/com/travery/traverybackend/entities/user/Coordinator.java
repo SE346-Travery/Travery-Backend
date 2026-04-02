@@ -18,6 +18,6 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class Coordinator extends User {
 
-    @Column(name = "experience_year")
-    private int experienceYear;
+  @Column(name = "experience_year")
+  private int experienceYear;
 }

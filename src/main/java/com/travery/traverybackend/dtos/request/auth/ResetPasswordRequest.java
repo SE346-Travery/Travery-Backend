@@ -1,7 +1,6 @@
 package com.travery.traverybackend.dtos.request.auth;
 
 import com.travery.traverybackend.validation.PasswordMatches;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

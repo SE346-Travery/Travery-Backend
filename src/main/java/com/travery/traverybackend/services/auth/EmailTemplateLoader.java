@@ -8,8 +8,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 /**
- * Loads HTML email templates from classpath:templates/email/ and replaces {{key}} placeholders
- * with provided values.
+ * Loads HTML email templates from classpath:templates/email/ and replaces {{key}} placeholders with
+ * provided values.
  *
  * <p>No Thymeleaf or FreeMarker required — zero additional dependencies.
  */
@@ -39,8 +39,7 @@ public class EmailTemplateLoader {
     try (InputStream inputStream = resource.getInputStream()) {
       return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     } catch (IOException e) {
-      throw new IllegalStateException(
-          "Failed to load email template: " + templateName, e);
+      throw new IllegalStateException("Failed to load email template: " + templateName, e);
     }
   }
 }

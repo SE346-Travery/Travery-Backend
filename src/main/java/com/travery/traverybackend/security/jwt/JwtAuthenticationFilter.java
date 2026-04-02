@@ -34,11 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       JwtService jwtServiceImpl,
       TokenBlacklistService tokenBlacklistService,
       UserDetailsService userDetailsService,
-      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) // Để xử lí exception vì filter
-                                                                                         // chạy trước nên
-                                                                                         // AppExceptionHandler
-  // không bắt được
-  {
+      @Qualifier("handlerExceptionResolver")
+          HandlerExceptionResolver exceptionResolver) // Để xử lí exception vì filter
+        // chạy trước nên
+        // AppExceptionHandler
+        // không bắt được
+      {
     this.jwtServiceImpl = jwtServiceImpl;
     this.tokenBlacklistService = tokenBlacklistService;
     this.userDetailsService = userDetailsService;
@@ -78,16 +79,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       // Tránh override context nếu đã có
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
+        CustomUserDetails customUserDetails =
+            (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
         if (!customUserDetails.isEnabled()) {
           throw new BaseAppException(AuthErrorCode.USER_DISABLED);
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-            customUserDetails,
-            null, // credentials — null after successful authentication
-            customUserDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authenticationToken =
+            new UsernamePasswordAuthenticationToken(
+                customUserDetails,
+                null, // credentials — null after successful authentication
+                customUserDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
       }

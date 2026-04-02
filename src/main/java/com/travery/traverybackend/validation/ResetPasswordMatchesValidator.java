@@ -1,7 +1,6 @@
 package com.travery.traverybackend.validation;
 
 import com.travery.traverybackend.dtos.request.auth.ResetPasswordRequest;
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
