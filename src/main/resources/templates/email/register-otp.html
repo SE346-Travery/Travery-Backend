@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify your Travery account</title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0f4f8">
+    <table role="presentation" style="width: 100%; border-collapse: collapse">
+      <tr>
+        <td align="center" style="padding: 40px 16px">
+          <table
+            role="presentation"
+            style="
+              width: 100%;
+              max-width: 600px;
+              border-collapse: collapse;
+              background-color: #ffffff;
+              border-radius: 12px;
+              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+              overflow: hidden;
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  padding: 36px 40px 28px 40px;
+                  text-align: center;
+                  background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+                "
+              >
+                <!-- Logo area -->
+                <div style="margin-bottom: 12px">
+                  <span
+                    style="
+                      display: inline-block;
+                      background-color: rgba(255, 255, 255, 0.2);
+                      border-radius: 50%;
+                      width: 56px;
+                      height: 56px;
+                      line-height: 56px;
+                      font-size: 28px;
+                    "
+                    >✈️</span
+                  >
+                </div>
+                <h1
+                  style="
+                    margin: 0;
+                    color: #ffffff;
+                    font-size: 26px;
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                  "
+                >
+                  Travery
+                </h1>
+                <p style="margin: 6px 0 0 0; color: rgba(255,255,255,0.8); font-size: 13px">
+                  Your travel companion
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px">
+                <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700">
+                  Verify your account 👋
+                </h2>
+                <p style="margin: 0 0 24px 0; color: #64748b; font-size: 15px; line-height: 1.6">
+                  Welcome to Travery! Use the verification code below to activate your account.
+                  The code is valid for <strong style="color: #0369a1">{{expirationMinutes}} minutes</strong>.
+                </p>
+
+                <!-- OTP Box -->
+                <table
+                  role="presentation"
+                  style="width: 100%; border-collapse: collapse; margin: 0 0 28px 0"
+                >
+                  <tr>
+                    <td
+                      align="center"
+                      style="
+                        padding: 24px 20px;
+                        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                        border-radius: 10px;
+                        border: 2px dashed #0ea5e9;
+                      "
+                    >
+                      <p style="margin: 0 0 8px 0; color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 1px">
+                        Your verification code
+                      </p>
+                      <div
+                        style="
+                          font-size: 40px;
+                          font-weight: bold;
+                          color: #0369a1;
+                          letter-spacing: 10px;
+                          font-family: 'Courier New', monospace;
+                        "
+                      >
+                        {{otpCode}}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Warning box -->
+                <div
+                  style="
+                    margin: 0 0 28px 0;
+                    padding: 14px 16px;
+                    background-color: #fefce8;
+                    border-left: 4px solid #eab308;
+                    border-radius: 6px;
+                  "
+                >
+                  <p style="margin: 0; color: #713f12; font-size: 13px; line-height: 1.5">
+                    <strong>⚠️ Security notice:</strong> If you did not create a Travery account,
+                    you can safely ignore this email. Do not share this code with anyone.
+                  </p>
+                </div>
+
+                <p style="margin: 0; color: #94a3b8; font-size: 13px; line-height: 1.6">
+                  This code will expire in {{expirationMinutes}} minutes. If it expires, you can request a new one from the app.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Divider -->
+            <tr>
+              <td style="padding: 0 40px">
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0" />
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 24px 40px; background-color: #f8fafc; text-align: center">
+                <p style="margin: 0 0 6px 0; color: #94a3b8; font-size: 12px">
+                  This is an automated message — please do not reply to this email.
+                </p>
+                <p style="margin: 0; color: #cbd5e1; font-size: 12px">
+                  © 2025 Travery. All rights reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
