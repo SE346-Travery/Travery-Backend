@@ -3,6 +3,7 @@ package com.travery.traverybackend.security.jwt;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.auth.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,23 +22,25 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+  private static final String BEARER_PREFIX = "Bearer ";
+
   private final JwtService jwtServiceImpl;
-  //  private final TokenBlacklistService tokenBlacklistService;
+  private final TokenBlacklistService tokenBlacklistService;
   private final UserDetailsService userDetailsService;
   private final HandlerExceptionResolver exceptionResolver;
 
   // Phải tự viết Constructor để dùng @Qualifier cho HandlerExceptionResolver
   public JwtAuthenticationFilter(
       JwtService jwtServiceImpl,
-      //      TokenBlacklistService tokenBlacklistService,
+      TokenBlacklistService tokenBlacklistService,
       UserDetailsService userDetailsService,
-      @Qualifier("handlerExceptionResolver")
-          HandlerExceptionResolver
-              exceptionResolver) // Để xử lí exception vì filter chạy trước nên AppExceptionHandler
-        // không bắt được
-      {
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) // Để xử lí exception vì filter
+                                                                                         // chạy trước nên
+                                                                                         // AppExceptionHandler
+  // không bắt được
+  {
     this.jwtServiceImpl = jwtServiceImpl;
-    //    this.tokenBlacklistService = tokenBlacklistService;
+    this.tokenBlacklistService = tokenBlacklistService;
     this.userDetailsService = userDetailsService;
     this.exceptionResolver = exceptionResolver;
   }
@@ -50,12 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     final String authHeader = request.getHeader("Authorization");
 
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
       filterChain.doFilter(request, response); // Không có vẫn cho qua và bắt ở các filter sau
       return;
     }
 
-    final String token = authHeader.substring(7);
+    final String token = authHeader.substring(BEARER_PREFIX.length());
 
     try {
       Claims claims = jwtServiceImpl.parseAndValidate(token);
@@ -65,33 +68,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       String jti = jwtServiceImpl.extractJti(claims);
-      // TO DO: Add service to check blacklisted token
-      //      if (tokenBlacklistService.isBlacklisted(jti)) {
-      //        throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
-      //      }
+
+      if (tokenBlacklistService.isBlacklisted(jti)) {
+        throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+      }
 
       String username = jwtServiceImpl.extractUsername(claims);
 
       // Tránh override context nếu đã có
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        CustomUserDetails customUserDetails =
-            (CustomUserDetails) userDetailsService.loadUserByUsername(username);
+        CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
         if (!customUserDetails.isEnabled()) {
           throw new BaseAppException(AuthErrorCode.USER_DISABLED);
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken =
-            new UsernamePasswordAuthenticationToken(
-                customUserDetails,
-                null, // credentials — null after successful authentication
-                customUserDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            customUserDetails,
+            null, // credentials — null after successful authentication
+            customUserDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
       }
     } catch (Exception ex) {
-      // Delegate exception to HandlerExceptionResolver to be handled by AppExceptionHandler
+      // Delegate exception to HandlerExceptionResolver to be handled by
+      // AppExceptionHandler
       exceptionResolver.resolveException(request, response, null, ex);
       return;
     }
