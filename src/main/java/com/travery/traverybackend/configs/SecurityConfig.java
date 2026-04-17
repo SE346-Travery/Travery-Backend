@@ -19,37 +19,37 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity // Bật @PreAuthorize
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private static final String[] WHITE_LIST = {
-            "/auth/signup",
-            "/auth/verify-otp",
-            "/auth/resend-otp",
-            "/auth/login",
-            "/auth/refresh",
-            "/auth/forgot-password",
-            "/auth/reset-password",
-            "/v3/api-docs/**",
-            "/docs",
-            "/scalar/**",
-            "/scalar.html",
-            "/actuator/prometheus"
-    };
+  private static final String[] WHITE_LIST = {
+    "/auth/signup",
+    "/auth/verify-otp",
+    "/auth/resend-otp",
+    "/auth/login",
+    "/auth/refresh",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/v3/api-docs/**",
+    "/docs",
+    "/scalar/**",
+    "/scalar.html",
+    "/actuator/prometheus"
+  };
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final DaoAuthenticationProvider daoAuthenticationProvider;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+  private final DaoAuthenticationProvider daoAuthenticationProvider;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(
-                        auth -> auth.requestMatchers(WHITE_LIST).permitAll().anyRequest().authenticated())
-                .exceptionHandling(
-                        exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
-                .authenticationProvider(daoAuthenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return httpSecurity.build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth -> auth.requestMatchers(WHITE_LIST).permitAll().anyRequest().authenticated())
+        .exceptionHandling(
+            exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
+        .authenticationProvider(daoAuthenticationProvider)
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    return httpSecurity.build();
+  }
 }
