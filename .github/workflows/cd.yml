@@ -1,0 +1,52 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  # ============================================================================
+  # JOB 1: DEPLOY TO PRODUCTION (SERVER 1)
+  # ============================================================================
+  # Only runs if CI Pipeline succeeded and it was a push event (not PR)
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+
+    steps:
+      - name: Deploy to Server 1
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SERVER1_HOST }}
+          username: ${{ secrets.SERVER1_USERNAME }}
+          key: ${{ secrets.SERVER1_SSH_KEY }}
+          script: |
+            set -e
+            echo "Starting deployment to Server 1..."
+
+            # Authenticate with GitHub Container Registry
+            echo "Logging in to GHCR..."
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+
+            # Navigate to deployment directory
+            cd ~/travery-deployment
+
+            # Pull the latest image
+            echo "Pulling latest Docker image from GHCR..."
+            docker compose -f docker-compose-prod.yml pull app
+
+            # Restart only the app container (Nginx, DB, Redis, Alloy stay running)
+            echo "Restarting app container..."
+            docker compose -f docker-compose-prod.yml up -d app
+
+            # Clean up unused images
+            echo "Cleaning up old images..."
+            docker image prune -f
+
+            echo "Deployment complete!"
+
+            # Verify deployment
+            docker ps | grep travery-app && echo "✓ App container is running"

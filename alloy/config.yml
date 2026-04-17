@@ -1,0 +1,125 @@
+# Discovery: Automatically find Docker containers
+discovery.docker "docker_containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+# Log collection
+loki.source.docker "docker_logs" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.docker.docker_container.targets
+  relabel_configs {
+    action = "replace"
+    source_labels = ["__meta_docker_container_name"]
+    target_label = "container_name"
+  }
+  relabel_configs {
+    action = "replace"
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label = "service"
+  }
+  relabel_configs {
+    action = "replace"
+    source_labels = ["__meta_docker_container_id"]
+    target_label = "container_id"
+  }
+  format = "json"
+}
+
+# Log pipeline
+
+loki.process "docker_logs_pipeline" {
+  stage.json {
+    expressions = {
+      output = "log",
+      stream = "stream"
+    }
+  }
+  stage.labels {
+    values = {
+      stream = "stream",
+    }
+  }
+  forward_to = [loki.write.loki_push.receiver]
+}
+
+# Log output
+loki.write "loki_push" {
+  endpoint {
+    url = "http://${LOKI_HOST}:3100/loki/api/v1/push"
+  }
+}
+
+# Metric collection - Host metric
+prometheus.exporter.unix "unix_metrics" {
+  disable_collectors = [
+    "selinux", 
+    "schedstat"
+  ]
+}
+
+# Metric collection - Prometheus Remote endpoint Scraping
+prometheus.scrap "spring_boot" {
+  targets = [
+    {
+      __address__ = "travery-app:8080",
+      __scheme__ = "http", 
+      __metrics_path__ = "/actuator/prometheus",
+      job = "spring-boot", 
+      instance = "travery-backend"
+    },
+  ]
+  scrape_interval = "30s"
+  scrape_timout = "10s"
+  forward_to = [prometheus.relabel.add_server_label_receiver]
+}
+
+# Metric processing
+prometheus.relabel "add_server_label" {
+  rule {
+    target_label = "server"
+    replacement = "server1"
+  }
+  forward_to = [prometheus.remote_write.prometheus_push.receiver]
+}
+
+# Metric output 
+prometheus.remote_write "prometheus_push" {
+  endpoint {
+    url = "http://${PROMETHEUS_HOST}:9090/api/v1/write"
+  }
+  wal {
+    enabled = true
+    directory = "/alloy/wal"
+    max_segment_size = 134217728
+  }
+}
+
+# Export Metrics from both source for local debuggin
+prometheus.exporter.unix "unix_for_export" {
+  disable_collectors = [
+    "selinux", 
+    "schedstat",
+  ]
+}
+
+prometheus.scrape "spring_boot_for_export" {
+  targets = [
+    {
+      __address__ = "travery-app:8080",
+      __scheme__ = "http", 
+      __metrics_path__ = "/actuator/prometheus", 
+      job = "spring-boot", 
+      instance = "travery-backend",
+    },
+  ]
+  scrape_interval = "30s"
+  scrape_timeout = "10s"
+  forward_to = [prometheus.remote_write.localhost.receiver]
+}
+
+prometheus.remote_write "localhost" {
+  endpoint {
+    url = "http://localhost:9090/api/v1/write"
+  }
+}
+
