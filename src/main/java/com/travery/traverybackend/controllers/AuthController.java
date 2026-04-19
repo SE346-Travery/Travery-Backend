@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,8 +26,7 @@ public class AuthController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<RegisterResponse>> signup(
       @Valid @RequestBody RegisterRequest request) {
     authService.register(request);
-    RegisterResponse responseData =
-        RegisterResponse.builder().email(request.getEmail()).requiresOtp(true).build();
+    RegisterResponse responseData = RegisterResponse.builder().email(request.getEmail()).requiresOtp(true).build();
     return success(responseData, "User register successfully. Please verify your email.");
   }
 
@@ -84,5 +84,15 @@ public class AuthController extends AbstractBaseController {
       @Valid @RequestBody ChangePasswordRequest request) {
     authService.changePassword(currentUser.getUserId(), request);
     return success("Password changed successfully. Please log in again on other devices.");
+  }
+
+  @PostMapping("/account-deletion")
+  @PreAuthorize("hasRole('TOURIST')")
+  public ResponseEntity<SuccessResponse> deleteAccount(
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @RequestHeader("Authorization") String authHeader,
+      @Valid @RequestBody AccountDeletionRequest request) {
+    authService.deleteAccount(currentUser.getUserId(), request, authHeader);
+    return success("Account deleted successfully.");
   }
 }

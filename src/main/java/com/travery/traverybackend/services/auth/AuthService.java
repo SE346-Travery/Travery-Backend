@@ -294,6 +294,32 @@ public class AuthService {
     refreshTokenService.revokeAll(userId);
   }
 
+  @Transactional
+  public void deleteAccount(UUID userId, AccountDeletionRequest request, String authHeader) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, userId));
+
+    // 1. Verify password
+    if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHashed())) {
+      throw new BaseAppException(AuthErrorCode.INVALID_CURRENT_PASSWORD);
+    }
+
+    // 2. Soft delete
+    user.setStatus(UserStatus.DELETED);
+    userRepository.save(user);
+
+    // 3. Revoke all refresh tokens
+    refreshTokenService.revokeAll(userId);
+
+    // 4. Blacklist current access token
+    String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    Claims claims = jwtServiceImpl.parseAndValidate(accessToken);
+    tokenBlacklistService.blacklistAccessToken(
+        jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
+  }
+
   private void sendOtp(String email) {
     String otp = otpService.generateOtp();
     otpService.saveRegisterOtp(email, otp);
