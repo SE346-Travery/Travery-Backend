@@ -1,10 +1,8 @@
 name: CI Pipeline
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
+    branches: ["test", "main"]
 
 env:
   REGISTRY: ghcr.io
@@ -84,14 +82,11 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
-  # ============================================================================
-  # JOB 3: BUILD & PUSH DOCKER IMAGE
-  # ============================================================================
   build-and-push:
     name: Build and Push Docker Image
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event.pull_request.base.ref == 'main'
     permissions:
       contents: read
       packages: write

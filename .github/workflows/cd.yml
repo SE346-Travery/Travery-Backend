@@ -1,20 +1,22 @@
 name: CD Pipeline
 
 on:
-  workflow_run:
-    workflows: ["CI Pipeline"]
-    types: [completed]
+  pull_request:
+    types: [closed]
     branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ============================================================================
   # JOB 1: DEPLOY TO PRODUCTION (SERVER 1)
   # ============================================================================
-  # Only runs if CI Pipeline succeeded and it was a push event (not PR)
+  # Only runs if PR was successfully merged to main
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    if: github.event.pull_request.merged == true
 
     steps:
       - name: Deploy to Server 1
