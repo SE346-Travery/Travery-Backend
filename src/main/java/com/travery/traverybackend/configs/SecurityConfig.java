@@ -20,7 +20,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
   private static final String[] WHITE_LIST = {
-    "/auth/**", "/v3/api-docs/**", "/docs", "/scalar/**", "/scalar.html"
+    "/auth/signup",
+    "/auth/verify-otp",
+    "/auth/resend-otp",
+    "/auth/login",
+    "/auth/refresh",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/v3/api-docs/**",
+    "/docs",
+    "/scalar/**",
+    "/scalar.html",
+    "/actuator/prometheus"
   };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;

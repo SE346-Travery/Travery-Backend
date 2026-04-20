@@ -30,6 +30,8 @@
     <properties>
         <java.version>25</java.version>
         <lombok.version>1.18.40</lombok.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -105,6 +107,16 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.7.0</version>
+        </dependency>
+
+        <!-- Monitoring - Logging -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
         <!-- Other -->
@@ -238,10 +250,23 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>check</goal>
+                            <goal>apply</goal>
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.9.8.0</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs</artifactId>
+                    <version>4.9.8</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

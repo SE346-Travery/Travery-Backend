@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none  # Không dùng none, ép buộc entity phải khớp với flyway
+      ddl-auto: validate # Không dùng none, ép buộc entity phải khớp với flyway
     show-sql: false # Sử dụng log bên dưới nên tắt ở đây
     properties:
       hibernate:
@@ -27,8 +27,8 @@ spring:
       password: ${REDIS_PASSWORD}
 
   mail:
-    host: ${DEV_MAIL_HOST}
-    port: ${DEV_MAIL_PORT}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
     username: ${EMAIL_USERNAME}
     password: ${EMAIL_PASSWORD}
     properties:
@@ -108,7 +108,4 @@ logging:
     com.travery.traverybackend: DEBUG
     org.flywaydb: DEBUG
     org.hibernate.SQL: DEBUG # Thêm cái này để xem query đẹp hơn
-
-
-
 

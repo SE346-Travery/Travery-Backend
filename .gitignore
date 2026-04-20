@@ -34,3 +34,12 @@ build/
 
 # env
 .env
+
+### AI agent
+.agents/
+
+####
+docs/
+
+### VSCode
+.vscode
