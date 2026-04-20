@@ -30,7 +30,8 @@ public class SecurityConfig {
     "/v3/api-docs/**",
     "/docs",
     "/scalar/**",
-    "/scalar.html"
+    "/scalar.html",
+    "/actuator/prometheus"
   };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
