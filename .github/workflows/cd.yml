@@ -19,16 +19,6 @@ jobs:
     if: github.event.pull_request.merged == true
 
     steps:
-      - name: Debug - Test connectivity to Server 1
-        run: |
-          echo "Testing TCP connectivity to Server 1 on port 22..."
-          echo "Target host: ${{ secrets.SERVER1_HOST }}"
-          nc -zv -w 10 ${{ secrets.SERVER1_HOST }} 22 || echo "TCP connection FAILED"
-          echo "---"
-          echo "Runner public IP:"
-          curl -s https://api.ipify.org
-          echo ""
-
       - name: Deploy to Server 1
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -37,6 +27,10 @@ jobs:
           key: ${{ secrets.SERVER1_SSH_KEY }}
           script: |
             set -e
+
+            # Load PATH for non-interactive SSH shell
+            export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+
             echo "Starting deployment to Server 1..."
 
             # Authenticate with GitHub Container Registry
