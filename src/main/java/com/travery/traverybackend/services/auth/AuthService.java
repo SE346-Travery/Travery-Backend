@@ -314,8 +314,13 @@ public class AuthService {
     refreshTokenService.revokeAll(userId);
 
     // 4. Blacklist current access token
+    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+      throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+    }
     String accessToken = authHeader.substring(BEARER_PREFIX.length());
+
     Claims claims = jwtServiceImpl.parseAndValidate(accessToken);
+
     tokenBlacklistService.blacklistAccessToken(
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
   }
