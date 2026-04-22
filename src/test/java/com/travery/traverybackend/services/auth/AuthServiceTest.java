@@ -1,7 +1,6 @@
 package com.travery.traverybackend.services.auth;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.travery.traverybackend.dtos.request.auth.AccountDeletionRequest;
@@ -12,6 +11,10 @@ import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,83 +22,71 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+  @Mock private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private RefreshTokenService refreshTokenService;
+  @Mock private RefreshTokenService refreshTokenService;
 
-    @Mock
-    private TokenBlacklistService tokenBlacklistService;
+  @Mock private TokenBlacklistService tokenBlacklistService;
 
-    @Mock
-    private JwtService jwtServiceImpl;
+  @Mock private JwtService jwtServiceImpl;
 
-    @InjectMocks
-    private AuthService authService;
+  @InjectMocks private AuthService authService;
 
-    @Test
-    public void deleteAccount_Success() {
-        // Arrange
-        UUID userId = UUID.randomUUID();
-        String password = "correctPassword";
-        String authHeader = "Bearer mock-token";
-        String token = "mock-token";
-        
-        AccountDeletionRequest request = new AccountDeletionRequest(password);
-        
-        User user = User.builder()
-                .id(userId)
-                .passwordHashed("hashedPassword")
-                .status(UserStatus.ACTIVE)
-                .build();
+  @Test
+  public void deleteAccount_Success() {
+    // Arrange
+    UUID userId = UUID.randomUUID();
+    String password = "correctPassword";
+    String authHeader = "Bearer mock-token";
+    String token = "mock-token";
 
-        Claims claims = new DefaultClaims(Map.of("jti", "mock-jti"));
-        Date expiration = new Date(System.currentTimeMillis() + 100000);
+    AccountDeletionRequest request = new AccountDeletionRequest(password);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(true);
-        when(jwtServiceImpl.parseAndValidate(token)).thenReturn(claims);
-        when(jwtServiceImpl.extractJti(claims)).thenReturn("mock-jti");
-        when(jwtServiceImpl.extractExpiration(claims)).thenReturn(expiration);
+    User user =
+        User.builder()
+            .id(userId)
+            .passwordHashed("hashedPassword")
+            .status(UserStatus.ACTIVE)
+            .build();
 
-        // Act
-        authService.deleteAccount(userId, request, authHeader);
+    Claims claims = new DefaultClaims(Map.of("jti", "mock-jti"));
+    Date expiration = new Date(System.currentTimeMillis() + 100000);
 
-        // Assert
-        assertEquals(UserStatus.DELETED, user.getStatus());
-        verify(userRepository).save(user);
-        verify(refreshTokenService).revokeAll(userId);
-        verify(tokenBlacklistService).blacklistAccessToken("mock-jti", expiration);
-    }
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(true);
+    when(jwtServiceImpl.parseAndValidate(token)).thenReturn(claims);
+    when(jwtServiceImpl.extractJti(claims)).thenReturn("mock-jti");
+    when(jwtServiceImpl.extractExpiration(claims)).thenReturn(expiration);
 
-    @Test
-    public void deleteAccount_WrongPassword_ThrowsException() {
-        // Arrange
-        UUID userId = UUID.randomUUID();
-        String password = "wrongPassword";
-        AccountDeletionRequest request = new AccountDeletionRequest(password);
-        
-        User user = User.builder()
-                .id(userId)
-                .passwordHashed("hashedPassword")
-                .build();
+    // Act
+    authService.deleteAccount(userId, request, authHeader);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(false);
+    // Assert
+    assertEquals(UserStatus.DELETED, user.getStatus());
+    verify(userRepository).save(user);
+    verify(refreshTokenService).revokeAll(userId);
+    verify(tokenBlacklistService).blacklistAccessToken("mock-jti", expiration);
+  }
 
-        // Act & Assert
-        assertThrows(BaseAppException.class, () -> authService.deleteAccount(userId, request, "Bearer token"));
-    }
+  @Test
+  public void deleteAccount_WrongPassword_ThrowsException() {
+    // Arrange
+    UUID userId = UUID.randomUUID();
+    String password = "wrongPassword";
+    AccountDeletionRequest request = new AccountDeletionRequest(password);
+
+    User user = User.builder().id(userId).passwordHashed("hashedPassword").build();
+
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(false);
+
+    // Act & Assert
+    assertThrows(
+        BaseAppException.class, () -> authService.deleteAccount(userId, request, "Bearer token"));
+  }
 }

@@ -11,8 +11,8 @@ import com.travery.traverybackend.services.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +26,8 @@ public class AuthController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<RegisterResponse>> signup(
       @Valid @RequestBody RegisterRequest request) {
     authService.register(request);
-    RegisterResponse responseData = RegisterResponse.builder().email(request.getEmail()).requiresOtp(true).build();
+    RegisterResponse responseData =
+        RegisterResponse.builder().email(request.getEmail()).requiresOtp(true).build();
     return success(responseData, "User register successfully. Please verify your email.");
   }
 
