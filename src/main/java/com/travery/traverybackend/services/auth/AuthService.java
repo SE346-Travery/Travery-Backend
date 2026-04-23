@@ -304,43 +304,23 @@ public class AuthService {
       throw new BaseAppException(UserErrorCode.USER_EXISTED);
     }
 
-    User user;
-    if (request.getRole() == UserRoles.COORDINATOR) {
-      user =
-          Coordinator.builder()
-              .email(request.getEmail())
-              .fullName(request.getFullName())
-              .passwordHashed(passwordEncoder.encode(request.getPassword()))
-              .role(UserRoles.COORDINATOR)
-              .status(UserStatus.ACTIVE)
-              .authProvider(AuthProvider.LOCAL)
-              .experienceYear(request.getExperienceYear())
-              .build();
-    } else if (request.getRole() == UserRoles.GUILD) {
-      user =
-          Guild.builder()
-              .email(request.getEmail())
-              .fullName(request.getFullName())
-              .passwordHashed(passwordEncoder.encode(request.getPassword()))
-              .role(UserRoles.GUILD)
-              .status(UserStatus.ACTIVE)
-              .authProvider(AuthProvider.LOCAL)
-              .experienceYear(request.getExperienceYear())
-              .build();
-    } else if (request.getRole() == UserRoles.RECEPTIONIST) {
-      user =
-          Receptionist.builder()
-              .email(request.getEmail())
-              .fullName(request.getFullName())
-              .passwordHashed(passwordEncoder.encode(request.getPassword()))
-              .role(UserRoles.RECEPTIONIST)
-              .status(UserStatus.ACTIVE)
-              .authProvider(AuthProvider.LOCAL)
-              .experienceYear(request.getExperienceYear())
-              .build();
-    } else {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
-    }
+    User user =
+        switch (request.getRole()) {
+          case COORDINATOR ->
+              Coordinator.builder().experienceYear(request.getExperienceYear()).build();
+          case GUILD -> Guild.builder().experienceYear(request.getExperienceYear()).build();
+          case RECEPTIONIST ->
+              Receptionist.builder().experienceYear(request.getExperienceYear()).build();
+          default ->
+              throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+        };
+
+    user.setEmail(request.getEmail());
+    user.setFullName(request.getFullName());
+    user.setPasswordHashed(passwordEncoder.encode(request.getPassword()));
+    user.setRole(request.getRole());
+    user.setStatus(UserStatus.ACTIVE);
+    user.setAuthProvider(AuthProvider.LOCAL);
 
     userRepository.save(user);
   }
