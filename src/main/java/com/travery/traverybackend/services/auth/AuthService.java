@@ -328,7 +328,7 @@ public class AuthService {
     tokenBlacklistService.blacklistAccessToken(
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
   }
-  
+
   public void createStaff(CreateStaffRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new BaseAppException(UserErrorCode.USER_EXISTED);
