@@ -96,4 +96,12 @@ public class AuthController extends AbstractBaseController {
     authService.deleteAccount(currentUser.getUserId(), request, authHeader);
     return success("Account deleted successfully.");
   }
+
+  @PostMapping("/create-staff")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> createStaff(
+      @Valid @RequestBody CreateStaffRequest request) {
+    authService.createStaff(request);
+    return success("Staff account created successfully");
+  }
 }

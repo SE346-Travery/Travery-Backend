@@ -329,6 +329,7 @@ public class AuthService {
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
   }
 
+  @Transactional
   public void createStaff(CreateStaffRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new BaseAppException(UserErrorCode.USER_EXISTED);
