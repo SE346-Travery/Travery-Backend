@@ -34,17 +34,17 @@ services:
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
       
       # Email
-      PROD_MAIL_HOST: ${PROD_MAIL_HOST:-smtp.gmail.com}
-      PROD_MAIL_PORT: ${PROD_MAIL_PORT:-587}
+      MAIL_HOST: ${PROD_MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${PROD_MAIL_PORT:-587}
       EMAIL_USERNAME: ${EMAIL_USERNAME}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
 
       # App Config
-      OTP_LENGTH: ${OTP_LENGTH:6}
+      OTP_LENGTH: ${OTP_LENGTH:-6}
       OTP_TTL_MINUTES: ${OTP_TTL_MINUTES}
-      MAX_ATTEMPTS: ${MAX_ATTEMPTS:3}
-      RESEND_COOLDOWN_SECONDS: ${RESEND_COOLDOWN_SECONDS:60}
-      RESET_MAX_PER_HOUR: ${RESET_MAX_PER_HOUR:3}
+      MAX_ATTEMPTS: ${MAX_ATTEMPTS:-3}
+      RESEND_COOLDOWN_SECONDS: ${RESEND_COOLDOWN_SECONDS:-60}
+      RESET_MAX_PER_HOUR: ${RESET_MAX_PER_HOUR:-3}
     
     depends_on:
       postgres:
@@ -75,7 +75,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
     networks:
