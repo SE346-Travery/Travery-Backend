@@ -1,7 +1,6 @@
 package com.travery.traverybackend.controllers;
 
 import com.travery.traverybackend.dtos.request.auth.*;
-import com.travery.traverybackend.dtos.request.auth.CreateStaffRequest;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.dtos.response.auth.RegisterResponse;
