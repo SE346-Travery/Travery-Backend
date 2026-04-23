@@ -312,7 +312,8 @@ public class AuthService {
           case RECEPTIONIST ->
               Receptionist.builder().experienceYear(request.getExperienceYear()).build();
           default ->
-              throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
         };
 
     user.setEmail(request.getEmail());

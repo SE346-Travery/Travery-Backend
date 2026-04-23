@@ -15,7 +15,6 @@ import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.enums.UserRoles;
 import com.travery.traverybackend.exception.AppExceptionHandler;
 import com.travery.traverybackend.security.jwt.CustomAuthenticationEntryPoint;
-import com.travery.traverybackend.security.jwt.JwtAuthenticationFilter;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.auth.AuthService;
