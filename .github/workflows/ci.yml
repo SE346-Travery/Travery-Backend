@@ -59,7 +59,7 @@ jobs:
   # ============================================================================
   build-and-test:
     name: Build & Run Tests
-    needs: format-check
+    needs: format-apply
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,6 +69,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+        with:
+          # Ensure we get the latest commit pushed by the format job
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
