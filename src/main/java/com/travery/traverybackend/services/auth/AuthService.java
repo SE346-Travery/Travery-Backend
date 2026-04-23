@@ -196,7 +196,12 @@ public class AuthService {
   @Transactional
   public void logout(String authHeader, LogoutRequest request) {
     // Access token
-    String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    if (authHeader == null
+        || !authHeader.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
+      throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+    }
+    String accessToken = authHeader.substring(BEARER_PREFIX.length()).trim();
+
     Claims accessClaims = jwtServiceImpl.parseAndValidate(accessToken);
     String jti = jwtServiceImpl.extractJti(accessClaims);
     Date expiration = jwtServiceImpl.extractExpiration(accessClaims);
@@ -318,12 +323,18 @@ public class AuthService {
     refreshTokenService.revokeAll(userId);
 
     // 4. Blacklist current access token
-    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+    if (authHeader == null
+        || !authHeader.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
       throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
     }
-    String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    String accessToken = authHeader.substring(BEARER_PREFIX.length()).trim();
 
     Claims claims = jwtServiceImpl.parseAndValidate(accessToken);
+
+    // Security check: Ensure token belongs to the user being deleted
+    if (!userId.equals(jwtServiceImpl.extractUserId(claims))) {
+      throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+    }
 
     tokenBlacklistService.blacklistAccessToken(
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
@@ -331,9 +342,15 @@ public class AuthService {
 
   @Transactional
   public void createStaff(CreateStaffRequest request) {
-    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new BaseAppException(UserErrorCode.USER_EXISTED);
-    }
+    // Consistency check: Only throw if an ACTIVE user already exists with this email
+    userRepository
+        .findByEmail(request.getEmail())
+        .ifPresent(
+            existingUser -> {
+              if (existingUser.getStatus() == UserStatus.ACTIVE) {
+                throw new BaseAppException(UserErrorCode.USER_EXISTED);
+              }
+            });
 
     User user =
         switch (request.getRole()) {

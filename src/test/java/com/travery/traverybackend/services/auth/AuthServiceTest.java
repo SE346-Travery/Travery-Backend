@@ -60,6 +60,7 @@ public class AuthServiceTest {
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(password, "hashedPassword")).thenReturn(true);
     when(jwtServiceImpl.parseAndValidate(token)).thenReturn(claims);
+    when(jwtServiceImpl.extractUserId(claims)).thenReturn(userId);
     when(jwtServiceImpl.extractJti(claims)).thenReturn("mock-jti");
     when(jwtServiceImpl.extractExpiration(claims)).thenReturn(expiration);
 
