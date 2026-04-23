@@ -4,6 +4,9 @@ import com.travery.traverybackend.dtos.request.auth.*;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
+import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guild;
+import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.AuthProvider;
 import com.travery.traverybackend.enums.UserRoles;
@@ -11,6 +14,7 @@ import com.travery.traverybackend.enums.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.repositories.RefreshTokenRepository;
 import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
@@ -323,6 +327,33 @@ public class AuthService {
 
     tokenBlacklistService.blacklistAccessToken(
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
+  }
+  
+  public void createStaff(CreateStaffRequest request) {
+    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+      throw new BaseAppException(UserErrorCode.USER_EXISTED);
+    }
+
+    User user =
+        switch (request.getRole()) {
+          case COORDINATOR ->
+              Coordinator.builder().experienceYear(request.getExperienceYear()).build();
+          case GUILD -> Guild.builder().experienceYear(request.getExperienceYear()).build();
+          case RECEPTIONIST ->
+              Receptionist.builder().experienceYear(request.getExperienceYear()).build();
+          default ->
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+        };
+
+    user.setEmail(request.getEmail());
+    user.setFullName(request.getFullName());
+    user.setPasswordHashed(passwordEncoder.encode(request.getPassword()));
+    user.setRole(request.getRole());
+    user.setStatus(UserStatus.ACTIVE);
+    user.setAuthProvider(AuthProvider.LOCAL);
+
+    userRepository.save(user);
   }
 
   private void sendOtp(String email) {

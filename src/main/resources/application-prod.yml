@@ -1,0 +1,117 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: update # Safe for production: only validates schema, never alters
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  threads:
+    virtual:
+      enabled: true
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${MAX_FILE_SIZE}
+      max-request-size: ${MAX_REQUEST_SIZE}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    connect-retries: 30
+    connect-retries-interval: 5
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_EXPIRATION}
+    refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
+
+  otp:
+    length: ${OTP_LENGTH:6}
+    ttl-minutes: ${OTP_TTL_MINUTES:5}
+    max-attempts: ${MAX_ATTEMPTS:3}
+    resend-cooldown-seconds: ${RESEND_COOLDOWN_SECONDS:60}
+    reset-max-per-hour: ${RESET_MAX_PER_HOUR:3}
+
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+    default-avatar-url: ${CLOUDINARY_DEFAULT_AVATAR_URL}
+    allowed-image-types: ${CLOUDINARY_ALLOWED_IMAGE_TYPES:image/jpeg,image/png,image/webp,image/jpg}
+    allowed-video-types: ${CLOUDINARY_ALLOWED_VIDEO_TYPES:video/mp4,video/webm}
+    avatar-size: ${CLOUDINARY_AVATAR_SIZE:5242880}
+    thumbnail-size: ${CLOUDINARY_THUMBNAIL_SIZE:1048576}
+    post-image-width: ${CLOUDINARY_POST_IMAGE_WIDTH:1080}
+    post-image-height: ${CLOUDINARY_POST_IMAGE_HEIGHT:1080}
+
+  post:
+    limit-upload-images: ${POST_LIMIT_UPLOAD_IMAGES:10}
+    limit-upload-videos: ${POST_LIMIT_UPLOAD_VIDEOS:1}
+
+  thread:
+    core-thread-pool-size: ${CORE_THREAD_POOL_SIZE:10}
+    max-thread-pool-size: ${MAX_THREAD_POOL_SIZE:200}
+    thread-queue-capacity: ${THREAD_QUEUE_CAPACITY:500}
+
+  scalar:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    root: WARN
+    com.travery.traverybackend: INFO
+    org.flywaydb: INFO
+    org.hibernate.SQL: WARN
