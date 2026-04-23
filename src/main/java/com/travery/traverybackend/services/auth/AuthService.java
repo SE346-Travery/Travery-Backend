@@ -1,9 +1,13 @@
 package com.travery.traverybackend.services.auth;
 
 import com.travery.traverybackend.dtos.request.auth.*;
+import com.travery.traverybackend.dtos.request.auth.CreateStaffRequest;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
+import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guild;
+import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.AuthProvider;
 import com.travery.traverybackend.enums.UserRoles;
@@ -11,6 +15,7 @@ import com.travery.traverybackend.enums.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.repositories.RefreshTokenRepository;
 import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
@@ -292,6 +297,53 @@ public class AuthService {
     // 5. Revoke all refresh tokens — forces re-login on other devices
     //    The current access token remains valid until it expires (short TTL).
     refreshTokenService.revokeAll(userId);
+  }
+
+  @Transactional
+  public void createStaff(CreateStaffRequest request) {
+    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+      throw new BaseAppException(UserErrorCode.USER_EXISTED);
+    }
+
+    User user;
+    if (request.getRole() == UserRoles.COORDINATOR) {
+      user =
+          Coordinator.builder()
+              .email(request.getEmail())
+              .fullName(request.getFullName())
+              .passwordHashed(passwordEncoder.encode(request.getPassword()))
+              .role(UserRoles.COORDINATOR)
+              .status(UserStatus.ACTIVE)
+              .authProvider(AuthProvider.LOCAL)
+              .experienceYear(request.getExperienceYear())
+              .build();
+    } else if (request.getRole() == UserRoles.GUILD) {
+      user =
+          Guild.builder()
+              .email(request.getEmail())
+              .fullName(request.getFullName())
+              .passwordHashed(passwordEncoder.encode(request.getPassword()))
+              .role(UserRoles.GUILD)
+              .status(UserStatus.ACTIVE)
+              .authProvider(AuthProvider.LOCAL)
+              .experienceYear(request.getExperienceYear())
+              .build();
+    } else if (request.getRole() == UserRoles.RECEPTIONIST) {
+      user =
+          Receptionist.builder()
+              .email(request.getEmail())
+              .fullName(request.getFullName())
+              .passwordHashed(passwordEncoder.encode(request.getPassword()))
+              .role(UserRoles.RECEPTIONIST)
+              .status(UserStatus.ACTIVE)
+              .authProvider(AuthProvider.LOCAL)
+              .experienceYear(request.getExperienceYear())
+              .build();
+    } else {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+    }
+
+    userRepository.save(user);
   }
 
   private void sendOtp(String email) {
