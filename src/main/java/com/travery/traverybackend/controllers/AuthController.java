@@ -11,6 +11,7 @@ import com.travery.traverybackend.services.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,5 +85,13 @@ public class AuthController extends AbstractBaseController {
       @Valid @RequestBody ChangePasswordRequest request) {
     authService.changePassword(currentUser.getUserId(), request);
     return success("Password changed successfully. Please log in again on other devices.");
+  }
+
+  @PostMapping("/create-staff")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> createStaff(
+      @Valid @RequestBody CreateStaffRequest request) {
+    authService.createStaff(request);
+    return success("Staff account created successfully");
   }
 }
