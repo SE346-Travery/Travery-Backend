@@ -1,0 +1,37 @@
+package com.travery.traverybackend.dtos.request.booking;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import java.util.List;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateBookingRequest {
+  @NotNull(message = "Tour instance ID is required")
+  private UUID tourInstanceId;
+
+  @NotBlank(message = "Passenger name is required")
+  private String passengerName;
+
+  @NotBlank(message = "Passenger phone is required")
+  private String passengerPhone;
+
+  @Positive(message = "Adult count must be positive")
+  private int adultCount;
+
+  private int childCount;
+
+  private String specialNotes;
+
+  private List<BookingMemberRequest> members;
+}
