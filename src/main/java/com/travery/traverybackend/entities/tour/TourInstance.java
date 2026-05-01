@@ -2,7 +2,7 @@ package com.travery.traverybackend.entities.tour;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.user.Coordinator;
-import com.travery.traverybackend.entities.user.Guild;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.vehicle.Driver;
 import com.travery.traverybackend.entities.vehicle.Vehicle;
 import com.travery.traverybackend.enums.TourInstanceStatus;
@@ -43,7 +43,7 @@ public class TourInstance extends AbstractBaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "guide_id")
-  private Guild guide;
+  private Guide guide;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assigned_by")

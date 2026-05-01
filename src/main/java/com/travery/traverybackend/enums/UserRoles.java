@@ -4,6 +4,6 @@ public enum UserRoles {
   TOURIST,
   RECEPTIONIST,
   COORDINATOR,
-  GUILD,
+  GUIDE,
   ADMIN
 }
