@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.request.booking;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -33,5 +34,6 @@ public class CreateBookingRequest {
 
   private String specialNotes;
 
+  @Valid
   private List<BookingMemberRequest> members;
 }
