@@ -2,6 +2,7 @@ package com.travery.traverybackend.entities.tour;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.enums.IdentityType;
+import com.travery.traverybackend.enums.TourBookingMemberStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,5 +36,6 @@ public class TourBookingMember extends AbstractBaseEntity {
   @Column(name = "is_child")
   private boolean isChild;
 
-  private String status;
+  @Enumerated(EnumType.STRING)
+  private TourBookingMemberStatus status;
 }
