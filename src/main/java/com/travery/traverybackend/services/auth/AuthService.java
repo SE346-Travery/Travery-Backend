@@ -5,7 +5,7 @@ import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
 import com.travery.traverybackend.entities.user.Coordinator;
-import com.travery.traverybackend.entities.user.Guild;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.AuthProvider;
@@ -356,7 +356,7 @@ public class AuthService {
         switch (request.getRole()) {
           case COORDINATOR ->
               Coordinator.builder().experienceYear(request.getExperienceYear()).build();
-          case GUILD -> Guild.builder().experienceYear(request.getExperienceYear()).build();
+          case GUIDE -> Guide.builder().experienceYear(request.getExperienceYear()).build();
           case RECEPTIONIST ->
               Receptionist.builder().experienceYear(request.getExperienceYear()).build();
           default ->

@@ -10,13 +10,13 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "guilds")
+@Table(name = "guides")
 @SuperBuilder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Guild extends User {
+public class Guide extends User {
   @Column(name = "experience_year")
   private int experienceYear;
 }
