@@ -2,6 +2,7 @@ package com.travery.traverybackend.dtos.request.tour;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class TourItineraryDayRequest {
 
   private String description;
 
+  @PositiveOrZero(message = "Meal count must be zero or positive")
   private int mealCount;
 
   private List<String> imageUrls;
