@@ -42,8 +42,7 @@ public class CreateTourRequest {
 
   private UUID hotelId;
 
-  @Valid
-  private List<TourItineraryDayRequest> itinerary;
+  @Valid private List<TourItineraryDayRequest> itinerary;
 
   private List<String> imageUrls;
 }

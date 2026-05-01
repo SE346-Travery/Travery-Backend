@@ -36,6 +36,5 @@ public class CreateBookingRequest {
 
   private String specialNotes;
 
-  @Valid
-  private List<BookingMemberRequest> members;
+  @Valid private List<BookingMemberRequest> members;
 }
