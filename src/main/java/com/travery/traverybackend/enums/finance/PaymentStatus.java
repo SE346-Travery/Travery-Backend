@@ -1,4 +1,4 @@
-package com.travery.traverybackend.enums;
+package com.travery.traverybackend.enums.finance;
 
 public enum PaymentStatus {
   PENDING,
@@ -6,3 +6,4 @@ public enum PaymentStatus {
   FAILED,
   REFUNDED
 }
+

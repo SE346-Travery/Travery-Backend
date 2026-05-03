@@ -1,4 +1,4 @@
-package com.travery.traverybackend.enums;
+package com.travery.traverybackend.enums.user;
 
 public enum UserRoles {
   TOURIST,
@@ -7,3 +7,4 @@ public enum UserRoles {
   GUIDE,
   ADMIN
 }
+

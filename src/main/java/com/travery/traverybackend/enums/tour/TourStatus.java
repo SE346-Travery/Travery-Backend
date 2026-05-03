@@ -1,4 +1,4 @@
-package com.travery.traverybackend.enums;
+package com.travery.traverybackend.enums.tour;
 
 public enum TourStatus {
   DRAFT,
@@ -6,3 +6,4 @@ public enum TourStatus {
   EXPIRED,
   CANCELLED
 }
+

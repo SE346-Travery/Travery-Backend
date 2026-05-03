@@ -1,4 +1,4 @@
-package com.travery.traverybackend.enums;
+package com.travery.traverybackend.enums.user;
 
 public enum UserStatus {
   ACTIVE,
@@ -6,3 +6,4 @@ public enum UserStatus {
   DELETED,
   BANNED
 }
+
