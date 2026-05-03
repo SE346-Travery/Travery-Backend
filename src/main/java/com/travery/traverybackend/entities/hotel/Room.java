@@ -11,9 +11,9 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "rooms", uniqueConstraints = {
-    @UniqueConstraint(columnNames = { "hotel_id", "room_number" })
-})
+@Table(
+    name = "rooms",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"hotel_id", "room_number"})})
 @Getter
 @Setter
 @NoArgsConstructor

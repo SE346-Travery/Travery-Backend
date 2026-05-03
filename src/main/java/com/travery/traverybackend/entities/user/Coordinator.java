@@ -1,7 +1,6 @@
 package com.travery.traverybackend.entities.user;
 
 import com.travery.traverybackend.enums.user.Department;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,7 +31,8 @@ public class Coordinator extends User {
   @PrePersist
   protected void onCreate() {
     if (this.employeeCode == null) {
-      this.employeeCode = "COO-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+      this.employeeCode =
+          "COO-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
   }
 }

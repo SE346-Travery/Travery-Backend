@@ -5,4 +5,3 @@ public enum SeatPosition {
   MIDDLE,
   BACK
 }
-

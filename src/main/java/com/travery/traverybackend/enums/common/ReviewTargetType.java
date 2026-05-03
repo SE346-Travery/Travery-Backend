@@ -5,4 +5,3 @@ public enum ReviewTargetType {
   HOTEL,
   ROUTE
 }
-

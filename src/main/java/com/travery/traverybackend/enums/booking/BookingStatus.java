@@ -7,4 +7,3 @@ public enum BookingStatus {
   CHECKED_OUT,
   CANCELLED
 }
-

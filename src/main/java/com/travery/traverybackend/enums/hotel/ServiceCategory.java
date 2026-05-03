@@ -6,4 +6,3 @@ public enum ServiceCategory {
   LAUNDRY,
   OTHER
 }
-

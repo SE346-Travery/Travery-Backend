@@ -6,4 +6,3 @@ public enum PaymentType {
   REFUND,
   LATE_FEE
 }
-

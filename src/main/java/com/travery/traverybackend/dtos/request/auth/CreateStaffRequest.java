@@ -1,14 +1,12 @@
 package com.travery.traverybackend.dtos.request.auth;
 
-import java.util.UUID;
-
 import com.travery.traverybackend.enums.user.Department;
 import com.travery.traverybackend.enums.user.UserRoles;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import lombok.*;
 
 @Getter

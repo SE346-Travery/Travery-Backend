@@ -5,4 +5,3 @@ public enum PaymentMethod {
   MOMO,
   CASH
 }
-

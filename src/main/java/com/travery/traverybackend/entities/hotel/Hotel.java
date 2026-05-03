@@ -1,10 +1,5 @@
 package com.travery.traverybackend.entities.hotel;
 
-import java.math.BigDecimal;
-import java.time.LocalTime;
-import java.util.Set;
-import java.util.UUID;
-
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +7,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,6 +57,9 @@ public class Hotel extends AbstractBaseEntity {
   private UUID refundPolicyId;
 
   @ManyToMany
-  @JoinTable(name = "hotel_amenities", joinColumns = @JoinColumn(name = "hotel_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @JoinTable(
+      name = "hotel_amenities",
+      joinColumns = @JoinColumn(name = "hotel_id"),
+      inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   private Set<Amenity> amenities;
 }

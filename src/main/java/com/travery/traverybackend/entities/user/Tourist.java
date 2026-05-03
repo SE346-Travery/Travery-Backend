@@ -1,17 +1,16 @@
 package com.travery.traverybackend.entities.user;
 
-import java.time.LocalDate;
-
+import com.travery.traverybackend.enums.user.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import com.travery.traverybackend.enums.user.Gender;
 
 @Entity
 @Table(name = "tourists")

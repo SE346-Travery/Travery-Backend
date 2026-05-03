@@ -2,7 +2,6 @@ package com.travery.traverybackend.entities.hotel;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.enums.hotel.AmenityType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

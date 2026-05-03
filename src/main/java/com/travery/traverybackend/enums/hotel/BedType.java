@@ -5,4 +5,3 @@ public enum BedType {
   DOUBLE,
   TWIN
 }
-

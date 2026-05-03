@@ -4,4 +4,3 @@ public enum SeatTier {
   UPPER,
   LOWER
 }
-

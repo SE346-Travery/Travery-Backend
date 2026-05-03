@@ -6,4 +6,3 @@ public enum CoachTripStatus {
   COMPLETED,
   CANCELLED
 }
-

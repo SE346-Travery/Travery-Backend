@@ -14,5 +14,4 @@ import lombok.experimental.SuperBuilder;
 @Setter
 // @NoArgsConstructor
 @AllArgsConstructor
-public class Admin extends User {
-}
+public class Admin extends User {}

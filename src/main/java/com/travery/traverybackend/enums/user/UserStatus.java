@@ -6,4 +6,3 @@ public enum UserStatus {
   DELETED,
   BANNED
 }
-

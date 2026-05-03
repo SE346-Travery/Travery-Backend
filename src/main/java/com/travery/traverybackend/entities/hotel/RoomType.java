@@ -46,6 +46,9 @@ public class RoomType extends AbstractBaseEntity {
   private BedType bedType;
 
   @ManyToMany
-  @JoinTable(name = "room_type_amenities", joinColumns = @JoinColumn(name = "room_type_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @JoinTable(
+      name = "room_type_amenities",
+      joinColumns = @JoinColumn(name = "room_type_id"),
+      inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   private Set<Amenity> amenities;
 }

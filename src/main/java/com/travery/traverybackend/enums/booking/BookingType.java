@@ -5,4 +5,3 @@ public enum BookingType {
   HOTEL_BOOKING,
   COACH_BOOKING
 }
-

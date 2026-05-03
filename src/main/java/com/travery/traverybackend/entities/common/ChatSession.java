@@ -5,7 +5,6 @@ import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.common.ChatSessionStatus;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -2,7 +2,6 @@ package com.travery.traverybackend.entities.user;
 
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.enums.user.ShiftType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,7 +39,8 @@ public class Receptionist extends User {
   @PrePersist
   protected void onCreate() {
     if (this.employeeCode == null) {
-      this.employeeCode = "REC-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+      this.employeeCode =
+          "REC-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
     }
   }
 }

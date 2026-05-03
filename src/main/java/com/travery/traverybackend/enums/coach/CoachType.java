@@ -5,4 +5,3 @@ public enum CoachType {
   BED,
   LIMOUSINE
 }
-

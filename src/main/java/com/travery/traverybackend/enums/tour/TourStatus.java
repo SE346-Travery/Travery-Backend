@@ -6,4 +6,3 @@ public enum TourStatus {
   EXPIRED,
   CANCELLED
 }
-

@@ -4,4 +4,3 @@ public enum CoachStatus {
   ACTIVE,
   MAINTENANCE
 }
-

@@ -5,4 +5,3 @@ public enum DriverStatus {
   ON_TRIP,
   ON_LEAVE
 }
-

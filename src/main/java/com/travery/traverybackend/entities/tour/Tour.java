@@ -4,12 +4,10 @@ import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
-
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

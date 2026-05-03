@@ -7,4 +7,3 @@ public enum UserRoles {
   GUIDE,
   ADMIN
 }
-

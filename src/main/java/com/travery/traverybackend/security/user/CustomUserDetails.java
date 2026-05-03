@@ -3,7 +3,6 @@ package com.travery.traverybackend.security.user;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.auth.AuthProvider;
 import com.travery.traverybackend.enums.user.UserStatus;
-
 import jakarta.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +23,8 @@ public class CustomUserDetails implements UserDetails {
   // sau đó không thay đổi (UserDetails nên là object bất biến (immutable))
   private final UUID userId; // Từ userId của user
   private final String email; // Từ email của user
-  private final String password; // Từ passwordHashed của user -> AuthenticationManager sẽ gọi để so sánh với
+  private final String
+      password; // Từ passwordHashed của user -> AuthenticationManager sẽ gọi để so sánh với
   // passwordEncoder.
   private final boolean isEnabled; // Từ status == ACTIVE của user
   private final Collection<? extends GrantedAuthority> authorities; // Từ role của user
@@ -33,7 +33,7 @@ public class CustomUserDetails implements UserDetails {
 
   @Override
   public @Nonnull String getUsername() // Spring dùng nó để authentication.getName()
-  {
+      {
     return email;
   }
 
@@ -44,7 +44,8 @@ public class CustomUserDetails implements UserDetails {
 
   // Factory method
   public static CustomUserDetails from(User user) {
-    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    List<GrantedAuthority> authorities =
+        List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     return CustomUserDetails.builder()
         .userId(user.getId())
         .email(user.getEmail())
