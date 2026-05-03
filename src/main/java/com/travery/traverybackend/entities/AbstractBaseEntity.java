@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,4 +31,11 @@ public class AbstractBaseEntity implements Serializable {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
+
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
+
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
 }
