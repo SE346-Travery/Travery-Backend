@@ -31,11 +31,4 @@ public class AbstractBaseEntity implements Serializable {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
-
-  @Column(name = "is_deleted", nullable = false)
-  @Builder.Default
-  private boolean isDeleted = false;
-
-  @Column(name = "deleted_at")
-  private LocalDateTime deletedAt;
 }

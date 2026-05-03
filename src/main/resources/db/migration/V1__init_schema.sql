@@ -8,11 +8,9 @@
 -- =============================================
 
 create table add_on_orders (
-    is_deleted boolean not null,
     quantity integer not null,
     total_price numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_booking_id uuid not null,
     hotel_service_id uuid not null,
@@ -27,9 +25,7 @@ create table admins (
 );
 
 create table amenities (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     type varchar(50) not null check ((type in ('HOTEL_AMENITY','ROOM_AMENITY'))),
@@ -40,9 +36,7 @@ create table amenities (
 
 create table booking_members (
     date_of_birth date,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     booking_id uuid not null,
     id uuid not null,
@@ -53,9 +47,7 @@ create table booking_members (
 );
 
 create table chat_sessions (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     coordinator_id uuid,
     id uuid not null,
@@ -67,10 +59,8 @@ create table chat_sessions (
 );
 
 create table coach_bookings (
-    is_deleted boolean not null,
     total_price numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     payment_deadline timestamp(6),
     updated_at timestamp(6) not null,
     coach_trip_id uuid not null,
@@ -81,9 +71,7 @@ create table coach_bookings (
 );
 
 create table coach_seats (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     seat_name varchar(10) not null,
     coach_id uuid not null,
@@ -94,10 +82,8 @@ create table coach_seats (
 );
 
 create table coach_tickets (
-    is_deleted boolean not null,
     price_at_booking numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     coach_booking_id uuid not null,
     coach_seat_id uuid not null,
@@ -108,10 +94,8 @@ create table coach_tickets (
 );
 
 create table coach_trips (
-    is_deleted boolean not null,
     arrival_time timestamp(6),
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     departure_time timestamp(6) not null,
     updated_at timestamp(6) not null,
     coach_id uuid not null,
@@ -125,9 +109,7 @@ create table coach_trips (
 
 create table coaches (
     capacity integer not null,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     license_plate varchar(20) not null unique,
@@ -144,9 +126,7 @@ create table coordinators (
 );
 
 create table drivers (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     phone_number varchar(20) not null unique,
@@ -173,12 +153,10 @@ create table hotel_amenities (
 
 create table hotel_booking_details (
     end_date date not null,
-    is_deleted boolean not null,
     price_at_booking numeric(12,2) not null,
     quantity integer not null,
     start_date date not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_booking_id uuid not null,
     id uuid not null,
@@ -187,10 +165,8 @@ create table hotel_booking_details (
 );
 
 create table hotel_bookings (
-    is_deleted boolean not null,
     total_price numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     payment_deadline timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
@@ -202,10 +178,8 @@ create table hotel_bookings (
 
 create table hotel_services (
     is_active boolean,
-    is_deleted boolean not null,
     price numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_id uuid not null,
     id uuid not null,
@@ -219,12 +193,10 @@ create table hotel_services (
 create table hotels (
     check_in_time time(0),
     check_out_time time(0),
-    is_deleted boolean not null,
     latitude numeric(10,8) not null,
     longitude numeric(11,8) not null,
     star_rating integer not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     refund_policy_id uuid,
@@ -237,10 +209,8 @@ create table hotels (
 
 create table images (
     display_order integer not null,
-    is_deleted boolean not null,
     is_thumbnail boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     entity_id uuid not null,
     id uuid not null,
@@ -251,9 +221,7 @@ create table images (
 
 create table payment_transactions (
     amount numeric(12,2) not null,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     booking_id uuid,
     id uuid not null,
@@ -275,10 +243,8 @@ create table receptionists (
 );
 
 create table refresh_tokens (
-    is_deleted boolean not null,
     revoked boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     expiry_date timestamp(6) with time zone not null,
     updated_at timestamp(6) not null,
     id uuid not null,
@@ -288,9 +254,7 @@ create table refresh_tokens (
 );
 
 create table refund_policies (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     service_type varchar(50) not null check ((service_type in ('TOUR','HOTEL','COACH'))),
@@ -300,10 +264,8 @@ create table refund_policies (
 
 create table refund_policy_rules (
     days_before integer not null,
-    is_deleted boolean not null,
     refund_percentage numeric(5,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     refund_policy_id uuid not null,
@@ -312,10 +274,8 @@ create table refund_policy_rules (
 
 create table refund_requests (
     actual_refunded numeric(12,2),
-    is_deleted boolean not null,
     requested_amount numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     payment_transaction_id uuid not null,
@@ -328,9 +288,7 @@ create table refund_requests (
 
 create table reviews (
     average_rating integer not null,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     booking_id uuid not null,
     id uuid not null,
@@ -343,9 +301,7 @@ create table reviews (
 );
 
 create table room_assignments (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_booking_detail_id uuid not null,
     id uuid not null,
@@ -363,9 +319,7 @@ create table room_types (
     base_price numeric(12,2) not null,
     capacity_adults integer not null,
     capacity_children integer,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_id uuid not null,
     id uuid not null,
@@ -376,9 +330,7 @@ create table room_types (
 );
 
 create table rooms (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     hotel_id uuid not null,
     id uuid not null,
@@ -393,9 +345,7 @@ create table routes (
     base_price numeric(12,2) not null,
     distance_km numeric(6,2),
     estimated_hours numeric(4,1),
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     destination_station_id uuid not null,
     id uuid not null,
@@ -405,11 +355,9 @@ create table routes (
 );
 
 create table stations (
-    is_deleted boolean not null,
     latitude numeric(10,8),
     longitude numeric(11,8),
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     city_province varchar(100) not null,
@@ -419,10 +367,8 @@ create table stations (
 );
 
 create table tour_bookings (
-    is_deleted boolean not null,
     total_price numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     payment_deadline timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
@@ -437,12 +383,10 @@ create table tour_bookings (
 create table tour_instances (
     current_participants integer,
     end_date date not null,
-    is_deleted boolean not null,
     max_participants integer,
     min_participants integer,
     start_date date not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     coach_id uuid,
     coordinator_id uuid not null,
@@ -457,9 +401,7 @@ create table tour_instances (
 
 create table tour_itineraries (
     day_number integer not null,
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     tour_id uuid not null,
@@ -480,11 +422,9 @@ create table tourists (
 
 create table tours (
     is_custom boolean not null,
-    is_deleted boolean not null,
     price_per_adult numeric(12,2) not null,
     price_per_child numeric(12,2) not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     coordinator_id uuid not null,
     hotel_id uuid,
@@ -499,9 +439,7 @@ create table tours (
 );
 
 create table users (
-    is_deleted boolean not null,
     created_at timestamp(6) not null,
-    deleted_at timestamp(6),
     updated_at timestamp(6) not null,
     id uuid not null,
     auth_provider varchar(20) not null check ((auth_provider in ('LOCAL','GOOGLE'))),
