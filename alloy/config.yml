@@ -1,37 +1,42 @@
-# Discovery: Automatically find Docker containers
+// Discovery: Automatically find Docker containers
 discovery.docker "docker_containers" {
   host = "unix:///var/run/docker.sock"
 }
 
-# Log collection
-loki.source.docker "docker_logs" {
-  host = "unix:///var/run/docker.sock"
-  targets = discovery.docker.docker_container.targets
-  relabel_configs {
+// Process 1: Relabel Docker metadata into clean Loki labels
+discovery.relabel "docker_relabel" {
+  targets = discovery.docker.docker_containers.targets
+
+  rule {
     action = "replace"
     source_labels = ["__meta_docker_container_name"]
     target_label = "container_name"
   }
-  relabel_configs {
+  rule {
     action = "replace"
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label = "service"
   }
-  relabel_configs {
+  rule {
     action = "replace"
     source_labels = ["__meta_docker_container_id"]
     target_label = "container_id"
   }
-  format = "json"
 }
 
-# Log pipeline
+// Log collection (tailing Docker logs)
+loki.source.docker "docker_logs" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.docker_relabel.output
+  forward_to = [loki.process.docker_logs_pipeline.receiver]
+}
 
+// Log pipeline processing
 loki.process "docker_logs_pipeline" {
   stage.json {
     expressions = {
       output = "log",
-      stream = "stream"
+      stream = "stream",
     }
   }
   stage.labels {
@@ -42,38 +47,66 @@ loki.process "docker_logs_pipeline" {
   forward_to = [loki.write.loki_push.receiver]
 }
 
-# Log output
+// Log output
 loki.write "loki_push" {
   endpoint {
-    url = "http://${LOKI_HOST}:3100/loki/api/v1/push"
+    url = "http://" + sys.env("LOKI_HOST") + ":3100/loki/api/v1/push"
   }
 }
 
-# Metric collection - Host metric
+// Metric collection - Host metric
 prometheus.exporter.unix "unix_metrics" {
   disable_collectors = [
     "selinux", 
-    "schedstat"
+    "schedstat",
   ]
 }
 
-# Metric collection - Prometheus Remote endpoint Scraping
-prometheus.scrap "spring_boot" {
+// Scrape Host metrics
+prometheus.scrape "unix_scrape" {
+  targets = prometheus.exporter.unix.unix_metrics.targets
+  job_name = "node-exporter"
+  scrape_interval = "30s"
+  forward_to = [prometheus.relabel.unix_relabel.receiver]
+}
+
+// Fix weird Docker container IDs in Host metrics
+prometheus.relabel "unix_relabel" {
+  rule {
+    action = "replace"
+    target_label = "job"
+    replacement = "node-exporter"
+  }
+  rule {
+    action = "replace"
+    target_label = "instance"
+    replacement = "travery-server-1"
+  }
+  rule {
+    action = "replace"
+    target_label = "nodename"
+    replacement = "travery-server-1"
+  }
+  forward_to = [prometheus.relabel.add_server_label.receiver]
+}
+
+// Metric collection - Prometheus Remote endpoint Scraping
+prometheus.scrape "spring_boot" {
   targets = [
     {
       __address__ = "travery-app:8080",
       __scheme__ = "http", 
       __metrics_path__ = "/actuator/prometheus",
       job = "spring-boot", 
-      instance = "travery-backend"
+      instance = "travery-backend",
     },
   ]
   scrape_interval = "30s"
-  scrape_timout = "10s"
-  forward_to = [prometheus.relabel.add_server_label_receiver]
+  scrape_timeout = "10s"
+  forward_to = [prometheus.relabel.add_server_label.receiver]
 }
 
-# Metric processing
+// Metric processing
 prometheus.relabel "add_server_label" {
   rule {
     target_label = "server"
@@ -82,24 +115,25 @@ prometheus.relabel "add_server_label" {
   forward_to = [prometheus.remote_write.prometheus_push.receiver]
 }
 
-# Metric output 
+// Metric output 
 prometheus.remote_write "prometheus_push" {
   endpoint {
-    url = "http://${PROMETHEUS_HOST}:9090/api/v1/write"
-  }
-  wal {
-    enabled = true
-    directory = "/alloy/wal"
-    max_segment_size = 134217728
+    url = "http://" + sys.env("PROMETHEUS_HOST") + ":9090/api/v1/write"
   }
 }
 
-# Export Metrics from both source for local debuggin
+// Export Metrics from both source for local debuggin
 prometheus.exporter.unix "unix_for_export" {
   disable_collectors = [
     "selinux", 
     "schedstat",
   ]
+}
+
+prometheus.scrape "unix_scrape_local" {
+  targets = prometheus.exporter.unix.unix_for_export.targets
+  scrape_interval = "30s"
+  forward_to = [prometheus.remote_write.localhost.receiver]
 }
 
 prometheus.scrape "spring_boot_for_export" {
@@ -122,4 +156,3 @@ prometheus.remote_write "localhost" {
     url = "http://localhost:9090/api/v1/write"
   }
 }
-
