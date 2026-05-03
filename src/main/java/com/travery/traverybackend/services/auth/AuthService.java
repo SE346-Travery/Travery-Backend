@@ -4,13 +4,14 @@ import com.travery.traverybackend.dtos.request.auth.*;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
+import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.AuthProvider;
-import com.travery.traverybackend.enums.UserRoles;
-import com.travery.traverybackend.enums.UserStatus;
+import com.travery.traverybackend.enums.auth.AuthProvider;
+import com.travery.traverybackend.enums.user.UserRoles;
+import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
@@ -46,6 +47,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
+  private final com.travery.traverybackend.repositories.HotelRepository hotelRepository;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -70,16 +72,15 @@ public class AuthService {
       return;
     }
 
-    User user =
-        User.builder()
-            .email(request.getEmail())
-            .fullName(request.getFullName())
-            .role(
-                UserRoles.TOURIST) // Only tourists may self-register; other roles are admin-created
-            .passwordHashed(passwordEncoder.encode(request.getPassword()))
-            .authProvider(AuthProvider.LOCAL)
-            .status(UserStatus.PENDING)
-            .build();
+    User user = User.builder()
+        .email(request.getEmail())
+        .fullName(request.getFullName())
+        .role(
+            UserRoles.TOURIST) // Only tourists may self-register; other roles are admin-created
+        .passwordHashed(passwordEncoder.encode(request.getPassword()))
+        .authProvider(AuthProvider.LOCAL)
+        .status(UserStatus.PENDING)
+        .build();
 
     // Save user with PENDING status
     userRepository.save(user);
@@ -88,11 +89,10 @@ public class AuthService {
   }
 
   public void verifyOtp(VerifyOtpRequest request) {
-    User user =
-        userRepository
-            .findByEmail(request.getEmail())
-            .orElseThrow(
-                () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
+    User user = userRepository
+        .findByEmail(request.getEmail())
+        .orElseThrow(
+            () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
 
     if (user.getStatus() == UserStatus.ACTIVE) {
       throw new BaseAppException(UserErrorCode.USER_ALREADY_ACTIVE);
@@ -121,9 +121,8 @@ public class AuthService {
     // Tạo `UsernamePasswordAuthenticationToken`-> gửi vào AuthenticationManager ->
     // Gọi
     // DaoAuthenticationProvider -> loadUserByUsername + so sánh password
-    Authentication authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
     // ===== BUSINESS CHECK =====
     CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -156,10 +155,9 @@ public class AuthService {
       throw new BaseAppException(AuthErrorCode.TOKEN_TYPE_INVALID);
     }
 
-    RefreshToken refreshToken =
-        refreshTokenRepository
-            .findByToken(token)
-            .orElseThrow(() -> new BaseAppException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
+    RefreshToken refreshToken = refreshTokenRepository
+        .findByToken(token)
+        .orElseThrow(() -> new BaseAppException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
     if (refreshToken.isRevoked()) {
       throw new BaseAppException(AuthErrorCode.REFRESH_TOKEN_REVOKED);
@@ -218,10 +216,9 @@ public class AuthService {
       throw new BaseAppException(AuthErrorCode.TOKEN_TYPE_INVALID);
     }
 
-    RefreshToken refreshToken =
-        refreshTokenRepository
-            .findByToken(refreshTokenStr)
-            .orElseThrow(() -> new BaseAppException(AuthErrorCode.TOKEN_INVALID));
+    RefreshToken refreshToken = refreshTokenRepository
+        .findByToken(refreshTokenStr)
+        .orElseThrow(() -> new BaseAppException(AuthErrorCode.TOKEN_INVALID));
 
     // Ownership check - Prevent revoking other users' tokens
     if (refreshToken.getUser() == null || !refreshToken.getUser().getId().equals(accessUserId)) {
@@ -255,11 +252,10 @@ public class AuthService {
 
   @Transactional
   public void confirmReset(ResetPasswordRequest request) {
-    User user =
-        userRepository
-            .findByEmail(request.getEmail())
-            .orElseThrow(
-                () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
+    User user = userRepository
+        .findByEmail(request.getEmail())
+        .orElseThrow(
+            () -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, request.getEmail()));
 
     if (!otpService.verifyPasswordResetOtp(user.getEmail(), request.getOtp())) {
       throw new BaseAppException(AuthErrorCode.OTP_INVALID);
@@ -274,10 +270,9 @@ public class AuthService {
 
   @Transactional
   public void changePassword(UUID userId, ChangePasswordRequest request) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, userId));
+    User user = userRepository
+        .findById(userId)
+        .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, userId));
 
     // 1. Verify current password
     if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHashed())) {
@@ -299,16 +294,15 @@ public class AuthService {
     userRepository.save(user);
 
     // 5. Revoke all refresh tokens — forces re-login on other devices
-    //    The current access token remains valid until it expires (short TTL).
+    // The current access token remains valid until it expires (short TTL).
     refreshTokenService.revokeAll(userId);
   }
 
   @Transactional
   public void deleteAccount(UUID userId, AccountDeletionRequest request, String authHeader) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, userId));
+    User user = userRepository
+        .findById(userId)
+        .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND, userId));
 
     // 1. Verify password
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHashed())) {
@@ -342,7 +336,8 @@ public class AuthService {
 
   @Transactional
   public void createStaff(CreateStaffRequest request) {
-    // Consistency check: Only throw if an ACTIVE user already exists with this email
+    // Consistency check: Only throw if an ACTIVE user already exists with this
+    // email
     userRepository
         .findByEmail(request.getEmail())
         .ifPresent(
@@ -352,17 +347,26 @@ public class AuthService {
               }
             });
 
-    User user =
-        switch (request.getRole()) {
-          case COORDINATOR ->
-              Coordinator.builder().experienceYear(request.getExperienceYear()).build();
-          case GUIDE -> Guide.builder().experienceYear(request.getExperienceYear()).build();
-          case RECEPTIONIST ->
-              Receptionist.builder().experienceYear(request.getExperienceYear()).build();
-          default ->
-              throw new BaseAppException(
-                  WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
-        };
+    User user = switch (request.getRole()) {
+      case COORDINATOR ->
+        Coordinator.builder()
+            .department(request.getDepartment())
+            .build();
+      case GUIDE ->
+        Guide.builder()
+            .guideLicense(request.getGuideLicense())
+            .build();
+      case RECEPTIONIST -> {
+        Hotel hotel = hotelRepository.findById(request.getHotelId())
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Hotel not found for Receptionist"));
+        yield Receptionist.builder()
+            .hotel(hotel)
+            .build();
+      }
+      default ->
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+    };
 
     user.setEmail(request.getEmail());
     user.setFullName(request.getFullName());
