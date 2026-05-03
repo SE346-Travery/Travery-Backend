@@ -9,8 +9,6 @@ import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

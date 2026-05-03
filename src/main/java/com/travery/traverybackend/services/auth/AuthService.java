@@ -355,29 +355,28 @@ public class AuthService {
               }
             });
 
-    User user = switch (request.getRole()) {
-      case COORDINATOR ->
-        Coordinator.builder()
-            .department(request.getDepartment())
-            .build();
-      case GUIDE ->
-        Guide.builder()
-            .guideLicense(request.getGuideLicense())
-            .build();
-      case RECEPTIONIST -> {
-        if (request.getHotelId() == null) {
-          throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Hotel ID is required for Receptionist");
-        }
-        Hotel hotel = hotelRepository.findById(request.getHotelId())
-            .orElseThrow(() -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Hotel not found for Receptionist"));
-        yield Receptionist.builder()
-            .hotel(hotel)
-            .build();
-      }
-      default ->
-        throw new BaseAppException(
-            WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
-    };
+    User user =
+        switch (request.getRole()) {
+          case COORDINATOR -> Coordinator.builder().department(request.getDepartment()).build();
+          case GUIDE -> Guide.builder().guideLicense(request.getGuideLicense()).build();
+          case RECEPTIONIST -> {
+            if (request.getHotelId() == null) {
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Hotel ID is required for Receptionist");
+            }
+            Hotel hotel =
+                hotelRepository
+                    .findById(request.getHotelId())
+                    .orElseThrow(
+                        () ->
+                            new BaseAppException(
+                                WebErrorCode.BAD_REQUEST, "Hotel not found for Receptionist"));
+            yield Receptionist.builder().hotel(hotel).build();
+          }
+          default ->
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
+        };
 
     user.setEmail(request.getEmail());
     user.setFullName(request.getFullName());
