@@ -432,17 +432,7 @@ create table tour_bookings (
     primary key (id)
 );
 
-create table tour_images (
-    is_deleted boolean not null,
-    is_primary boolean,
-    created_at timestamp(6) not null,
-    deleted_at timestamp(6),
-    updated_at timestamp(6) not null,
-    id uuid not null,
-    tour_id uuid not null,
-    image_url varchar(255) not null,
-    primary key (id)
-);
+
 
 create table tour_instances (
     current_participants integer,
@@ -478,30 +468,7 @@ create table tour_itineraries (
     primary key (id)
 );
 
-create table tour_itinerary_day_images (
-    is_deleted boolean not null,
-    created_at timestamp(6) not null,
-    deleted_at timestamp(6),
-    updated_at timestamp(6) not null,
-    id uuid not null,
-    itinerary_day_id uuid not null,
-    image_url varchar(255) not null,
-    primary key (id)
-);
 
-create table tour_itinerary_days (
-    day_number integer,
-    is_deleted boolean not null,
-    meal_count integer,
-    created_at timestamp(6) not null,
-    deleted_at timestamp(6),
-    updated_at timestamp(6) not null,
-    id uuid not null,
-    tour_id uuid not null,
-    description TEXT,
-    title varchar(255),
-    primary key (id)
-);
 
 create table tourists (
     date_of_birth date,
@@ -754,19 +721,28 @@ alter table tour_bookings
     add constraint fk_tour_bookings_user
     foreign key (user_id) references users;
 
--- tour_images
-alter table tour_images
-    add constraint fk_tour_images_tour
-    foreign key (tour_id) references tours;
+
 
 -- tour_instances
+alter table tour_instances
+    add constraint fk_tour_instances_coach
+    foreign key (coach_id) references coaches;
+
 alter table tour_instances
     add constraint fk_tour_instances_coordinator
     foreign key (coordinator_id) references coordinators;
 
 alter table tour_instances
+    add constraint fk_tour_instances_driver
+    foreign key (driver_id) references drivers;
+
+alter table tour_instances
     add constraint fk_tour_instances_guide
     foreign key (guide_id) references guides;
+
+alter table tour_instances
+    add constraint fk_tour_instances_hotel_booking
+    foreign key (hotel_booking_id) references hotel_bookings;
 
 alter table tour_instances
     add constraint fk_tour_instances_tour
@@ -775,16 +751,6 @@ alter table tour_instances
 -- tour_itineraries
 alter table tour_itineraries
     add constraint fk_tour_itineraries_tour
-    foreign key (tour_id) references tours;
-
--- tour_itinerary_day_images
-alter table tour_itinerary_day_images
-    add constraint fk_tour_itinerary_day_images_itinerary_day
-    foreign key (itinerary_day_id) references tour_itinerary_days;
-
--- tour_itinerary_days
-alter table tour_itinerary_days
-    add constraint fk_tour_itinerary_days_tour
     foreign key (tour_id) references tours;
 
 -- tourists (inheritance → users)

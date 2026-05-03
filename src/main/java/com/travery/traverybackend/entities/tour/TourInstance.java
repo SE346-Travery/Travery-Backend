@@ -1,12 +1,16 @@
 package com.travery.traverybackend.entities.tour;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.booking.HotelBooking;
+import com.travery.traverybackend.entities.coach.Coach;
+import com.travery.traverybackend.entities.coach.Driver;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.UUID;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,14 +39,17 @@ public class TourInstance extends AbstractBaseEntity {
   @JoinColumn(name = "guide_id")
   private Guide guide;
 
-  @Column(name = "coach_id")
-  private UUID coachId; // Will map to Coach entity later
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "coach_id")
+  private Coach coach;
 
-  @Column(name = "driver_id")
-  private UUID driverId; // Will map to Driver entity later
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "driver_id")
+  private Driver driver;
 
-  @Column(name = "hotel_booking_id")
-  private UUID hotelBookingId; // Will map to HotelBooking entity later
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "hotel_booking_id")
+  private HotelBooking hotelBooking;
 
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
