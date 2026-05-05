@@ -1,8 +1,8 @@
 package com.travery.traverybackend.security.user;
 
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.AuthProvider;
-import com.travery.traverybackend.enums.UserStatus;
+import com.travery.traverybackend.enums.auth.AuthProvider;
+import com.travery.traverybackend.enums.user.UserStatus;
 import jakarta.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
@@ -18,12 +18,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
-  // Chỉ bỏ vào mấy cái security cần biết, mấy cái field này final vì nó chỉ đc gán gt trong ctor và
+  // Chỉ bỏ vào mấy cái security cần biết, mấy cái field này final vì nó chỉ đc
+  // gán gt trong ctor và
   // sau đó không thay đổi (UserDetails nên là object bất biến (immutable))
   private final UUID userId; // Từ userId của user
   private final String email; // Từ email của user
   private final String
-      password; // Từ passwordHashed của user  -> AuthenticationManager sẽ gọi để so sánh với
+      password; // Từ passwordHashed của user -> AuthenticationManager sẽ gọi để so sánh với
   // passwordEncoder.
   private final boolean isEnabled; // Từ status == ACTIVE của user
   private final Collection<? extends GrantedAuthority> authorities; // Từ role của user

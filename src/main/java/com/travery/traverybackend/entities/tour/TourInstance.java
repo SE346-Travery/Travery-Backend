@@ -1,14 +1,16 @@
 package com.travery.traverybackend.entities.tour;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.booking.HotelBooking;
+import com.travery.traverybackend.entities.coach.Coach;
+import com.travery.traverybackend.entities.coach.Driver;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
-import com.travery.traverybackend.entities.vehicle.Driver;
-import com.travery.traverybackend.entities.vehicle.Vehicle;
-import com.travery.traverybackend.enums.TourInstanceStatus;
+import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,44 +29,46 @@ public class TourInstance extends AbstractBaseEntity {
   @JoinColumn(name = "tour_id", nullable = false)
   private Tour tour;
 
-  @Column(name = "start_date", nullable = false)
-  private LocalDateTime startDate;
-
-  @Column(name = "end_date", nullable = false)
-  private LocalDateTime endDate;
-
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "vehicle_id")
-  private Vehicle vehicle;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "driver_id")
-  private Driver driver;
+  @JoinColumn(name = "coordinator_id", nullable = false)
+  private Coordinator coordinator;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "guide_id")
   private Guide guide;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "assigned_by")
-  private Coordinator assignedBy;
-
-  @Enumerated(EnumType.STRING)
-  private TourInstanceStatus status;
-
-  @Column(name = "postponement_reason", columnDefinition = "TEXT")
-  private String postponementReason;
-
-  @Column(name = "postponed_at")
-  private LocalDateTime postponedAt;
+  @JoinColumn(name = "coach_id")
+  private Coach coach;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "postponed_by")
-  private Coordinator postponedBy;
+  @JoinColumn(name = "driver_id")
+  private Driver driver;
 
-  @Column(name = "cancelled_at")
-  private LocalDateTime cancelledAt;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "hotel_booking_id")
+  private HotelBooking hotelBooking;
 
-  @Column(name = "cancellation_reason", columnDefinition = "TEXT")
-  private String cancellationReason;
+  @Column(name = "start_date", nullable = false)
+  private LocalDate startDate;
+
+  @Column(name = "end_date", nullable = false)
+  private LocalDate endDate;
+
+  @Column(name = "min_participants")
+  @Builder.Default
+  private int minParticipants = 10;
+
+  @Column(name = "max_participants")
+  @Builder.Default
+  private int maxParticipants = 40;
+
+  @Column(name = "current_participants")
+  @Builder.Default
+  private int currentParticipants = 0;
+
+  @Enumerated(EnumType.STRING)
+  @Column(length = 50)
+  @Builder.Default
+  private TourInstanceStatus status = TourInstanceStatus.PLANNING;
 }

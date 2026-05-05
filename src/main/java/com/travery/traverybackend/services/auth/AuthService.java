@@ -4,13 +4,14 @@ import com.travery.traverybackend.dtos.request.auth.*;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
+import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.AuthProvider;
-import com.travery.traverybackend.enums.UserRoles;
-import com.travery.traverybackend.enums.UserStatus;
+import com.travery.traverybackend.enums.auth.AuthProvider;
+import com.travery.traverybackend.enums.user.UserRoles;
+import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
@@ -46,6 +47,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
+  private final com.travery.traverybackend.repositories.HotelRepository hotelRepository;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -299,7 +301,7 @@ public class AuthService {
     userRepository.save(user);
 
     // 5. Revoke all refresh tokens — forces re-login on other devices
-    //    The current access token remains valid until it expires (short TTL).
+    // The current access token remains valid until it expires (short TTL).
     refreshTokenService.revokeAll(userId);
   }
 
@@ -342,7 +344,8 @@ public class AuthService {
 
   @Transactional
   public void createStaff(CreateStaffRequest request) {
-    // Consistency check: Only throw if an ACTIVE user already exists with this email
+    // Consistency check: Only throw if an ACTIVE user already exists with this
+    // email
     userRepository
         .findByEmail(request.getEmail())
         .ifPresent(
@@ -354,11 +357,22 @@ public class AuthService {
 
     User user =
         switch (request.getRole()) {
-          case COORDINATOR ->
-              Coordinator.builder().experienceYear(request.getExperienceYear()).build();
-          case GUIDE -> Guide.builder().experienceYear(request.getExperienceYear()).build();
-          case RECEPTIONIST ->
-              Receptionist.builder().experienceYear(request.getExperienceYear()).build();
+          case COORDINATOR -> Coordinator.builder().department(request.getDepartment()).build();
+          case GUIDE -> Guide.builder().guideLicense(request.getGuideLicense()).build();
+          case RECEPTIONIST -> {
+            if (request.getHotelId() == null) {
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Hotel ID is required for Receptionist");
+            }
+            Hotel hotel =
+                hotelRepository
+                    .findById(request.getHotelId())
+                    .orElseThrow(
+                        () ->
+                            new BaseAppException(
+                                WebErrorCode.BAD_REQUEST, "Hotel not found for Receptionist"));
+            yield Receptionist.builder().hotel(hotel).build();
+          }
           default ->
               throw new BaseAppException(
                   WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
