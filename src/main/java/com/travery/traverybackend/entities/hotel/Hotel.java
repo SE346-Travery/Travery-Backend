@@ -53,6 +53,9 @@ public class Hotel extends AbstractBaseEntity {
   private RefundPolicy refundPolicy;
 
   @ManyToMany
-  @JoinTable(name = "hotel_amenities", joinColumns = @JoinColumn(name = "hotel_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @JoinTable(
+      name = "hotel_amenities",
+      joinColumns = @JoinColumn(name = "hotel_id"),
+      inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   private Set<Amenity> amenities;
 }
