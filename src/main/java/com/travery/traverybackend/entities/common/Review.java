@@ -2,6 +2,7 @@ package com.travery.traverybackend.entities.common;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.user.User;
+import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.common.ReviewTargetType;
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class Review extends AbstractBaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "booking_type", nullable = false, length = 50)
-  private com.travery.traverybackend.enums.booking.BookingType bookingType;
+  private BookingType bookingType;
 
   @Column(name = "target_id", nullable = false)
   private UUID targetId;

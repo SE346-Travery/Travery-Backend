@@ -6,7 +6,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,4 +30,7 @@ public class RefundPolicy extends AbstractBaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "service_type", nullable = false, length = 50)
   private RefundServiceType serviceType;
+
+  @OneToMany(mappedBy = "refundPolicy")
+  private List<RefundPolicyRule> rules;
 }

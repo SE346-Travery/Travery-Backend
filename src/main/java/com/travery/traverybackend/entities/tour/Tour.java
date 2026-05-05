@@ -1,13 +1,14 @@
 package com.travery.traverybackend.entities.tour;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.common.Destination;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,8 +43,9 @@ public class Tour extends AbstractBaseEntity {
   @JoinColumn(name = "requested_by_user_id")
   private User requestedByUser;
 
-  @Column(name = "destination_code", nullable = false, length = 50)
-  private String destinationCode;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "destination_id", nullable = false)
+  private Destination destination;
 
   @Column(name = "pickup_location", nullable = false, length = 500)
   private String pickupLocation;
@@ -58,8 +60,9 @@ public class Tour extends AbstractBaseEntity {
   @Builder.Default
   private boolean isCustom = false;
 
-  @Column(name = "refund_policy_id")
-  private UUID refundPolicyId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "refund_policy_id")
+  private RefundPolicy refundPolicy;
 
   @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<TourItinerary> itineraries;

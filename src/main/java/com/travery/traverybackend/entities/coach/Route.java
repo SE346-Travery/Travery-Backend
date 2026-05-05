@@ -1,9 +1,9 @@
 package com.travery.traverybackend.entities.coach;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,6 +36,7 @@ public class Route extends AbstractBaseEntity {
   @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal basePrice;
 
-  @Column(name = "refund_policy_id")
-  private UUID refundPolicyId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "refund_policy_id")
+  private RefundPolicy refundPolicy;
 }

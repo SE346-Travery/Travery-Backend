@@ -420,6 +420,18 @@ create table tourists (
     primary key (id)
 );
 
+create table destinations (
+    created_at timestamp(6) not null,
+    updated_at timestamp(6) not null,
+    id uuid not null,
+    code varchar(50) not null unique,
+    name varchar(255) not null,
+    region varchar(20) not null check ((region in ('NORTH','CENTRAL','SOUTH'))),
+    image_url varchar(500),
+    description TEXT,
+    primary key (id)
+);
+
 create table tours (
     is_custom boolean not null,
     price_per_adult numeric(12,2) not null,
@@ -427,16 +439,17 @@ create table tours (
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     coordinator_id uuid not null,
+    destination_id uuid not null,
     hotel_id uuid,
     id uuid not null,
     refund_policy_id uuid,
     requested_by_user_id uuid,
-    destination_code varchar(50) not null,
     pickup_location varchar(500) not null,
     description TEXT,
     name varchar(255) not null,
     primary key (id)
 );
+
 
 create table users (
     created_at timestamp(6) not null,
@@ -702,8 +715,16 @@ alter table tours
     foreign key (coordinator_id) references coordinators;
 
 alter table tours
+    add constraint fk_tours_destination
+    foreign key (destination_id) references destinations;
+
+alter table tours
     add constraint fk_tours_hotel
     foreign key (hotel_id) references hotels;
+
+alter table tours
+    add constraint fk_tours_refund_policy
+    foreign key (refund_policy_id) references refund_policies;
 
 alter table tours
     add constraint fk_tours_requested_by_user
