@@ -1,11 +1,15 @@
 package com.travery.traverybackend.services.tour;
 
+import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
+import com.travery.traverybackend.exception.BaseAppException;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,5 +56,12 @@ public class CoordinatorTourInstanceService {
     return instances.stream()
         .map(tourInstanceMapper::toTourInstanceResponse)
         .collect(Collectors.toList());
+  }
+
+  @Transactional(readOnly = true)
+  public TourInstanceDetailResponse getInstanceDetail(UUID id) {
+    TourInstance tourInstance = tourInstanceRepository.findById(id)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Tour instance not found"));
+    return tourInstanceMapper.toTourInstanceDetailResponse(tourInstance);
   }
 }
