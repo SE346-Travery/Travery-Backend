@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +15,8 @@ import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.user.*;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
+import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourMapper;
 import com.travery.traverybackend.repositories.HotelRepository;
@@ -84,6 +87,12 @@ public class TourServiceTest {
                     .description("Arrive")
                     .build()))
         .build();
+
+    // Default mock for standard refund policy since it's used in most tests
+    RefundPolicy standardPolicy = new RefundPolicy();
+    standardPolicy.setName("Standard Tour Policy");
+    lenient().when(refundPolicyRepository.findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR))
+        .thenReturn(Optional.of(standardPolicy));
   }
 
   @Test
@@ -155,6 +164,28 @@ public class TourServiceTest {
 
     assertThrows(
         BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+  }
+
+  @Test
+  void createTemplate_noRefundPolicy_assignsStandard() {
+    request.setRefundPolicyId(null);
+    
+    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
+    when(destinationRepository.findById(request.getDestinationId()))
+        .thenReturn(Optional.of(destination));
+    when(hotelRepository.findById(request.getHotelId())).thenReturn(Optional.of(hotel));
+
+    Tour tour = new Tour();
+    when(tourMapper.toEntity(request)).thenReturn(tour);
+    when(tourRepository.save(any(Tour.class))).thenReturn(tour);
+
+    TourResponse response = new TourResponse();
+    when(tourMapper.toResponse(tour)).thenReturn(response);
+
+    TourResponse result = tourService.createTemplate(request, coordinatorId);
+
+    assertNotNull(result);
+    verify(refundPolicyRepository).findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR);
   }
 
   @Test
