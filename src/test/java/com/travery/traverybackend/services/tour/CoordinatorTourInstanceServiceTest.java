@@ -26,14 +26,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class CoordinatorTourInstanceServiceTest {
 
-  @Mock
-  private TourInstanceRepository tourInstanceRepository;
+  @Mock private TourInstanceRepository tourInstanceRepository;
 
-  @Mock
-  private TourInstanceMapper tourInstanceMapper;
+  @Mock private TourInstanceMapper tourInstanceMapper;
 
-  @InjectMocks
-  private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @InjectMocks private CoordinatorTourInstanceService coordinatorTourInstanceService;
 
   private TourInstance tourInstance;
   private TourInstanceResponse tourInstanceResponse;
@@ -74,7 +71,8 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findWaitingConfirmation(any())).thenReturn(List.of(tourInstance));
     when(tourInstanceMapper.toTourInstanceResponse(tourInstance)).thenReturn(tourInstanceResponse);
 
-    List<TourInstanceResponse> result = coordinatorTourInstanceService.getInstances("waiting_confirmation");
+    List<TourInstanceResponse> result =
+        coordinatorTourInstanceService.getInstances("waiting_confirmation");
 
     assertEquals(1, result.size());
     verify(tourInstanceRepository).findWaitingConfirmation(any());
@@ -85,7 +83,8 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findLowOccupancy(any())).thenReturn(List.of(tourInstance));
     when(tourInstanceMapper.toTourInstanceResponse(tourInstance)).thenReturn(tourInstanceResponse);
 
-    List<TourInstanceResponse> result = coordinatorTourInstanceService.getInstances("low_occupancy");
+    List<TourInstanceResponse> result =
+        coordinatorTourInstanceService.getInstances("low_occupancy");
 
     assertEquals(1, result.size());
     verify(tourInstanceRepository).findLowOccupancy(any());
@@ -110,8 +109,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThrows(
-        BaseAppException.class,
-        () -> coordinatorTourInstanceService.getInstanceDetail(id));
+        BaseAppException.class, () -> coordinatorTourInstanceService.getInstanceDetail(id));
 
     verify(tourInstanceRepository).findById(id);
   }
@@ -121,7 +119,8 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findAll()).thenReturn(List.of(tourInstance));
     when(tourInstanceMapper.toTourInstanceResponse(tourInstance)).thenReturn(tourInstanceResponse);
 
-    List<TourInstanceResponse> result = coordinatorTourInstanceService.getInstances("unknown_random_filter");
+    List<TourInstanceResponse> result =
+        coordinatorTourInstanceService.getInstances("unknown_random_filter");
 
     assertEquals(1, result.size());
     verify(tourInstanceRepository).findAll();

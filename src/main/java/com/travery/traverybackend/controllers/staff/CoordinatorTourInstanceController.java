@@ -31,6 +31,7 @@ public class CoordinatorTourInstanceController {
     List<TourInstanceResponse> instances = coordinatorTourInstanceService.getInstances(filter);
     return responseFactory.success(instances, "Fetched tour instances successfully");
   }
+
   @GetMapping("/{id}")
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> getInstanceDetail(

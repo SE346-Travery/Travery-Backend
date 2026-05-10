@@ -12,10 +12,10 @@ import com.travery.traverybackend.dtos.request.tour.TourItineraryRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.entities.common.Destination;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.user.*;
-import com.travery.traverybackend.entities.finance.RefundPolicy;
 import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourMapper;
@@ -38,21 +38,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class TourServiceTest {
 
-  @Mock
-  private TourRepository tourRepository;
-  @Mock
-  private DestinationRepository destinationRepository;
-  @Mock
-  private HotelRepository hotelRepository;
-  @Mock
-  private RefundPolicyRepository refundPolicyRepository;
-  @Mock
-  private UserRepository userRepository;
-  @Mock
-  private TourMapper tourMapper;
+  @Mock private TourRepository tourRepository;
+  @Mock private DestinationRepository destinationRepository;
+  @Mock private HotelRepository hotelRepository;
+  @Mock private RefundPolicyRepository refundPolicyRepository;
+  @Mock private UserRepository userRepository;
+  @Mock private TourMapper tourMapper;
 
-  @InjectMocks
-  private TourService tourService;
+  @InjectMocks private TourService tourService;
 
   private UUID coordinatorId;
   private Coordinator coordinator;
@@ -72,26 +65,30 @@ public class TourServiceTest {
     hotel = new Hotel();
     hotel.setName("Hotel A");
 
-    request = TourTemplateRequest.builder()
-        .name("Dalat Trip")
-        .destinationId(UUID.randomUUID())
-        .hotelId(UUID.randomUUID())
-        .pickupLocation("Station 1")
-        .pricePerAdult(new BigDecimal("1000"))
-        .pricePerChild(new BigDecimal("500"))
-        .itineraries(
-            List.of(
-                TourItineraryRequest.builder()
-                    .dayNumber(1)
-                    .title("Day 1")
-                    .description("Arrive")
-                    .build()))
-        .build();
+    request =
+        TourTemplateRequest.builder()
+            .name("Dalat Trip")
+            .destinationId(UUID.randomUUID())
+            .hotelId(UUID.randomUUID())
+            .pickupLocation("Station 1")
+            .pricePerAdult(new BigDecimal("1000"))
+            .pricePerChild(new BigDecimal("500"))
+            .itineraries(
+                List.of(
+                    TourItineraryRequest.builder()
+                        .dayNumber(1)
+                        .title("Day 1")
+                        .description("Arrive")
+                        .build()))
+            .build();
 
     // Default mock for standard refund policy since it's used in most tests
     RefundPolicy standardPolicy = new RefundPolicy();
     standardPolicy.setName("Standard Tour Policy");
-    lenient().when(refundPolicyRepository.findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR))
+    lenient()
+        .when(
+            refundPolicyRepository.findByNameAndServiceType(
+                "Standard Tour Policy", RefundServiceType.TOUR))
         .thenReturn(Optional.of(standardPolicy));
   }
 
@@ -162,14 +159,13 @@ public class TourServiceTest {
     when(hotelRepository.findById(request.getHotelId())).thenReturn(Optional.of(hotel));
     when(userRepository.findById(requestedByUserId)).thenReturn(Optional.of(nonTouristUser));
 
-    assertThrows(
-        BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
   }
 
   @Test
   void createTemplate_noRefundPolicy_assignsStandard() {
     request.setRefundPolicyId(null);
-    
+
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(destinationRepository.findById(request.getDestinationId()))
         .thenReturn(Optional.of(destination));
@@ -185,15 +181,15 @@ public class TourServiceTest {
     TourResponse result = tourService.createTemplate(request, coordinatorId);
 
     assertNotNull(result);
-    verify(refundPolicyRepository).findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR);
+    verify(refundPolicyRepository)
+        .findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR);
   }
 
   @Test
   void createTemplate_invalidCoordinator_throwsException() {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.empty());
 
-    assertThrows(
-        BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
   }
 
   @Test
@@ -201,7 +197,6 @@ public class TourServiceTest {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(destinationRepository.findById(request.getDestinationId())).thenReturn(Optional.empty());
 
-    assertThrows(
-        BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
   }
 }

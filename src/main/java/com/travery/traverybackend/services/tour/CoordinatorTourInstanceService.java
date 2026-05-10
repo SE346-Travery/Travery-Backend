@@ -40,12 +40,20 @@ public class CoordinatorTourInstanceService {
         instances = tourInstanceRepository.findByStatus(TourInstanceStatus.COMPLETED);
         break;
       case "waiting_confirmation":
-        instances = tourInstanceRepository.findWaitingConfirmation(
-            List.of(TourInstanceStatus.COMPLETED, TourInstanceStatus.CANCELLED, TourInstanceStatus.PLANNING));
+        instances =
+            tourInstanceRepository.findWaitingConfirmation(
+                List.of(
+                    TourInstanceStatus.COMPLETED,
+                    TourInstanceStatus.CANCELLED,
+                    TourInstanceStatus.PLANNING));
         break;
       case "low_occupancy":
-        instances = tourInstanceRepository.findLowOccupancy(
-            List.of(TourInstanceStatus.COMPLETED, TourInstanceStatus.CANCELLED, TourInstanceStatus.PLANNING));
+        instances =
+            tourInstanceRepository.findLowOccupancy(
+                List.of(
+                    TourInstanceStatus.COMPLETED,
+                    TourInstanceStatus.CANCELLED,
+                    TourInstanceStatus.PLANNING));
         break;
       case "all":
       default:
@@ -60,8 +68,11 @@ public class CoordinatorTourInstanceService {
 
   @Transactional(readOnly = true)
   public TourInstanceDetailResponse getInstanceDetail(UUID id) {
-    TourInstance tourInstance = tourInstanceRepository.findById(id)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Tour instance not found"));
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Tour instance not found"));
     return tourInstanceMapper.toTourInstanceDetailResponse(tourInstance);
   }
 }

@@ -61,26 +61,32 @@ public class TourControllerTest {
 
     ReflectionTestUtils.setField(tourController, "responseFactory", responseFactory);
 
-    mockMvc = MockMvcBuilders.standaloneSetup(tourController)
-        .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-          @Override
-          public boolean supportsParameter(org.springframework.core.MethodParameter parameter) {
-            return parameter.hasParameterAnnotation(org.springframework.security.core.annotation.AuthenticationPrincipal.class);
-          }
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(tourController)
+            .setCustomArgumentResolvers(
+                new HandlerMethodArgumentResolver() {
+                  @Override
+                  public boolean supportsParameter(
+                      org.springframework.core.MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(
+                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                  }
 
-          @Override
-          public Object resolveArgument(org.springframework.core.MethodParameter parameter,
-              org.springframework.web.method.support.ModelAndViewContainer mavContainer,
-              org.springframework.web.context.request.NativeWebRequest webRequest,
-              org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
-            return userDetails;
-          }
-        })
-        .build();
+                  @Override
+                  public Object resolveArgument(
+                      org.springframework.core.MethodParameter parameter,
+                      org.springframework.web.method.support.ModelAndViewContainer mavContainer,
+                      org.springframework.web.context.request.NativeWebRequest webRequest,
+                      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+                    return userDetails;
+                  }
+                })
+            .build();
 
     SecurityContextHolder.getContext()
         .setAuthentication(
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()));
   }
 
   @Test

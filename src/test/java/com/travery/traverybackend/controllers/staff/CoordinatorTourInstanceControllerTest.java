@@ -31,14 +31,11 @@ public class CoordinatorTourInstanceControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock
-  private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @Mock private CoordinatorTourInstanceService coordinatorTourInstanceService;
 
-  @Mock
-  private ResponseFactory responseFactory;
+  @Mock private ResponseFactory responseFactory;
 
-  @InjectMocks
-  private CoordinatorTourInstanceController coordinatorTourInstanceController;
+  @InjectMocks private CoordinatorTourInstanceController coordinatorTourInstanceController;
 
   @BeforeEach
   void setUp() {
@@ -55,7 +52,8 @@ public class CoordinatorTourInstanceControllerTest {
     singleResponse.setMessage("Fetched tour instances successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(responses), any())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(responses), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
     mockMvc
         .perform(get("/staff/coordinator/instances").param("filter", "all"))
@@ -75,7 +73,8 @@ public class CoordinatorTourInstanceControllerTest {
     singleResponse.setMessage("Fetched tour instance detail successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(detailResponse), any())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(detailResponse), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
     mockMvc
         .perform(get("/staff/coordinator/instances/" + id))
