@@ -72,7 +72,7 @@ public class CoordinatorTourInstanceService {
         tourInstanceRepository
             .findById(id)
             .orElseThrow(
-                () -> new BaseAppException(WebErrorCode.BAD_REQUEST, "Tour instance not found"));
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
     return tourInstanceMapper.toTourInstanceDetailResponse(tourInstance);
   }
 }

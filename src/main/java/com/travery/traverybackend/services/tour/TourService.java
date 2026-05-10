@@ -7,7 +7,9 @@ import com.travery.traverybackend.entities.finance.RefundPolicy;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourItinerary;
-import com.travery.traverybackend.entities.user.*;
+import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Tourist;
+import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
@@ -84,7 +86,6 @@ public class TourService {
     tour.setHotel(hotel);
     tour.setRefundPolicy(refundPolicy);
     tour.setRequestedByUser(requestedByUser);
-    tour.setCustom(Boolean.TRUE.equals(request.getIsCustom()));
 
     List<TourItinerary> itineraries =
         request.getItineraries().stream()
