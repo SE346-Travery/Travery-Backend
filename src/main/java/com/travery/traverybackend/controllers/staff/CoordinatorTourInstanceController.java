@@ -1,6 +1,6 @@
 package com.travery.traverybackend.controllers.staff;
 
-import com.travery.traverybackend.dtos.response.ResponseFactory;
+import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
@@ -19,17 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/staff/coordinator/instances")
 @RequiredArgsConstructor
-public class CoordinatorTourInstanceController {
+public class CoordinatorTourInstanceController extends AbstractBaseController {
 
   private final CoordinatorTourInstanceService coordinatorTourInstanceService;
-  private final ResponseFactory responseFactory;
 
   @GetMapping
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<List<TourInstanceResponse>>> getInstances(
       @RequestParam(defaultValue = "all") String filter) {
     List<TourInstanceResponse> instances = coordinatorTourInstanceService.getInstances(filter);
-    return responseFactory.success(instances, "Fetched tour instances successfully");
+    return success(instances, "Fetched tour instances successfully");
   }
 
   @GetMapping("/{id}")
@@ -37,6 +36,6 @@ public class CoordinatorTourInstanceController {
   public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> getInstanceDetail(
       @PathVariable UUID id) {
     TourInstanceDetailResponse detail = coordinatorTourInstanceService.getInstanceDetail(id);
-    return responseFactory.success(detail, "Fetched tour instance detail successfully");
+    return success(detail, "Fetched tour instance detail successfully");
   }
 }

@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -39,6 +40,8 @@ public class CoordinatorTourInstanceControllerTest {
 
   @BeforeEach
   void setUp() {
+    ReflectionTestUtils.setField(
+        coordinatorTourInstanceController, "responseFactory", responseFactory);
     mockMvc = MockMvcBuilders.standaloneSetup(coordinatorTourInstanceController).build();
   }
 
