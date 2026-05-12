@@ -1,4 +1,4 @@
-package com.travery.traverybackend.repositories;
+package com.travery.traverybackend.repositories.common;
 
 import java.util.List;
 import java.util.Optional;

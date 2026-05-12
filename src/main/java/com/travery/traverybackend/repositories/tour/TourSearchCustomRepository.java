@@ -1,4 +1,4 @@
-package com.travery.traverybackend.repositories;
+package com.travery.traverybackend.repositories.tour;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

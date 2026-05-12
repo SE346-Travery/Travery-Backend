@@ -1,4 +1,4 @@
-package com.travery.traverybackend.repositories;
+package com.travery.traverybackend.repositories.auth;
 
 import com.travery.traverybackend.entities.auth.RefreshToken;
 import com.travery.traverybackend.entities.user.User;
@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
 
   Optional<RefreshToken> findByToken(String token);
