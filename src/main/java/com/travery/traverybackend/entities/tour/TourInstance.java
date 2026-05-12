@@ -9,15 +9,13 @@ import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Entity
 @Table(name = "tour_instances")

@@ -1,8 +1,7 @@
 package com.travery.traverybackend.dtos.response.tour;
 
-import java.util.UUID;
 import com.travery.traverybackend.enums.common.Region;
-
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,10 +14,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class DestinationResponse {
-    private UUID id;
-    private String code;
-    private String name;
-    private Region region;
-    private String imageUrl;
-    private String description;
+  private UUID id;
+  private String code;
+  private String name;
+  private Region region;
+  private String imageUrl;
+  private String description;
 }

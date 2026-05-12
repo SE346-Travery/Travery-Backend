@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface CoordinatorTourInstanceService {
   List<TourInstanceResponse> getInstances(String filter);
+
   TourInstanceDetailResponse getInstanceDetail(UUID id);
 }

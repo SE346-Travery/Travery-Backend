@@ -9,7 +9,6 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;

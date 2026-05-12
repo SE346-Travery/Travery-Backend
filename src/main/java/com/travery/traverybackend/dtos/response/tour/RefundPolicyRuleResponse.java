@@ -2,7 +2,6 @@ package com.travery.traverybackend.dtos.response.tour;
 
 import java.math.BigDecimal;
 import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class RefundPolicyRuleResponse {
-    private UUID id;
-    private int daysBefore;
-    private BigDecimal refundPercentage;
+  private UUID id;
+  private int daysBefore;
+  private BigDecimal refundPercentage;
 }

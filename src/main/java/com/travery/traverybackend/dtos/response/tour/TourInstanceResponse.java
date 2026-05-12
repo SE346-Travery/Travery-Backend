@@ -1,10 +1,8 @@
 package com.travery.traverybackend.dtos.response.tour;
 
+import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import com.travery.traverybackend.enums.tour.TourInstanceStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

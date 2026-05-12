@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageResponse {
-    private String url;
-    private Boolean isThumnail;
+  private String url;
+  private Boolean isThumnail;
 }

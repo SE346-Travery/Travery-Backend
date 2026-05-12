@@ -16,38 +16,40 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class HibernateSearchInit implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final EntityManager entityManager;
+  private final EntityManager entityManager;
 
-    @Value("${app.hibernate.search.mass-indexer.enabled:false}")
-    private boolean isMassIndexerEnabled;
+  @Value("${app.hibernate.search.mass-indexer.enabled:false}")
+  private boolean isMassIndexerEnabled;
 
-    @Override
-    @Transactional
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        if (!isMassIndexerEnabled) {
-            log.info("Hibernate Search Mass Indexer is disabled.");
-            return;
-        }
-
-        log.info("Starting Hibernate Search Mass Indexing...");
-        try {
-            SearchSession searchSession = Search.session(entityManager);
-
-            // Tự động tính toán số luồng dựa trên số nhân CPU của Server
-            int cpuCores = Runtime.getRuntime().availableProcessors();
-            int threadsToUse = Math.max(cpuCores * 2, 4); // Tối thiểu 4 luồng
-
-            searchSession.massIndexer()
-                    .idFetchSize(150)
-                    .batchSizeToLoadObjects(25)
-                    .threadsToLoadObjects(threadsToUse) // Đã được tối ưu tự động
-                    .startAndWait();
-
-            log.info("Hibernate Search Mass Indexing completed successfully with {} threads!", threadsToUse);
-
-        } catch (InterruptedException e) {
-            log.error("Hibernate Search Mass Indexing was interrupted", e);
-            Thread.currentThread().interrupt();
-        }
+  @Override
+  @Transactional
+  public void onApplicationEvent(ApplicationReadyEvent event) {
+    if (!isMassIndexerEnabled) {
+      log.info("Hibernate Search Mass Indexer is disabled.");
+      return;
     }
+
+    log.info("Starting Hibernate Search Mass Indexing...");
+    try {
+      SearchSession searchSession = Search.session(entityManager);
+
+      // Tự động tính toán số luồng dựa trên số nhân CPU của Server
+      int cpuCores = Runtime.getRuntime().availableProcessors();
+      int threadsToUse = Math.max(cpuCores * 2, 4); // Tối thiểu 4 luồng
+
+      searchSession
+          .massIndexer()
+          .idFetchSize(150)
+          .batchSizeToLoadObjects(25)
+          .threadsToLoadObjects(threadsToUse) // Đã được tối ưu tự động
+          .startAndWait();
+
+      log.info(
+          "Hibernate Search Mass Indexing completed successfully with {} threads!", threadsToUse);
+
+    } catch (InterruptedException e) {
+      log.error("Hibernate Search Mass Indexing was interrupted", e);
+      Thread.currentThread().interrupt();
+    }
+  }
 }
