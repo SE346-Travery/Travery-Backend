@@ -9,19 +9,21 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.tour.ImageResponse;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.dtos.response.tour.TourItineraryResponse;
+import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
 import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.tour.TourItinerary;
 import com.travery.traverybackend.enums.common.ImageType;
-import com.travery.traverybackend.repositories.ImageRepository;
+import com.travery.traverybackend.repositories.common.ImageRepository;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", builder = @org.mapstruct.Builder(disableBuilder = true), unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public abstract class TourMapper {
 
     @Autowired
@@ -44,6 +46,23 @@ public abstract class TourMapper {
     @Mapping(target = "images", ignore = true) // Hình ảnh sẽ được map sau hoặc bỏ qua nếu không cần thiết
     public abstract TourItineraryResponse toTourItineraryResponse(TourItinerary itinerary);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "coordinator", ignore = true)
+    @Mapping(target = "hotel", ignore = true)
+    @Mapping(target = "destination", ignore = true)
+    @Mapping(target = "refundPolicy", ignore = true)
+    @Mapping(target = "itineraries", ignore = true)
+    @Mapping(target = "requestedByUser", ignore = true)
+    @Mapping(source = "isCustom", target = "custom")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    public abstract Tour toEntity(TourTemplateRequest request);
+
+    @Mapping(source = "destination.name", target = "destinationName")
+    @Mapping(source = "hotel.name", target = "hotelName")
+    @Mapping(source = "custom", target = "custom")
+    public abstract TourResponse toTourResponse(Tour tour);
+
     @AfterMapping
     protected void afterToTourDetailResponse(Tour tour, @MappingTarget TourDetailResponse response) {
         List<Image> tourImages = imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(tour.getId(),
@@ -59,4 +78,5 @@ public abstract class TourMapper {
         response.setIsThumnail(image.isThumbnail());
         return response;
     }
+
 }

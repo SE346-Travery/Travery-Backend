@@ -7,8 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
+import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
 
 public interface TourService {
@@ -20,4 +22,6 @@ public interface TourService {
     TourDetailResponse getTourDetail(UUID id);
 
     List<TourInstanceResponse> getTourInstances(UUID tourId);
+
+    TourResponse createTemplate(TourTemplateRequest request, UUID coordinatorId);
 }

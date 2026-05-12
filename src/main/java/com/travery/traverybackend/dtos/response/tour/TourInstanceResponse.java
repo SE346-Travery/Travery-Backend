@@ -15,9 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TourInstanceResponse {
-    private UUID id;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private TourInstanceStatus status;
-    private Integer availableSlots;
+  private UUID id;
+  private LocalDate startDate;
+  private LocalDate endDate;
+  private TourInstanceStatus status;
+  private Integer availableSlots;
 }
