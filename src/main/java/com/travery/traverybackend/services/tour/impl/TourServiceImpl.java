@@ -13,19 +13,34 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
+import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
+import com.travery.traverybackend.entities.common.Destination;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
+import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.tour.TourItinerary;
+import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Tourist;
+import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourMapper;
-import com.travery.traverybackend.repositories.ImageRepository;
-import com.travery.traverybackend.repositories.TourInstanceRepository;
-import com.travery.traverybackend.repositories.TourRepository;
+import com.travery.traverybackend.repositories.hotel.HotelRepository;
+import com.travery.traverybackend.repositories.common.ImageRepository;
+import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
+import com.travery.traverybackend.repositories.tour.TourRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.repositories.common.DestinationRepository;
+import com.travery.traverybackend.repositories.finance.RefundPolicyRepository;
 import com.travery.traverybackend.enums.common.ImageType;
+import com.travery.traverybackend.enums.finance.RefundServiceType;
+
 import java.util.Map;
 import com.travery.traverybackend.services.tour.TourService;
 
@@ -41,6 +56,10 @@ public class TourServiceImpl implements TourService {
     private final TourInstanceRepository tourInstanceRepository;
     private final TourMapper tourMapper;
     private final ImageRepository imageRepository;
+    private final DestinationRepository destinationRepository;
+    private final HotelRepository hotelRepository;
+    private final RefundPolicyRepository refundPolicyRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -114,6 +133,67 @@ public class TourServiceImpl implements TourService {
                     return response;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public TourResponse createTemplate(TourTemplateRequest request, UUID coordinatorId) {
+        Coordinator coordinator = userRepository
+                .findById(coordinatorId)
+                .filter(user -> user instanceof Coordinator)
+                .map(user -> (Coordinator) user)
+                .orElseThrow(
+                        () -> new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator"));
+
+        Destination destination = destinationRepository
+                .findById(request.getDestinationId())
+                .orElseThrow(
+                        () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
+
+        Hotel hotel = null;
+        if (request.getHotelId() != null) {
+            hotel = hotelRepository
+                    .findById(request.getHotelId())
+                    .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
+        }
+
+        RefundPolicy refundPolicy = refundPolicyRepository
+                .findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR)
+                .orElseThrow(
+                        () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
+
+        User requestedByUser = null;
+        if (request.getRequestedByUserId() != null) {
+            requestedByUser = userRepository
+                    .findById(request.getRequestedByUserId())
+                    .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
+
+            if (!(requestedByUser instanceof Tourist)) {
+                throw new BaseAppException(
+                        WebErrorCode.BAD_REQUEST, "Only Tourists can request custom tours");
+            }
+        }
+
+        Tour tour = tourMapper.toEntity(request);
+        tour.setCoordinator(coordinator);
+        tour.setDestination(destination);
+        tour.setHotel(hotel);
+        tour.setRefundPolicy(refundPolicy);
+        tour.setRequestedByUser(requestedByUser);
+
+        List<TourItinerary> itineraries = request.getItineraries().stream()
+                .map(
+                        itineraryRequest -> TourItinerary.builder()
+                                .tour(tour)
+                                .dayNumber(itineraryRequest.getDayNumber())
+                                .title(itineraryRequest.getTitle())
+                                .description(itineraryRequest.getDescription())
+                                .build())
+                .collect(Collectors.toList());
+
+        tour.setItineraries(itineraries);
+
+        Tour savedTour = tourRepository.save(tour);
+        return tourMapper.toTourResponse(savedTour);
     }
 
     private Map<UUID, String> getThumbnailsForTours(List<UUID> tourIds) {
