@@ -11,20 +11,17 @@ env:
 
 jobs:
   # ============================================================================
-  # JOB 1: AUTO-FORMAT (Apply & Commit)
+  # JOB 1: FORMAT CHECK
   # ============================================================================
-  format-apply:
-    name: Auto-Format & Push
+  format-check:
+    name: Format & Import Check
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push the commit back to the repo
+      contents: read
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
-        with:
-          # Ensures we check out the actual branch, not a detached HEAD
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
@@ -36,30 +33,15 @@ jobs:
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Apply code formatting
-        run: ./mvnw spotless:apply -q
-
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git add .
-          
-          # Only commit if there are actual changes to avoid build errors
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "refactor code"
-            git push
-          else
-            echo "No formatting changes detected. Skipping commit."
-          fi
+      - name: Check code formatting
+        run: ./mvnw spotless:check -q
 
   # ============================================================================
   # JOB 2: BUILD & TEST
   # ============================================================================
   build-and-test:
     name: Build & Run Tests
-    needs: format-apply
+    needs: format-check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,9 +51,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
-        with:
-          # Ensure we get the latest commit pushed by the format job
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
