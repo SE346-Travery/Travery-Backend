@@ -1,6 +1,13 @@
 package com.travery.traverybackend.entities.common;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.enums.common.Region;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,6 +28,7 @@ public class Destination extends AbstractBaseEntity {
   @Column(nullable = false, unique = true, length = 50)
   private String code;
 
+  @FullTextField(analyzer = "standard")
   @Column(nullable = false, length = 255)
   private String name;
 
@@ -33,4 +41,8 @@ public class Destination extends AbstractBaseEntity {
 
   @Column(columnDefinition = "TEXT")
   private String description;
+
+  @JsonIgnore
+  @OneToMany(mappedBy = "destination")
+  private List<Tour> tours = new ArrayList<>();
 }

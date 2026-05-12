@@ -9,6 +9,14 @@ import com.travery.traverybackend.entities.user.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
+
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.engine.backend.types.ObjectStructure;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,11 +31,14 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@Indexed
 public class Tour extends AbstractBaseEntity {
 
+  @FullTextField(analyzer = "standard")
   @Column(nullable = false)
   private String name;
 
+  @FullTextField(analyzer = "standard")
   @Column(columnDefinition = "TEXT")
   private String description;
 
@@ -43,6 +54,7 @@ public class Tour extends AbstractBaseEntity {
   @JoinColumn(name = "requested_by_user_id")
   private User requestedByUser;
 
+  @IndexedEmbedded
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "destination_id", nullable = false)
   private Destination destination;
@@ -50,15 +62,34 @@ public class Tour extends AbstractBaseEntity {
   @Column(name = "pickup_location", nullable = false, length = 500)
   private String pickupLocation;
 
+  @GenericField(sortable = Sortable.YES)
+  @Column(name = "average_rating")
+  @Builder.Default
+  private Double averageRating = 0.0;
+
+  @GenericField(sortable = Sortable.YES)
   @Column(name = "price_per_adult", nullable = false, precision = 12, scale = 2)
   private BigDecimal pricePerAdult;
 
   @Column(name = "price_per_child", nullable = false, precision = 12, scale = 2)
   private BigDecimal pricePerChild;
 
+  @GenericField
   @Column(name = "is_custom", nullable = false)
   @Builder.Default
   private boolean isCustom = false;
+
+  @Column(name = "min_participants")
+  @Builder.Default
+  private int minParticipants = 10;
+
+  @Column(name = "max_participants")
+  @Builder.Default
+  private int maxParticipants = 30;
+
+  @Column(name = "duration_days")
+  @Builder.Default
+  private int durationDays = 1;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "refund_policy_id")
@@ -66,4 +97,8 @@ public class Tour extends AbstractBaseEntity {
 
   @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<TourItinerary> itineraries;
+
+  @OneToMany(mappedBy = "tour")
+  @IndexedEmbedded(structure = ObjectStructure.NESTED)
+  private List<TourInstance> tourInstances;
 }

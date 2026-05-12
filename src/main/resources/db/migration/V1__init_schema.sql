@@ -383,8 +383,6 @@ create table tour_bookings (
 create table tour_instances (
     current_participants integer,
     end_date date not null,
-    max_participants integer,
-    min_participants integer,
     start_date date not null,
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
@@ -433,7 +431,11 @@ create table destinations (
 );
 
 create table tours (
+    average_rating double precision not null default 0.0,
+    duration_days integer not null default 1,
     is_custom boolean not null,
+    max_participants integer,
+    min_participants integer,
     price_per_adult numeric(12,2) not null,
     price_per_child numeric(12,2) not null,
     created_at timestamp(6) not null,
