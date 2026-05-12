@@ -45,10 +45,6 @@ public abstract class TourMapper {
     public abstract TourItineraryResponse toTourItineraryResponse(TourItinerary itinerary);
 
     @AfterMapping
-    protected void afterToTourSummaryResponse(Tour tour, @MappingTarget TourSummaryResponse response) {
-    }
-
-    @AfterMapping
     protected void afterToTourDetailResponse(Tour tour, @MappingTarget TourDetailResponse response) {
         List<Image> tourImages = imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(tour.getId(),
                 ImageType.TOUR);

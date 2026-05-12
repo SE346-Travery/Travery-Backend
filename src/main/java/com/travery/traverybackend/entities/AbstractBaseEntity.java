@@ -24,7 +24,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericFie
 public class AbstractBaseEntity implements Serializable {
   @Id
   @DocumentId
-  @GenericField
+  @GenericField(sortable = Sortable.YES)
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
