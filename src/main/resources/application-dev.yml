@@ -18,6 +18,15 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        search:
+          backend:
+            directory:
+              root: ./travery-lucene-indexes
+          mapping:
+            automatic_indexing:
+              synchronization.strategy: sync
+          schema_management:
+            strategy: drop-and-create
     open-in-view: false
 
   data:
@@ -102,6 +111,11 @@ app:
     path: ${SCALAR_PATH:/docs}
     url: ${SCALAR_URL:/v3/api-docs}
     enabled: ${SCALAR_ENABLED:true}
+
+  hibernate:
+    search:
+      mass-indexer:
+        enabled: true
 
 logging:
   level:
