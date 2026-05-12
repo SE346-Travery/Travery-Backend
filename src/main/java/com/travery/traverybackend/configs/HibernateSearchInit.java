@@ -22,6 +22,7 @@ public class HibernateSearchInit implements ApplicationListener<ApplicationReady
     private boolean isMassIndexerEnabled;
 
     @Override
+    @Transactional
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (!isMassIndexerEnabled) {
             log.info("Hibernate Search Mass Indexer is disabled.");
