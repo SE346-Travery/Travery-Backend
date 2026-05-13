@@ -1,5 +1,6 @@
 package com.travery.traverybackend.mappers;
 
+import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.tour.TourInstance;
@@ -8,6 +9,19 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface TourInstanceMapper {
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "tour", ignore = true)
+  @Mapping(target = "coordinator", ignore = true)
+  @Mapping(target = "guide", ignore = true)
+  @Mapping(target = "coach", ignore = true)
+  @Mapping(target = "driver", ignore = true)
+  @Mapping(target = "hotelBooking", ignore = true)
+  @Mapping(target = "currentParticipants", ignore = true)
+  @Mapping(target = "status", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+  TourInstance toEntity(TourInstanceCreateRequest request);
 
   @Mapping(source = "tour.name", target = "tourName")
   TourInstanceResponse toTourInstanceResponse(TourInstance tourInstance);

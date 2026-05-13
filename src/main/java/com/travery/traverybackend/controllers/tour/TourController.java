@@ -1,10 +1,13 @@
 package com.travery.traverybackend.controllers.tour;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TourController extends AbstractBaseController {
 
   private final TourService tourService;
+  private final CoordinatorTourInstanceService coordinatorTourInstanceService;
 
   @PostMapping("/templates")
   @PreAuthorize("hasRole('COORDINATOR')")
@@ -30,5 +34,14 @@ public class TourController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     TourResponse response = tourService.createTemplate(request, userDetails.getUserId());
     return created(response, "Tour template created successfully");
+  }
+
+  @PostMapping("/tour-instances")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> createInstance(
+      @Valid @RequestBody TourInstanceCreateRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    TourInstanceDetailResponse response = coordinatorTourInstanceService.createInstance(request, userDetails.getUserId());
+    return created(response, "Tour instance created successfully");
   }
 }

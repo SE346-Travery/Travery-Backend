@@ -1,13 +1,18 @@
 package com.travery.traverybackend.services.tour;
 
+import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
+import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
+import com.travery.traverybackend.repositories.tour.TourRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,7 +25,35 @@ import org.springframework.transaction.annotation.Transactional;
 public class CoordinatorTourInstanceService {
 
   private final TourInstanceRepository tourInstanceRepository;
+  private final TourRepository tourRepository;
+  private final UserRepository userRepository;
   private final TourInstanceMapper tourInstanceMapper;
+
+  @Transactional
+  public TourInstanceDetailResponse createInstance(TourInstanceCreateRequest request, UUID coordinatorId) {
+    Tour tour = tourRepository.findById(request.getTourId())
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour template not found"));
+
+    Coordinator coordinator = userRepository.findById(coordinatorId)
+        .filter(user -> user instanceof Coordinator)
+        .map(user -> (Coordinator) user)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator"));
+
+    if (request.getStartDate().isAfter(request.getEndDate())) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Start date must be before end date");
+    }
+
+    TourInstance tourInstance = tourInstanceMapper.toEntity(request);
+    tourInstance.setTour(tour);
+    tourInstance.setCoordinator(coordinator);
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    
+    tourInstance.setMinParticipants(request.getMinParticipants() != null ? request.getMinParticipants() : 10);
+    tourInstance.setMaxParticipants(request.getMaxParticipants() != null ? request.getMaxParticipants() : 40);
+
+    TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
+    return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);
+  }
 
   @Transactional(readOnly = true)
   public List<TourInstanceResponse> getInstances(String filter) {
