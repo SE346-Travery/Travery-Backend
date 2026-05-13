@@ -6,10 +6,9 @@ import com.travery.traverybackend.entities.tour.TourInstance;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface TourInstanceMapper {
 
-  @Mapping(source = "tour.name", target = "tourName")
   TourInstanceResponse toTourInstanceResponse(TourInstance tourInstance);
 
   @Mapping(source = "tour.name", target = "tourName")

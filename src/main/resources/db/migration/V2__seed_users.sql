@@ -3,7 +3,7 @@
 -- Seed sample data for all user roles
 -- =============================================
 -- Password for all seeded users: Password@123
--- BCrypt hash (cost 10): $2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C
+-- BCrypt hash (cost 10): $2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS
 
 -- =============================================
 -- 1. ADMIN
@@ -13,7 +13,7 @@ VALUES (
     'a0000000-0000-0000-0000-000000000001',
     'Super Admin',
     'admin@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'ADMIN', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO admins (id) VALUES ('a0000000-0000-0000-0000-000000000001');
@@ -28,7 +28,7 @@ VALUES (
     'c0000000-0000-0000-0000-000000000001',
     'Nguyễn Văn Hùng',
     'coordinator.tour@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'COORDINATOR', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO coordinators (id, employee_code, department) VALUES ('c0000000-0000-0000-0000-000000000001', 'COO-SEED01', 'TOUR');
@@ -39,7 +39,7 @@ VALUES (
     'c0000000-0000-0000-0000-000000000002',
     'Trần Thị Mai',
     'coordinator.hotel@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'COORDINATOR', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO coordinators (id, employee_code, department) VALUES ('c0000000-0000-0000-0000-000000000002', 'COO-SEED02', 'HOTEL');
@@ -50,7 +50,7 @@ VALUES (
     'c0000000-0000-0000-0000-000000000003',
     'Lê Minh Tuấn',
     'coordinator.coach@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'COORDINATOR', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO coordinators (id, employee_code, department) VALUES ('c0000000-0000-0000-0000-000000000003', 'COO-SEED03', 'COACH');
@@ -64,7 +64,7 @@ VALUES (
     'da000000-0000-0000-0000-000000000001',
     'Phạm Quốc Bảo',
     'guide01@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'GUIDE', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO guides (id, employee_code, guide_license, languages, years_experience)
@@ -75,7 +75,7 @@ VALUES (
     'da000000-0000-0000-0000-000000000002',
     'Hoàng Thị Lan',
     'guide02@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'GUIDE', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO guides (id, employee_code, guide_license, languages, years_experience)
@@ -114,7 +114,7 @@ VALUES (
     'eb000000-0000-0000-0000-000000000001',
     'Võ Thanh Tâm',
     'receptionist01@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'RECEPTIONIST', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO receptionists (id, employee_code, hotel_id, shift_type)
@@ -125,7 +125,7 @@ VALUES (
     'eb000000-0000-0000-0000-000000000002',
     'Đặng Ngọc Hân',
     'receptionist02@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'RECEPTIONIST', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO receptionists (id, employee_code, hotel_id, shift_type)
@@ -140,7 +140,7 @@ VALUES (
     'f0000000-0000-0000-0000-000000000001',
     'Bùi Minh Khôi',
     'tourist01@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'TOURIST', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO tourists (id, passport_number, date_of_birth, gender)
@@ -151,7 +151,7 @@ VALUES (
     'f0000000-0000-0000-0000-000000000002',
     'Ngô Thị Hồng',
     'tourist02@travery.com',
-    '$2a$10$dXJ3SW6G7P50lGmMQoeHhOxht6Mwy/HBt0VbGrAaxOlTzT1FeBv.C',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOu5HEcnpJN4lvReic6SBARIpE9KJykMS',
     'TOURIST', 'ACTIVE', 'LOCAL', NOW(), NOW()
 );
 INSERT INTO tourists (id, passport_number, date_of_birth, gender)

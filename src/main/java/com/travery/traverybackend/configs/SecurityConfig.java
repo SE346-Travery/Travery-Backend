@@ -5,6 +5,7 @@ import com.travery.traverybackend.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,19 +21,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
   private static final String[] WHITE_LIST = {
-    "/auth/signup",
-    "/auth/verify-otp",
-    "/auth/resend-otp",
-    "/auth/login",
-    "/auth/refresh",
-    "/auth/forgot-password",
-    "/auth/reset-password",
+    "/api/v1/auth/login",
+    "/api/v1/auth/signup",
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password",
     "/v3/api-docs/**",
     "/docs",
     "/scalar/**",
     "/scalar.html",
     "/actuator/prometheus"
   };
+
+  private static final String[] PUBLIC_GET_ENDPOINTS = {"/api/v1/tours", "/api/v1/tours/**"};
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -45,7 +48,13 @@ public class SecurityConfig {
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(WHITE_LIST).permitAll().anyRequest().authenticated())
+            auth ->
+                auth.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+                    .permitAll()
+                    .requestMatchers(WHITE_LIST)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .exceptionHandling(
             exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
         .authenticationProvider(daoAuthenticationProvider)

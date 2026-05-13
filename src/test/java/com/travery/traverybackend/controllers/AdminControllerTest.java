@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travery.traverybackend.configs.SecurityConfig;
+import com.travery.traverybackend.controllers.auth.AuthController;
 import com.travery.traverybackend.dtos.request.auth.CreateStaffRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.enums.user.UserRoles;
@@ -92,7 +93,7 @@ public class AdminControllerTest {
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -114,7 +115,7 @@ public class AdminControllerTest {
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -143,7 +144,7 @@ public class AdminControllerTest {
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

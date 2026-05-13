@@ -2,6 +2,7 @@ package com.travery.traverybackend.repositories.tour;
 
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +21,10 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
       @Param("excludedStatuses") List<TourInstanceStatus> excludedStatuses);
 
   @Query(
-      "SELECT ti FROM TourInstance ti WHERE ti.currentParticipants < ti.minParticipants AND ti.status NOT IN :excludedStatuses")
+      "SELECT ti FROM TourInstance ti WHERE ti.currentParticipants < ti.tour.minParticipants AND ti.status NOT IN :excludedStatuses")
   List<TourInstance> findLowOccupancy(
       @Param("excludedStatuses") List<TourInstanceStatus> excludedStatuses);
+
+  List<TourInstance> findByTourIdAndStatusInAndStartDateGreaterThanEqualOrderByStartDateAsc(
+      UUID tourId, List<TourInstanceStatus> statuses, LocalDate currentDate);
 }

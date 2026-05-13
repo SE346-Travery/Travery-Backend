@@ -19,11 +19,12 @@ import com.travery.traverybackend.entities.user.*;
 import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourMapper;
-import com.travery.traverybackend.repositories.HotelRepository;
-import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.repositories.common.DestinationRepository;
 import com.travery.traverybackend.repositories.finance.RefundPolicyRepository;
+import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.tour.impl.TourServiceImpl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,7 @@ public class TourServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private TourMapper tourMapper;
 
-  @InjectMocks private TourService tourService;
+  @InjectMocks private TourServiceImpl tourService;
 
   private UUID coordinatorId;
   private Coordinator coordinator;
@@ -105,7 +106,7 @@ public class TourServiceTest {
 
     TourResponse response = new TourResponse();
     response.setName("Dalat Trip");
-    when(tourMapper.toResponse(tour)).thenReturn(response);
+    when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
     TourResponse result = tourService.createTemplate(request, coordinatorId);
 
@@ -135,7 +136,7 @@ public class TourServiceTest {
 
     TourResponse response = new TourResponse();
     response.setCustom(true);
-    when(tourMapper.toResponse(tour)).thenReturn(response);
+    when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
     TourResponse result = tourService.createTemplate(request, coordinatorId);
 
@@ -176,7 +177,7 @@ public class TourServiceTest {
     when(tourRepository.save(any(Tour.class))).thenReturn(tour);
 
     TourResponse response = new TourResponse();
-    when(tourMapper.toResponse(tour)).thenReturn(response);
+    when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
     TourResponse result = tourService.createTemplate(request, coordinatorId);
 

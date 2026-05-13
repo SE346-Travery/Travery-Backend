@@ -16,8 +16,9 @@ import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
 import com.travery.traverybackend.exception.error.WebErrorCode;
-import com.travery.traverybackend.repositories.RefreshTokenRepository;
-import com.travery.traverybackend.repositories.UserRepository;
+import com.travery.traverybackend.repositories.auth.RefreshTokenRepository;
+import com.travery.traverybackend.repositories.hotel.HotelRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import io.jsonwebtoken.Claims;
@@ -47,7 +48,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
-  private final com.travery.traverybackend.repositories.HotelRepository hotelRepository;
+  private final HotelRepository hotelRepository;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
