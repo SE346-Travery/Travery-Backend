@@ -122,7 +122,7 @@ public class TourControllerTest {
 
     mockMvc
         .perform(
-            post("/tours/templates")
+            post("/api/v1/tours/templates")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
                 .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))

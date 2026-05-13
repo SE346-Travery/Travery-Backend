@@ -1,5 +1,6 @@
 package com.travery.traverybackend.services.tour;
 
+import com.travery.traverybackend.services.tour.impl.CoordinatorTourInstanceServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +31,7 @@ public class CoordinatorTourInstanceServiceTest {
 
   @Mock private TourInstanceMapper tourInstanceMapper;
 
-  @InjectMocks private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
 
   private TourInstance tourInstance;
   private TourInstanceResponse tourInstanceResponse;

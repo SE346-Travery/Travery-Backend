@@ -1,5 +1,6 @@
 package com.travery.traverybackend.services.tour;
 
+import com.travery.traverybackend.services.tour.impl.TourServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,7 +46,7 @@ public class TourServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private TourMapper tourMapper;
 
-  @InjectMocks private TourService tourService;
+  @InjectMocks private TourServiceImpl tourService;
 
   private UUID coordinatorId;
   private Coordinator coordinator;
