@@ -1,4 +1,4 @@
-package com.travery.traverybackend.repositories;
+package com.travery.traverybackend.repositories.hotel;
 
 import com.travery.traverybackend.entities.hotel.Hotel;
 import java.util.UUID;

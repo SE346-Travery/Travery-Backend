@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourItineraryRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
@@ -126,7 +126,7 @@ public class TourControllerTest {
 
     mockMvc
         .perform(
-            post("/tours/templates")
+            post("/api/v1/tours/templates")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
                 .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))
@@ -136,17 +136,19 @@ public class TourControllerTest {
 
   @Test
   void createInstance_returnsCreated() throws Exception {
-    TourInstanceCreateRequest request = TourInstanceCreateRequest.builder()
-        .tourId(UUID.randomUUID())
-        .startDate(LocalDate.now().plusDays(10))
-        .endDate(LocalDate.now().plusDays(15))
-        .maxParticipants(30)
-        .build();
+    TourInstanceCreateRequest request =
+        TourInstanceCreateRequest.builder()
+            .tourId(UUID.randomUUID())
+            .startDate(LocalDate.now().plusDays(10))
+            .endDate(LocalDate.now().plusDays(15))
+            .maxParticipants(30)
+            .build();
 
     TourInstanceDetailResponse response = new TourInstanceDetailResponse();
     response.setTourName("Dalat Trip");
 
-    when(coordinatorTourInstanceService.createInstance(any(TourInstanceCreateRequest.class), eq(coordinatorId)))
+    when(coordinatorTourInstanceService.createInstance(
+            any(TourInstanceCreateRequest.class), eq(coordinatorId)))
         .thenReturn(response);
 
     SingleResponse<TourInstanceDetailResponse> singleResponse = new SingleResponse<>();
@@ -159,7 +161,7 @@ public class TourControllerTest {
 
     mockMvc
         .perform(
-            post("/tours/tour-instances")
+            post("/api/v1/tours/tour-instances")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
                 .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))

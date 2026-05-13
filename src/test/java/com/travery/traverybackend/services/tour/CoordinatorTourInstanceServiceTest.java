@@ -13,13 +13,13 @@ import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Tourist;
-import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
-import com.travery.traverybackend.repositories.UserRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.tour.impl.CoordinatorTourInstanceServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +42,7 @@ public class CoordinatorTourInstanceServiceTest {
 
   @Mock private TourInstanceMapper tourInstanceMapper;
 
-  @InjectMocks private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
 
   private TourInstance tourInstance;
   private TourInstanceResponse tourInstanceResponse;
@@ -59,23 +59,26 @@ public class CoordinatorTourInstanceServiceTest {
   void createInstance_withValidData_returnsDetail() {
     UUID tourId = UUID.randomUUID();
     UUID coordinatorId = UUID.randomUUID();
-    TourInstanceCreateRequest request = TourInstanceCreateRequest.builder()
-        .tourId(tourId)
-        .startDate(LocalDate.now().plusDays(10))
-        .endDate(LocalDate.now().plusDays(15))
-        .maxParticipants(30)
-        .build();
+    TourInstanceCreateRequest request =
+        TourInstanceCreateRequest.builder()
+            .tourId(tourId)
+            .startDate(LocalDate.now().plusDays(10))
+            .endDate(LocalDate.now().plusDays(15))
+            .maxParticipants(30)
+            .build();
 
     Tour tour = new Tour();
     Coordinator coordinator = new Coordinator();
-    
+
     when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(tourInstanceMapper.toEntity(request)).thenReturn(tourInstance);
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance)).thenReturn(tourInstanceDetailResponse);
+    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+        .thenReturn(tourInstanceDetailResponse);
 
-    TourInstanceDetailResponse result = coordinatorTourInstanceService.createInstance(request, coordinatorId);
+    TourInstanceDetailResponse result =
+        coordinatorTourInstanceService.createInstance(request, coordinatorId);
 
     assertEquals(tourInstanceDetailResponse, result);
     verify(tourInstanceRepository).save(any(TourInstance.class));
@@ -85,36 +88,39 @@ public class CoordinatorTourInstanceServiceTest {
   void createInstance_withInvalidDates_throwsException() {
     UUID tourId = UUID.randomUUID();
     UUID coordinatorId = UUID.randomUUID();
-    TourInstanceCreateRequest request = TourInstanceCreateRequest.builder()
-        .tourId(tourId)
-        .startDate(LocalDate.now().plusDays(15))
-        .endDate(LocalDate.now().plusDays(10))
-        .build();
+    TourInstanceCreateRequest request =
+        TourInstanceCreateRequest.builder()
+            .tourId(tourId)
+            .startDate(LocalDate.now().plusDays(15))
+            .endDate(LocalDate.now().plusDays(10))
+            .build();
 
     Tour tour = new Tour();
     Coordinator coordinator = new Coordinator();
-    
+
     when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
 
-    assertThrows(BaseAppException.class, () -> coordinatorTourInstanceService.createInstance(request, coordinatorId));
+    assertThrows(
+        BaseAppException.class,
+        () -> coordinatorTourInstanceService.createInstance(request, coordinatorId));
   }
 
   @Test
   void createInstance_withNonCoordinator_throwsException() {
     UUID tourId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
-    TourInstanceCreateRequest request = TourInstanceCreateRequest.builder()
-        .tourId(tourId)
-        .build();
+    TourInstanceCreateRequest request = TourInstanceCreateRequest.builder().tourId(tourId).build();
 
     Tour tour = new Tour();
     Tourist tourist = new Tourist();
-    
+
     when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
     when(userRepository.findById(userId)).thenReturn(Optional.of(tourist));
 
-    assertThrows(BaseAppException.class, () -> coordinatorTourInstanceService.createInstance(request, userId));
+    assertThrows(
+        BaseAppException.class,
+        () -> coordinatorTourInstanceService.createInstance(request, userId));
   }
 
   @Test

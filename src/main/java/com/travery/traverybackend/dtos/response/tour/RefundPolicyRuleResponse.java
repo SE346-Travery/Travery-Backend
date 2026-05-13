@@ -1,9 +1,9 @@
 package com.travery.traverybackend.dtos.response.tour;
 
-import com.travery.traverybackend.enums.tour.TourInstanceStatus;
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,10 +12,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TourInstanceResponse {
+@Builder
+public class RefundPolicyRuleResponse {
   private UUID id;
-  private LocalDate startDate;
-  private LocalDate endDate;
-  private TourInstanceStatus status;
-  private Integer availableSlots;
+  private int daysBefore;
+  private BigDecimal refundPercentage;
 }

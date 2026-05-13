@@ -32,11 +32,14 @@ public class CoordinatorTourInstanceControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @Mock
+  private CoordinatorTourInstanceService coordinatorTourInstanceService;
 
-  @Mock private ResponseFactory responseFactory;
+  @Mock
+  private ResponseFactory responseFactory;
 
-  @InjectMocks private CoordinatorTourInstanceController coordinatorTourInstanceController;
+  @InjectMocks
+  private CoordinatorTourInstanceController coordinatorTourInstanceController;
 
   @BeforeEach
   void setUp() {
@@ -59,7 +62,7 @@ public class CoordinatorTourInstanceControllerTest {
         .thenReturn(ResponseEntity.ok(singleResponse));
 
     mockMvc
-        .perform(get("/staff/coordinator/instances").param("filter", "all"))
+        .perform(get("/api/v1/staff/coordinator/instances").param("filter", "all"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Fetched tour instances successfully"))
         .andExpect(jsonPath("$.data").isArray());
@@ -80,7 +83,7 @@ public class CoordinatorTourInstanceControllerTest {
         .thenReturn(ResponseEntity.ok(singleResponse));
 
     mockMvc
-        .perform(get("/staff/coordinator/instances/" + id))
+        .perform(get("/api/v1/staff/coordinator/instances/" + id))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Fetched tour instance detail successfully"));
   }
@@ -92,7 +95,7 @@ public class CoordinatorTourInstanceControllerTest {
         .thenThrow(new BaseAppException(WebErrorCode.BAD_REQUEST, "Tour instance not found"));
 
     try {
-      mockMvc.perform(get("/staff/coordinator/instances/" + id));
+      mockMvc.perform(get("/api/v1/staff/coordinator/instances/" + id));
     } catch (Exception e) {
       assert (e.getCause() instanceof BaseAppException);
       BaseAppException baseException = (BaseAppException) e.getCause();

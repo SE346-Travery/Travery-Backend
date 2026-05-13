@@ -1,4 +1,4 @@
-package com.travery.traverybackend.repositories;
+package com.travery.traverybackend.repositories.user;
 
 import com.travery.traverybackend.entities.user.User;
 import java.util.Optional;

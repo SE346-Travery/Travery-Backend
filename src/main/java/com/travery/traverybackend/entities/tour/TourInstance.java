@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Entity
 @Table(name = "tour_instances")
@@ -49,24 +50,18 @@ public class TourInstance extends AbstractBaseEntity {
   @JoinColumn(name = "hotel_booking_id")
   private HotelBooking hotelBooking;
 
+  @GenericField
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
 
   @Column(name = "end_date", nullable = false)
   private LocalDate endDate;
 
-  @Column(name = "min_participants")
-  @Builder.Default
-  private int minParticipants = 10;
-
-  @Column(name = "max_participants")
-  @Builder.Default
-  private int maxParticipants = 40;
-
   @Column(name = "current_participants")
   @Builder.Default
   private int currentParticipants = 0;
 
+  @GenericField
   @Enumerated(EnumType.STRING)
   @Column(length = 50)
   @Builder.Default

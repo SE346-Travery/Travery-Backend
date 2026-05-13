@@ -1,7 +1,6 @@
 package com.travery.traverybackend.dtos.response.tour;
 
-import com.travery.traverybackend.enums.tour.TourInstanceStatus;
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,10 +11,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TourInstanceResponse {
+public class TourSummaryResponse {
   private UUID id;
-  private LocalDate startDate;
-  private LocalDate endDate;
-  private TourInstanceStatus status;
-  private Integer availableSlots;
+  private String name;
+  private Double averageRating;
+  private BigDecimal price;
+  private String thumbnailUrl;
+  private String destinationName;
+  private Integer durationDays;
 }

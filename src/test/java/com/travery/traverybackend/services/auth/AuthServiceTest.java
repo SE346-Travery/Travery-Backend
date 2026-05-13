@@ -7,7 +7,7 @@ import com.travery.traverybackend.dtos.request.auth.AccountDeletionRequest;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
-import com.travery.traverybackend.repositories.UserRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;

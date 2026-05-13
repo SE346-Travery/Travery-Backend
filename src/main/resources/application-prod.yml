@@ -18,6 +18,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        hibernate:
+        search:
+          schema_management:
+            strategy: update
     open-in-view: false
 
   data:
@@ -99,6 +103,11 @@ app:
 
   scalar:
     enabled: false
+
+  hibernate:
+    search:
+      mass-indexer:
+        enabled: false
 
 management:
   endpoints:
