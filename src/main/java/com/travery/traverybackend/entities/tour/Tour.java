@@ -7,6 +7,8 @@ import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -77,11 +79,15 @@ public class Tour extends AbstractBaseEntity {
   @Builder.Default
   private boolean isCustom = false;
 
-  @Column(name = "min_participants")
+  @Min(10)
+  @Max(30)
+  @Column(name = "min_participants", nullable = false)
   @Builder.Default
   private int minParticipants = 10;
 
-  @Column(name = "max_participants")
+  @Min(10)
+  @Max(30)
+  @Column(name = "max_participants", nullable = false)
   @Builder.Default
   private int maxParticipants = 30;
 
