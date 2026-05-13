@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
     unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public abstract class TourMapper {
 
-  @Autowired protected ImageRepository imageRepository;
+
 
   @Mapping(target = "destinationName", source = "destination.name")
   @Mapping(target = "price", source = "pricePerAdult")
@@ -67,15 +67,9 @@ public abstract class TourMapper {
   @Mapping(source = "custom", target = "custom")
   public abstract TourResponse toTourResponse(Tour tour);
 
-  @AfterMapping
-  protected void afterToTourDetailResponse(Tour tour, @MappingTarget TourDetailResponse response) {
-    List<Image> tourImages =
-        imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
-            tour.getId(), ImageType.TOUR);
-    response.setImages(tourImages.stream().map(this::toImageResponse).collect(Collectors.toList()));
-  }
 
-  protected ImageResponse toImageResponse(Image image) {
+
+  public ImageResponse toImageResponse(Image image) {
     if (image == null) return null;
     ImageResponse response = new ImageResponse();
     response.setUrl(image.getUrl());

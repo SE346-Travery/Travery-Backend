@@ -17,6 +17,9 @@ public interface ImageRepository extends JpaRepository<Image, UUID> {
   List<Image> findByEntityIdInAndEntityTypeAndIsThumbnailTrue(
       List<UUID> entityIds, ImageType entityType);
 
+  List<Image> findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(
+      List<UUID> entityIds, ImageType entityType);
+
   List<Image> findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
       UUID entityId, ImageType entityType);
 }
