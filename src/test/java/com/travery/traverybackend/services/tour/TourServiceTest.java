@@ -1,6 +1,5 @@
 package com.travery.traverybackend.services.tour;
 
-import com.travery.traverybackend.services.tour.impl.TourServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,6 +24,7 @@ import com.travery.traverybackend.repositories.finance.RefundPolicyRepository;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.tour.impl.TourServiceImpl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;

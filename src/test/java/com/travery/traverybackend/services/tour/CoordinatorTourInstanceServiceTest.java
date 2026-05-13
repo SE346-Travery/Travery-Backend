@@ -1,6 +1,5 @@
 package com.travery.traverybackend.services.tour;
 
-import com.travery.traverybackend.services.tour.impl.CoordinatorTourInstanceServiceImpl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,6 +13,7 @@ import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
+import com.travery.traverybackend.services.tour.impl.CoordinatorTourInstanceServiceImpl;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

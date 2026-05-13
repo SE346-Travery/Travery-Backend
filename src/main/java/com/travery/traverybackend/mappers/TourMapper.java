@@ -11,23 +11,14 @@ import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.tour.TourItinerary;
-import com.travery.traverybackend.enums.common.ImageType;
-import com.travery.traverybackend.repositories.common.ImageRepository;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(
     componentModel = "spring",
     builder = @org.mapstruct.Builder(disableBuilder = true),
     unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public abstract class TourMapper {
-
-
 
   @Mapping(target = "destinationName", source = "destination.name")
   @Mapping(target = "price", source = "pricePerAdult")
@@ -66,8 +57,6 @@ public abstract class TourMapper {
   @Mapping(source = "hotel.name", target = "hotelName")
   @Mapping(source = "custom", target = "custom")
   public abstract TourResponse toTourResponse(Tour tour);
-
-
 
   public ImageResponse toImageResponse(Image image) {
     if (image == null) return null;

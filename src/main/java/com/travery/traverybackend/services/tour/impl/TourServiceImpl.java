@@ -86,8 +86,9 @@ public class TourServiceImpl implements TourService {
   @Cacheable(value = "featuredTours", key = "'top10'")
   public List<TourSummaryResponse> getFeaturedTours() {
     log.info("Fetching featured tours from Database");
-    List<Tour> topTours = tourRepository
-        .findTop10ByIsCustomFalseAndAverageRatingGreaterThanEqualOrderByAverageRatingDesc(4.5);
+    List<Tour> topTours =
+        tourRepository
+            .findTop10ByIsCustomFalseAndAverageRatingGreaterThanEqualOrderByAverageRatingDesc(4.5);
     List<UUID> tourIds = topTours.stream().map(Tour::getId).toList();
     Map<UUID, String> thumbnails = getThumbnailsForTours(tourIds);
 
@@ -104,9 +105,10 @@ public class TourServiceImpl implements TourService {
   @Override
   @Transactional(readOnly = true)
   public TourDetailResponse getTourDetail(UUID id) {
-    Tour tour = tourRepository
-        .findByIdWithDetails(id)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+    Tour tour =
+        tourRepository
+            .findByIdWithDetails(id)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
 
     TourDetailResponse response = tourMapper.toTourDetailResponse(tour);
     enrichTourImages(response, tour);
@@ -114,26 +116,25 @@ public class TourServiceImpl implements TourService {
   }
 
   private void enrichTourImages(TourDetailResponse response, Tour tour) {
-    List<Image> tourImages = imageRepository
-        .findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
+    List<Image> tourImages =
+        imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
             tour.getId(), ImageType.TOUR);
     response.setImages(
         tourImages.stream().map(tourMapper::toImageResponse).collect(Collectors.toList()));
 
-    List<UUID> itineraryIds = tour.getItineraries().stream()
-        .map(TourItinerary::getId)
-        .collect(Collectors.toList());
+    List<UUID> itineraryIds =
+        tour.getItineraries().stream().map(TourItinerary::getId).collect(Collectors.toList());
 
     if (!itineraryIds.isEmpty()) {
-      Map<UUID, List<ImageResponse>> itineraryImages = imageRepository
-          .findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(
-              itineraryIds, ImageType.TOUR_ITINERARY)
-          .stream()
-          .collect(
-              Collectors.groupingBy(
-                  Image::getEntityId,
-                  Collectors.mapping(
-                      tourMapper::toImageResponse, Collectors.toList())));
+      Map<UUID, List<ImageResponse>> itineraryImages =
+          imageRepository
+              .findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(
+                  itineraryIds, ImageType.TOUR_ITINERARY)
+              .stream()
+              .collect(
+                  Collectors.groupingBy(
+                      Image::getEntityId,
+                      Collectors.mapping(tourMapper::toImageResponse, Collectors.toList())));
 
       // Match images to itineraries by index (since MapStruct preserves order)
       for (int i = 0; i < tour.getItineraries().size(); i++) {
@@ -148,16 +149,18 @@ public class TourServiceImpl implements TourService {
   @Override
   @Transactional(readOnly = true)
   public List<TourInstanceResponse> getTourInstances(UUID tourId) {
-    Tour tour = tourRepository
-        .findById(tourId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+    Tour tour =
+        tourRepository
+            .findById(tourId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
 
     // Only return instances that are OPEN, and date is >= today
     List<TourInstanceStatus> statuses = Arrays.asList(TourInstanceStatus.OPEN);
 
-    List<TourInstance> instances = tourInstanceRepository
-        .findByTourIdAndStatusInAndStartDateGreaterThanEqualOrderByStartDateAsc(
-            tourId, statuses, LocalDate.now());
+    List<TourInstance> instances =
+        tourInstanceRepository
+            .findByTourIdAndStatusInAndStartDateGreaterThanEqualOrderByStartDateAsc(
+                tourId, statuses, LocalDate.now());
 
     return instances.stream()
         .map(
@@ -172,35 +175,40 @@ public class TourServiceImpl implements TourService {
 
   @Transactional
   public TourResponse createTemplate(TourTemplateRequest request, UUID coordinatorId) {
-    Coordinator coordinator = userRepository
-        .findById(coordinatorId)
-        .filter(user -> user instanceof Coordinator)
-        .map(user -> (Coordinator) user)
-        .orElseThrow(
-            () -> new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator"));
+    Coordinator coordinator =
+        userRepository
+            .findById(coordinatorId)
+            .filter(user -> user instanceof Coordinator)
+            .map(user -> (Coordinator) user)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator"));
 
-    Destination destination = destinationRepository
-        .findById(request.getDestinationId())
-        .orElseThrow(
-            () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
+    Destination destination =
+        destinationRepository
+            .findById(request.getDestinationId())
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
 
     Hotel hotel = null;
     if (request.getHotelId() != null) {
-      hotel = hotelRepository
-          .findById(request.getHotelId())
-          .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
+      hotel =
+          hotelRepository
+              .findById(request.getHotelId())
+              .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
     }
 
-    RefundPolicy refundPolicy = refundPolicyRepository
-        .findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR)
-        .orElseThrow(
-            () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
+    RefundPolicy refundPolicy =
+        refundPolicyRepository
+            .findByNameAndServiceType("Standard Tour Policy", RefundServiceType.TOUR)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
 
     User requestedByUser = null;
     if (request.getRequestedByUserId() != null) {
-      requestedByUser = userRepository
-          .findById(request.getRequestedByUserId())
-          .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
+      requestedByUser =
+          userRepository
+              .findById(request.getRequestedByUserId())
+              .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
 
       if (!(requestedByUser instanceof Tourist)) {
         throw new BaseAppException(
@@ -215,15 +223,17 @@ public class TourServiceImpl implements TourService {
     tour.setRefundPolicy(refundPolicy);
     tour.setRequestedByUser(requestedByUser);
 
-    List<TourItinerary> itineraries = request.getItineraries().stream()
-        .map(
-            itineraryRequest -> TourItinerary.builder()
-                .tour(tour)
-                .dayNumber(itineraryRequest.getDayNumber())
-                .title(itineraryRequest.getTitle())
-                .description(itineraryRequest.getDescription())
-                .build())
-        .collect(Collectors.toList());
+    List<TourItinerary> itineraries =
+        request.getItineraries().stream()
+            .map(
+                itineraryRequest ->
+                    TourItinerary.builder()
+                        .tour(tour)
+                        .dayNumber(itineraryRequest.getDayNumber())
+                        .title(itineraryRequest.getTitle())
+                        .description(itineraryRequest.getDescription())
+                        .build())
+            .collect(Collectors.toList());
 
     tour.setItineraries(itineraries);
 
@@ -232,8 +242,7 @@ public class TourServiceImpl implements TourService {
   }
 
   private Map<UUID, String> getThumbnailsForTours(List<UUID> tourIds) {
-    if (tourIds.isEmpty())
-      return Map.of();
+    if (tourIds.isEmpty()) return Map.of();
     return imageRepository
         .findByEntityIdInAndEntityTypeAndIsThumbnailTrue(tourIds, ImageType.TOUR)
         .stream()
@@ -244,8 +253,7 @@ public class TourServiceImpl implements TourService {
   }
 
   private boolean hasSearchCriteria(TourSearchRequest request) {
-    if (request == null)
-      return false;
+    if (request == null) return false;
     return (request.getKeyword() != null && !request.getKeyword().isBlank())
         || request.getMinPrice() != null
         || request.getMaxPrice() != null
