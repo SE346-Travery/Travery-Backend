@@ -21,7 +21,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
   private static final String[] WHITE_LIST = {
-    "/api/v1/auth/**",
+    "/api/v1/auth/login",
+    "/api/v1/auth/signup",
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password",
     "/v3/api-docs/**",
     "/docs",
     "/scalar/**",
