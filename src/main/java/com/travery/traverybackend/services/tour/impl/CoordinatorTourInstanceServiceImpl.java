@@ -1,15 +1,20 @@
 package com.travery.traverybackend.services.tour.impl;
 
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
+import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.coach.CoachRepository;
+import com.travery.traverybackend.repositories.coach.DriverRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -28,6 +33,9 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final TourInstanceRepository tourInstanceRepository;
   private final TourRepository tourRepository;
   private final UserRepository userRepository;
+  private final CoachRepository coachRepository;
+  private final DriverRepository driverRepository;
+  private final HotelBookingRepository hotelBookingRepository;
   private final TourInstanceMapper tourInstanceMapper;
 
   @Override
@@ -112,6 +120,55 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     tourInstance.setTour(tour);
     tourInstance.setCoordinator(coordinator);
     tourInstance.setStatus(TourInstanceStatus.PLANNING);
+
+    TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
+    return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);
+  }
+
+  @Override
+  @Transactional
+  public TourInstanceDetailResponse updateInstance(UUID id, TourInstanceUpdateRequest request) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (request.getGuideId() != null) {
+      Guide guide =
+          userRepository
+              .findById(request.getGuideId())
+              .filter(user -> user instanceof Guide)
+              .map(user -> (Guide) user)
+              .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Guide not found"));
+      tourInstance.setGuide(guide);
+    }
+
+    if (request.getCoachId() != null) {
+      tourInstance.setCoach(
+          coachRepository
+              .findById(request.getCoachId())
+              .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coach not found")));
+    }
+
+    if (request.getDriverId() != null) {
+      tourInstance.setDriver(
+          driverRepository
+              .findById(request.getDriverId())
+              .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Driver not found")));
+    }
+
+    if (request.getHotelBookingId() != null) {
+      tourInstance.setHotelBooking(
+          hotelBookingRepository
+              .findById(request.getHotelBookingId())
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel booking not found")));
+    }
+
+    if (request.getStatus() != null) {
+      tourInstance.setStatus(request.getStatus());
+    }
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
     return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);

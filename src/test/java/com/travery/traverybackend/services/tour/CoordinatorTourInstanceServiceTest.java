@@ -7,15 +7,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
+import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.coach.CoachRepository;
+import com.travery.traverybackend.repositories.coach.DriverRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -41,6 +46,9 @@ public class CoordinatorTourInstanceServiceTest {
   @Mock private UserRepository userRepository;
 
   @Mock private TourInstanceMapper tourInstanceMapper;
+  @Mock private CoachRepository coachRepository;
+  @Mock private DriverRepository driverRepository;
+  @Mock private HotelBookingRepository hotelBookingRepository;
 
   @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
 
@@ -64,7 +72,6 @@ public class CoordinatorTourInstanceServiceTest {
             .tourId(tourId)
             .startDate(LocalDate.now().plusDays(10))
             .endDate(LocalDate.now().plusDays(15))
-            .maxParticipants(30)
             .build();
 
     Tour tour = new Tour();
@@ -204,5 +211,40 @@ public class CoordinatorTourInstanceServiceTest {
 
     assertEquals(1, result.size());
     verify(tourInstanceRepository).findAll();
+  }
+
+  @Test
+  void updateInstance_withValidData_updatesFields() {
+    UUID id = UUID.randomUUID();
+    UUID guideId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder()
+            .guideId(guideId)
+            .status(TourInstanceStatus.OPEN)
+            .build();
+
+    Guide guide = new Guide();
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(userRepository.findById(guideId)).thenReturn(Optional.of(guide));
+    when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
+    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+        .thenReturn(tourInstanceDetailResponse);
+
+    TourInstanceDetailResponse result = coordinatorTourInstanceService.updateInstance(id, request);
+
+    assertEquals(tourInstanceDetailResponse, result);
+    assertEquals(guide, tourInstance.getGuide());
+    assertEquals(TourInstanceStatus.OPEN, tourInstance.getStatus());
+  }
+
+  @Test
+  void updateInstance_withInvalidInstanceId_throwsException() {
+    UUID id = UUID.randomUUID();
+    TourInstanceUpdateRequest request = new TourInstanceUpdateRequest();
+
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
   }
 }

@@ -2,6 +2,7 @@ package com.travery.traverybackend.controllers.tour;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,5 +84,14 @@ public class TourController extends AbstractBaseController {
     TourInstanceDetailResponse response =
         coordinatorTourInstanceService.createInstance(request, userDetails.getUserId());
     return created(response, "Tour instance created successfully");
+  }
+
+  @PatchMapping("/tour-instances/{id}")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> updateInstance(
+      @PathVariable UUID id, @Valid @RequestBody TourInstanceUpdateRequest request) {
+    TourInstanceDetailResponse response =
+        coordinatorTourInstanceService.updateInstance(id, request);
+    return success(response, "Tour instance updated successfully");
   }
 }

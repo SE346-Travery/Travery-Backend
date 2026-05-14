@@ -27,7 +27,4 @@ public class TourInstanceCreateRequest {
   @NotNull(message = "End date is required")
   @Future(message = "End date must be in the future")
   private LocalDate endDate;
-
-  private Integer maxParticipants;
-  private Integer minParticipants;
 }

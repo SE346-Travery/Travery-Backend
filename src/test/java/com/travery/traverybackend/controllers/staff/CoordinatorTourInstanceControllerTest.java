@@ -32,14 +32,11 @@ public class CoordinatorTourInstanceControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock
-  private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @Mock private CoordinatorTourInstanceService coordinatorTourInstanceService;
 
-  @Mock
-  private ResponseFactory responseFactory;
+  @Mock private ResponseFactory responseFactory;
 
-  @InjectMocks
-  private CoordinatorTourInstanceController coordinatorTourInstanceController;
+  @InjectMocks private CoordinatorTourInstanceController coordinatorTourInstanceController;
 
   @BeforeEach
   void setUp() {

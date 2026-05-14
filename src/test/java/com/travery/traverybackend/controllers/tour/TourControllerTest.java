@@ -3,6 +3,7 @@ package com.travery.traverybackend.controllers.tour;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -10,12 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourItineraryRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
+import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
@@ -141,7 +144,6 @@ public class TourControllerTest {
             .tourId(UUID.randomUUID())
             .startDate(LocalDate.now().plusDays(10))
             .endDate(LocalDate.now().plusDays(15))
-            .maxParticipants(30)
             .build();
 
     TourInstanceDetailResponse response = new TourInstanceDetailResponse();
@@ -167,5 +169,37 @@ public class TourControllerTest {
                 .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.message").value("Tour instance created successfully"));
+  }
+
+  @Test
+  void updateInstance_returnsSuccess() throws Exception {
+    UUID id = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder()
+            .guideId(UUID.randomUUID())
+            .status(TourInstanceStatus.OPEN)
+            .build();
+
+    TourInstanceDetailResponse response = new TourInstanceDetailResponse();
+
+    when(coordinatorTourInstanceService.updateInstance(
+            eq(id), any(TourInstanceUpdateRequest.class)))
+        .thenReturn(response);
+
+    SingleResponse<TourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Tour instance updated successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(response), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/tours/tour-instances/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Tour instance updated successfully"));
   }
 }
