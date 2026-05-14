@@ -1,18 +1,14 @@
 package com.travery.traverybackend.controllers.tour;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
-import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
-import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
-import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
-import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -25,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class TourController extends AbstractBaseController {
 
   private final TourService tourService;
-  private final CoordinatorTourInstanceService coordinatorTourInstanceService;
 
   @GetMapping
   public ResponseEntity<SingleResponse<Page<TourSummaryResponse>>> getTours(
@@ -76,22 +70,4 @@ public class TourController extends AbstractBaseController {
     return created(response, "Tour template created successfully");
   }
 
-  @PostMapping("/tour-instances")
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> createInstance(
-      @Valid @RequestBody TourInstanceCreateRequest request,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    TourInstanceDetailResponse response =
-        coordinatorTourInstanceService.createInstance(request, userDetails.getUserId());
-    return created(response, "Tour instance created successfully");
-  }
-
-  @PatchMapping("/tour-instances/{id}")
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> updateInstance(
-      @PathVariable UUID id, @Valid @RequestBody TourInstanceUpdateRequest request) {
-    TourInstanceDetailResponse response =
-        coordinatorTourInstanceService.updateInstance(id, request);
-    return success(response, "Tour instance updated successfully");
-  }
 }

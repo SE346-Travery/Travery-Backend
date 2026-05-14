@@ -4,9 +4,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
@@ -38,11 +44,36 @@ public class CoordinatorTourInstanceControllerTest {
 
   @InjectMocks private CoordinatorTourInstanceController coordinatorTourInstanceController;
 
+  private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  private UUID coordinatorId = UUID.randomUUID();
+
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(
         coordinatorTourInstanceController, "responseFactory", responseFactory);
-    mockMvc = MockMvcBuilders.standaloneSetup(coordinatorTourInstanceController).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(coordinatorTourInstanceController)
+            .setCustomArgumentResolvers(
+                new org.springframework.web.method.support.HandlerMethodArgumentResolver() {
+                  @Override
+                  public boolean supportsParameter(
+                      org.springframework.core.MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(
+                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                  }
+
+                  @Override
+                  public Object resolveArgument(
+                      org.springframework.core.MethodParameter parameter,
+                      org.springframework.web.method.support.ModelAndViewContainer mavContainer,
+                      org.springframework.web.context.request.NativeWebRequest webRequest,
+                      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+                    return com.travery.traverybackend.security.user.CustomUserDetails.builder()
+                        .userId(coordinatorId)
+                        .build();
+                  }
+                })
+            .build();
   }
 
   @Test
@@ -98,5 +129,60 @@ public class CoordinatorTourInstanceControllerTest {
       BaseAppException baseException = (BaseAppException) e.getCause();
       assert (baseException.getErrorCode().equals(WebErrorCode.BAD_REQUEST));
     }
+  }
+
+  @Test
+  void createInstance_returnsCreated() throws Exception {
+    TourInstanceCreateRequest request =
+        TourInstanceCreateRequest.builder()
+            .tourId(UUID.randomUUID())
+            .startDate(java.time.LocalDate.now().plusDays(10))
+            .endDate(java.time.LocalDate.now().plusDays(15))
+            .build();
+
+    TourInstanceDetailResponse response = new TourInstanceDetailResponse();
+    when(coordinatorTourInstanceService.createInstance(any(), eq(coordinatorId)))
+        .thenReturn(response);
+
+    SingleResponse<TourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Tour instance created successfully");
+    singleResponse.setHttpStatus(201);
+
+    when(responseFactory.success(eq(org.springframework.http.HttpStatus.CREATED), eq(response), any()))
+        .thenReturn(ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(singleResponse));
+
+    mockMvc
+        .perform(
+            post("/api/v1/staff/coordinator/instances")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.message").value("Tour instance created successfully"));
+  }
+
+  @Test
+  void updateInstance_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    TourInstanceUpdateRequest request = new TourInstanceUpdateRequest();
+    TourInstanceDetailResponse response = new TourInstanceDetailResponse();
+
+    when(coordinatorTourInstanceService.updateInstance(eq(id), any())).thenReturn(response);
+
+    SingleResponse<TourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Tour instance updated successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(response), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/staff/coordinator/instances/" + id)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Tour instance updated successfully"));
   }
 }
