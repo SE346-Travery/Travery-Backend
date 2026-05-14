@@ -59,6 +59,8 @@ public class CoordinatorTourInstanceServiceTest {
   @BeforeEach
   void setUp() {
     tourInstance = new TourInstance();
+    tourInstance.setStartDate(LocalDate.now().plusDays(10));
+    tourInstance.setEndDate(LocalDate.now().plusDays(15));
     tourInstanceResponse = new TourInstanceResponse();
     tourInstanceDetailResponse = new TourInstanceDetailResponse();
   }
@@ -246,5 +248,48 @@ public class CoordinatorTourInstanceServiceTest {
 
     assertThrows(
         BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
+  }
+
+  @Test
+  void updateInstance_operationalFieldWhileNotPlanning_throwsException() {
+    UUID id = UUID.randomUUID();
+    UUID guideId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().guideId(guideId).build();
+
+    tourInstance.setStatus(TourInstanceStatus.OPEN);
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
+  }
+
+  @Test
+  void updateInstance_withNewFields_updatesCorrectly() {
+    UUID id = UUID.randomUUID();
+    UUID coordinatorId = UUID.randomUUID();
+    LocalDate newStart = LocalDate.now().plusDays(20);
+
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder()
+            .coordinatorId(coordinatorId)
+            .startDate(newStart)
+            .build();
+
+    Coordinator coordinator = new Coordinator();
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    tourInstance.setEndDate(LocalDate.now().plusDays(25)); // Ensure valid date range
+    tourInstance.setStartDate(LocalDate.now().plusDays(10));
+
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
+    when(tourInstanceRepository.save(any())).thenReturn(tourInstance);
+    when(tourInstanceMapper.toTourInstanceDetailResponse(any()))
+        .thenReturn(tourInstanceDetailResponse);
+
+    coordinatorTourInstanceService.updateInstance(id, request);
+
+    assertEquals(coordinator, tourInstance.getCoordinator());
+    assertEquals(newStart, tourInstance.getStartDate());
   }
 }

@@ -17,6 +17,7 @@ import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.security.user.CustomUserDetails;
@@ -171,6 +172,37 @@ public class CoordinatorTourInstanceControllerTest {
   void updateInstance_returnsOk() throws Exception {
     UUID id = UUID.randomUUID();
     TourInstanceUpdateRequest request = new TourInstanceUpdateRequest();
+    TourInstanceDetailResponse response = new TourInstanceDetailResponse();
+
+    when(coordinatorTourInstanceService.updateInstance(eq(id), any())).thenReturn(response);
+
+    SingleResponse<TourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Tour instance updated successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(response), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(
+            patch("/api/v1/staff/coordinator/instances/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Tour instance updated successfully"));
+  }
+
+  @Test
+  void updateInstance_withFullData_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder()
+            .coordinatorId(UUID.randomUUID())
+            .startDate(LocalDate.now().plusDays(5))
+            .endDate(LocalDate.now().plusDays(10))
+            .status(TourInstanceStatus.OPEN)
+            .build();
     TourInstanceDetailResponse response = new TourInstanceDetailResponse();
 
     when(coordinatorTourInstanceService.updateInstance(eq(id), any())).thenReturn(response);
