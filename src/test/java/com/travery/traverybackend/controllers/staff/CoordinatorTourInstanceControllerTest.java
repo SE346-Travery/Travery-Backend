@@ -19,7 +19,9 @@ import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,10 +30,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 
 @ExtendWith(MockitoExtension.class)
 public class CoordinatorTourInstanceControllerTest {
@@ -54,23 +63,20 @@ public class CoordinatorTourInstanceControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(coordinatorTourInstanceController)
             .setCustomArgumentResolvers(
-                new org.springframework.web.method.support.HandlerMethodArgumentResolver() {
+                new HandlerMethodArgumentResolver() {
                   @Override
-                  public boolean supportsParameter(
-                      org.springframework.core.MethodParameter parameter) {
+                  public boolean supportsParameter(MethodParameter parameter) {
                     return parameter.hasParameterAnnotation(
                         org.springframework.security.core.annotation.AuthenticationPrincipal.class);
                   }
 
                   @Override
                   public Object resolveArgument(
-                      org.springframework.core.MethodParameter parameter,
-                      org.springframework.web.method.support.ModelAndViewContainer mavContainer,
-                      org.springframework.web.context.request.NativeWebRequest webRequest,
-                      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
-                    return com.travery.traverybackend.security.user.CustomUserDetails.builder()
-                        .userId(coordinatorId)
-                        .build();
+                      MethodParameter parameter,
+                      ModelAndViewContainer mavContainer,
+                      NativeWebRequest webRequest,
+                      WebDataBinderFactory binderFactory) {
+                    return CustomUserDetails.builder().userId(coordinatorId).build();
                   }
                 })
             .build();
@@ -136,8 +142,8 @@ public class CoordinatorTourInstanceControllerTest {
     TourInstanceCreateRequest request =
         TourInstanceCreateRequest.builder()
             .tourId(UUID.randomUUID())
-            .startDate(java.time.LocalDate.now().plusDays(10))
-            .endDate(java.time.LocalDate.now().plusDays(15))
+            .startDate(LocalDate.now().plusDays(10))
+            .endDate(LocalDate.now().plusDays(15))
             .build();
 
     TourInstanceDetailResponse response = new TourInstanceDetailResponse();
@@ -149,13 +155,13 @@ public class CoordinatorTourInstanceControllerTest {
     singleResponse.setMessage("Tour instance created successfully");
     singleResponse.setHttpStatus(201);
 
-    when(responseFactory.success(eq(org.springframework.http.HttpStatus.CREATED), eq(response), any()))
-        .thenReturn(ResponseEntity.status(org.springframework.http.HttpStatus.CREATED).body(singleResponse));
+    when(responseFactory.success(eq(HttpStatus.CREATED), eq(response), any()))
+        .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(singleResponse));
 
     mockMvc
         .perform(
             post("/api/v1/staff/coordinator/instances")
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.message").value("Tour instance created successfully"));
@@ -180,7 +186,7 @@ public class CoordinatorTourInstanceControllerTest {
     mockMvc
         .perform(
             patch("/api/v1/staff/coordinator/instances/" + id)
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Tour instance updated successfully"));

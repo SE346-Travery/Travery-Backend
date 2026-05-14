@@ -61,7 +61,8 @@ public class CoordinatorTourInstanceController extends AbstractBaseController {
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<TourInstanceDetailResponse>> updateInstance(
       @PathVariable UUID id, @Valid @RequestBody TourInstanceUpdateRequest request) {
-    TourInstanceDetailResponse response = coordinatorTourInstanceService.updateInstance(id, request);
+    TourInstanceDetailResponse response =
+        coordinatorTourInstanceService.updateInstance(id, request);
     return success(response, "Tour instance updated successfully");
   }
 }

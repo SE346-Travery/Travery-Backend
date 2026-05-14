@@ -39,97 +39,95 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 @ExtendWith(MockitoExtension.class)
 public class TourControllerTest {
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @Mock
-    private TourService tourService;
-    @Mock
-    private CoordinatorTourInstanceService coordinatorTourInstanceService;
-    @Mock
-    private ResponseFactory responseFactory;
-    @InjectMocks
-    private TourController tourController;
+  @Mock private TourService tourService;
+  @Mock private CoordinatorTourInstanceService coordinatorTourInstanceService;
+  @Mock private ResponseFactory responseFactory;
+  @InjectMocks private TourController tourController;
 
-    private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    private UUID coordinatorId = UUID.randomUUID();
-    private CustomUserDetails userDetails;
+  private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  private UUID coordinatorId = UUID.randomUUID();
+  private CustomUserDetails userDetails;
 
-    @BeforeEach
-    void setUp() {
-        userDetails = CustomUserDetails.builder()
-                .userId(coordinatorId)
-                .email("test@travery.com")
-                .isEnabled(true)
-                .authorities(List.of())
-                .build();
+  @BeforeEach
+  void setUp() {
+    userDetails =
+        CustomUserDetails.builder()
+            .userId(coordinatorId)
+            .email("test@travery.com")
+            .isEnabled(true)
+            .authorities(List.of())
+            .build();
 
-        ReflectionTestUtils.setField(tourController, "responseFactory", responseFactory);
+    ReflectionTestUtils.setField(tourController, "responseFactory", responseFactory);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(tourController)
-                .setCustomArgumentResolvers(
-                        new HandlerMethodArgumentResolver() {
-                            @Override
-                            public boolean supportsParameter(
-                                    org.springframework.core.MethodParameter parameter) {
-                                return parameter.hasParameterAnnotation(
-                                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
-                            }
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(tourController)
+            .setCustomArgumentResolvers(
+                new HandlerMethodArgumentResolver() {
+                  @Override
+                  public boolean supportsParameter(
+                      org.springframework.core.MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(
+                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                  }
 
-                            @Override
-                            public Object resolveArgument(
-                                    org.springframework.core.MethodParameter parameter,
-                                    org.springframework.web.method.support.ModelAndViewContainer mavContainer,
-                                    org.springframework.web.context.request.NativeWebRequest webRequest,
-                                    org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
-                                return userDetails;
-                            }
-                        })
-                .build();
+                  @Override
+                  public Object resolveArgument(
+                      org.springframework.core.MethodParameter parameter,
+                      org.springframework.web.method.support.ModelAndViewContainer mavContainer,
+                      org.springframework.web.context.request.NativeWebRequest webRequest,
+                      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+                    return userDetails;
+                  }
+                })
+            .build();
 
-        SecurityContextHolder.getContext()
-                .setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()));
-    }
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()));
+  }
 
-    @Test
-    void createTemplate_returnsCreated() throws Exception {
-        TourTemplateRequest request = TourTemplateRequest.builder()
-                .name("Dalat Trip")
-                .destinationId(UUID.randomUUID())
-                .pickupLocation("Station 1")
-                .pricePerAdult(new BigDecimal("1000"))
-                .pricePerChild(new BigDecimal("500"))
-                .itineraries(
-                        List.of(
-                                TourItineraryRequest.builder()
-                                        .dayNumber(1)
-                                        .title("Day 1")
-                                        .description("Arrive")
-                                        .build()))
-                .build();
+  @Test
+  void createTemplate_returnsCreated() throws Exception {
+    TourTemplateRequest request =
+        TourTemplateRequest.builder()
+            .name("Dalat Trip")
+            .destinationId(UUID.randomUUID())
+            .pickupLocation("Station 1")
+            .pricePerAdult(new BigDecimal("1000"))
+            .pricePerChild(new BigDecimal("500"))
+            .itineraries(
+                List.of(
+                    TourItineraryRequest.builder()
+                        .dayNumber(1)
+                        .title("Day 1")
+                        .description("Arrive")
+                        .build()))
+            .build();
 
-        TourResponse response = TourResponse.builder().id(UUID.randomUUID()).name("Dalat Trip").build();
+    TourResponse response = TourResponse.builder().id(UUID.randomUUID()).name("Dalat Trip").build();
 
-        when(tourService.createTemplate(any(TourTemplateRequest.class), eq(coordinatorId)))
-                .thenReturn(response);
+    when(tourService.createTemplate(any(TourTemplateRequest.class), eq(coordinatorId)))
+        .thenReturn(response);
 
-        SingleResponse<TourResponse> singleResponse = new SingleResponse<>();
-        singleResponse.setData(response);
-        singleResponse.setMessage("Tour template created successfully");
-        singleResponse.setHttpStatus(201);
+    SingleResponse<TourResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Tour template created successfully");
+    singleResponse.setHttpStatus(201);
 
-        when(responseFactory.success(eq(HttpStatus.CREATED), eq(response), any()))
-                .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(singleResponse));
+    when(responseFactory.success(eq(HttpStatus.CREATED), eq(response), any()))
+        .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(singleResponse));
 
-        mockMvc
-                .perform(
-                        post("/api/v1/tours/templates")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
-                                .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("Tour template created successfully"));
-    }
-
+    mockMvc
+        .perform(
+            post("/api/v1/tours/templates")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+                .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.message").value("Tour template created successfully"));
+  }
 }

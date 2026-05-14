@@ -69,5 +69,4 @@ public class TourController extends AbstractBaseController {
     TourResponse response = tourService.createTemplate(request, userDetails.getUserId());
     return created(response, "Tour template created successfully");
   }
-
 }
