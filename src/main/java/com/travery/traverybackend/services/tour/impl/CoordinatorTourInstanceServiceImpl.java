@@ -113,7 +113,8 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
                 () -> new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator"));
 
     if (request.getStartDate().isAfter(request.getEndDate())) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Start date must be before end date");
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Start date must be before or equal to end date");
     }
 
     TourInstance tourInstance = tourInstanceMapper.toEntity(request);
