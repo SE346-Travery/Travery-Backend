@@ -168,10 +168,56 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     }
 
     if (request.getStatus() != null) {
+      validateStatusTransition(tourInstance, request.getStatus());
       tourInstance.setStatus(request.getStatus());
     }
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
     return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);
+  }
+
+  private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {
+    TourInstanceStatus currentStatus = tourInstance.getStatus();
+
+    if (currentStatus == newStatus) {
+      return;
+    }
+
+    switch (currentStatus) {
+      case PLANNING:
+        if (newStatus != TourInstanceStatus.OPEN && newStatus != TourInstanceStatus.CANCELLED) {
+          throw new BaseAppException(
+              WebErrorCode.BAD_REQUEST, "Planning instance can only move to OPEN or CANCELLED");
+        }
+        break;
+      case OPEN:
+        if (newStatus != TourInstanceStatus.FULL
+            && newStatus != TourInstanceStatus.IN_PROGRESS
+            && newStatus != TourInstanceStatus.CANCELLED) {
+          throw new BaseAppException(
+              WebErrorCode.BAD_REQUEST,
+              "Open instance can only move to FULL, IN_PROGRESS or CANCELLED");
+        }
+        break;
+      case FULL:
+        if (newStatus != TourInstanceStatus.IN_PROGRESS
+            && newStatus != TourInstanceStatus.CANCELLED) {
+          throw new BaseAppException(
+              WebErrorCode.BAD_REQUEST, "Full instance can only move to IN_PROGRESS or CANCELLED");
+        }
+        break;
+      case IN_PROGRESS:
+        if (newStatus != TourInstanceStatus.COMPLETED) {
+          throw new BaseAppException(
+              WebErrorCode.BAD_REQUEST, "Ongoing instance can only move to COMPLETED");
+        }
+        break;
+      case COMPLETED:
+      case CANCELLED:
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST, "Cannot change status of a " + currentStatus + " instance");
+      default:
+        throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid status transition");
+    }
   }
 }
