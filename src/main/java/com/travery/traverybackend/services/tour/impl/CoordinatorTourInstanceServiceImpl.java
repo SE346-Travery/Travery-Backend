@@ -135,6 +135,23 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
             .orElseThrow(
                 () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
 
+    if (isOperationalUpdate(request) && tourInstance.getStatus() != TourInstanceStatus.PLANNING) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST,
+          "Operational fields can only be updated when status is PLANNING");
+    }
+
+    if (request.getCoordinatorId() != null) {
+      Coordinator coordinator =
+          userRepository
+              .findById(request.getCoordinatorId())
+              .filter(user -> user instanceof Coordinator)
+              .map(user -> (Coordinator) user)
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
+      tourInstance.setCoordinator(coordinator);
+    }
+
     if (request.getGuideId() != null) {
       Guide guide =
           userRepository
@@ -165,6 +182,19 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
               .findById(request.getHotelBookingId())
               .orElseThrow(
                   () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel booking not found")));
+    }
+
+    if (request.getStartDate() != null) {
+      tourInstance.setStartDate(request.getStartDate());
+    }
+
+    if (request.getEndDate() != null) {
+      tourInstance.setEndDate(request.getEndDate());
+    }
+
+    if (tourInstance.getStartDate().isAfter(tourInstance.getEndDate())) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Start date must be before or equal to end date");
     }
 
     if (request.getStatus() != null) {
@@ -219,5 +249,15 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
       default:
         throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Invalid status transition");
     }
+  }
+
+  private boolean isOperationalUpdate(TourInstanceUpdateRequest request) {
+    return request.getCoordinatorId() != null
+        || request.getGuideId() != null
+        || request.getCoachId() != null
+        || request.getDriverId() != null
+        || request.getHotelBookingId() != null
+        || request.getStartDate() != null
+        || request.getEndDate() != null;
   }
 }
