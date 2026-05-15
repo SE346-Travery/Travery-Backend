@@ -8,12 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.travery.traverybackend.dtos.request.tour.TourItineraryRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,12 +42,11 @@ public class TourControllerTest {
   private MockMvc mockMvc;
 
   @Mock private TourService tourService;
-
+  @Mock private CoordinatorTourInstanceService coordinatorTourInstanceService;
   @Mock private ResponseFactory responseFactory;
-
   @InjectMocks private TourController tourController;
 
-  private ObjectMapper objectMapper = new ObjectMapper();
+  private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
   private UUID coordinatorId = UUID.randomUUID();
   private CustomUserDetails userDetails;
 
