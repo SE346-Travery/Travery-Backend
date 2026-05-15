@@ -7,6 +7,7 @@ import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
+import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.booking.BookingExpiryService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookingExpiryServiceImpl implements BookingExpiryService {
 
   private final TourBookingRepository tourBookingRepository;
+  private final TourInstanceRepository tourInstanceRepository;
   private final BookingMemberRepository bookingMemberRepository;
 
   @Override
@@ -57,20 +59,27 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
   }
 
   /**
-   * Cancel a booking and release its seats back to the TourInstance. If the instance was FULL, it
-   * transitions back to OPEN.
+   * Cancel a booking and release its seats back to the TourInstance.
+   * Acquires PESSIMISTIC_WRITE lock on TourInstance to prevent concurrent
+   * participant count corruption (e.g., Redis listener + scheduler race).
    */
   private void cancelAndReleaseSeats(TourBooking booking) {
-    // Count members to know how many seats to release
-    int memberCount =
-        bookingMemberRepository.countByBookingIdAndBookingType(
-            booking.getId(), BookingType.TOUR_BOOKING);
+    int memberCount = bookingMemberRepository.countByBookingIdAndBookingType(
+        booking.getId(), BookingType.TOUR_BOOKING);
 
     booking.setStatus(BookingStatus.CANCELLED);
     tourBookingRepository.save(booking);
 
-    // Release seats on TourInstance
-    TourInstance instance = booking.getTourInstance();
+    // Lock TourInstance before modifying participants to prevent race condition
+    TourInstance instance = tourInstanceRepository
+        .findByIdWithLock(booking.getTourInstance().getId())
+        .orElse(null);
+
+    if (instance == null) {
+      log.warn("TourInstance not found for booking {}", booking.getId());
+      return;
+    }
+
     int updatedParticipants = Math.max(0, instance.getCurrentParticipants() - memberCount);
     instance.setCurrentParticipants(updatedParticipants);
 

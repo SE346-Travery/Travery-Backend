@@ -51,6 +51,21 @@ public class PaymentServiceImpl implements PaymentService {
       throw new BaseAppException(BookingErrorCode.PAYMENT_DEADLINE_EXPIRED);
     }
 
+    // 4. Check for existing PENDING transaction (prevent double-click duplicates)
+    var existingTransaction = paymentTransactionRepository
+        .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING);
+    if (existingTransaction.isPresent()
+        && existingTransaction.get().getStatus() == PaymentStatus.PENDING) {
+      PaymentTransaction existing = existingTransaction.get();
+      return PaymentInitiationResponse.builder()
+          .transactionId(existing.getId())
+          .amount(existing.getAmount())
+          .paymentMethod(existing.getPaymentMethod())
+          .paymentUrl(STUB_PAYMENT_BASE_URL + existing.getId())
+          .expiresAt(booking.getPaymentDeadline())
+          .build();
+    }
+
     // 4. Create PaymentTransaction (polymorphic: bookingId + bookingType)
     PaymentTransaction transaction =
         PaymentTransaction.builder()
