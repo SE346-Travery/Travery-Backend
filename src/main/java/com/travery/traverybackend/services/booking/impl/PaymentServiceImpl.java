@@ -52,8 +52,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // 4. Check for existing PENDING transaction (prevent double-click duplicates)
-    var existingTransaction = paymentTransactionRepository
-        .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING);
+    var existingTransaction =
+        paymentTransactionRepository.findByBookingIdAndBookingType(
+            booking.getId(), BookingType.TOUR_BOOKING);
     if (existingTransaction.isPresent()
         && existingTransaction.get().getStatus() == PaymentStatus.PENDING) {
       PaymentTransaction existing = existingTransaction.get();

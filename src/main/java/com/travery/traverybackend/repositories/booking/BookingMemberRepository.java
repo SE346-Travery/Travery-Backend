@@ -17,8 +17,8 @@ public interface BookingMemberRepository extends JpaRepository<BookingMember, UU
   int countByBookingIdAndBookingType(UUID bookingId, BookingType bookingType);
 
   /**
-   * Batch fetch member counts for multiple bookings in a single query.
-   * Returns List of [bookingId, count] pairs.
+   * Batch fetch member counts for multiple bookings in a single query. Returns List of [bookingId,
+   * count] pairs.
    */
   @Query(
       "SELECT bm.bookingId, COUNT(bm) FROM BookingMember bm "

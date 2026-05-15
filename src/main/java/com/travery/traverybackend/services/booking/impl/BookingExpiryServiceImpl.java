@@ -59,21 +59,21 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
   }
 
   /**
-   * Cancel a booking and release its seats back to the TourInstance.
-   * Acquires PESSIMISTIC_WRITE lock on TourInstance to prevent concurrent
-   * participant count corruption (e.g., Redis listener + scheduler race).
+   * Cancel a booking and release its seats back to the TourInstance. Acquires PESSIMISTIC_WRITE
+   * lock on TourInstance to prevent concurrent participant count corruption (e.g., Redis listener +
+   * scheduler race).
    */
   private void cancelAndReleaseSeats(TourBooking booking) {
-    int memberCount = bookingMemberRepository.countByBookingIdAndBookingType(
-        booking.getId(), BookingType.TOUR_BOOKING);
+    int memberCount =
+        bookingMemberRepository.countByBookingIdAndBookingType(
+            booking.getId(), BookingType.TOUR_BOOKING);
 
     booking.setStatus(BookingStatus.CANCELLED);
     tourBookingRepository.save(booking);
 
     // Lock TourInstance before modifying participants to prevent race condition
-    TourInstance instance = tourInstanceRepository
-        .findByIdWithLock(booking.getTourInstance().getId())
-        .orElse(null);
+    TourInstance instance =
+        tourInstanceRepository.findByIdWithLock(booking.getTourInstance().getId()).orElse(null);
 
     if (instance == null) {
       log.warn("TourInstance not found for booking {}", booking.getId());
