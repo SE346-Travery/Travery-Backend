@@ -34,6 +34,12 @@ public class TourBooking extends AbstractBaseEntity {
   @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal totalPrice;
 
+  @Column(name = "price_per_adult_at_booking", nullable = false, precision = 12, scale = 2)
+  private BigDecimal pricePerAdultAtBooking;
+
+  @Column(name = "price_per_child_at_booking", nullable = false, precision = 12, scale = 2)
+  private BigDecimal pricePerChildAtBooking;
+
   @Column(name = "payment_deadline")
   private LocalDateTime paymentDeadline;
 
@@ -41,4 +47,7 @@ public class TourBooking extends AbstractBaseEntity {
   @Column(length = 50)
   @Builder.Default
   private BookingStatus status = BookingStatus.PENDING;
+
+  @Column(name = "customer_note", columnDefinition = "TEXT")
+  private String customerNote;
 }
