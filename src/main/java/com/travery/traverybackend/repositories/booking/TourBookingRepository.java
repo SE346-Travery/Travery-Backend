@@ -19,13 +19,14 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, UUID> 
 
   Optional<TourBooking> findByIdAndUser_Id(UUID id, UUID userId);
 
-  @EntityGraph(attributePaths = { "tourInstance", "tourInstance.tour" })
+  @EntityGraph(attributePaths = {"tourInstance", "tourInstance.tour"})
   Page<TourBooking> findByUser_IdAndStatus(UUID userId, BookingStatus status, Pageable pageable);
 
-  @EntityGraph(attributePaths = { "tourInstance", "tourInstance.tour" })
+  @EntityGraph(attributePaths = {"tourInstance", "tourInstance.tour"})
   Page<TourBooking> findByUser_Id(UUID userId, Pageable pageable);
 
-  @Query("""
+  @Query(
+      """
       SELECT b FROM TourBooking b
       JOIN FETCH b.tourInstance ti
       JOIN FETCH ti.tour t
