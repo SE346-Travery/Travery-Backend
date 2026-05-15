@@ -22,6 +22,7 @@ public interface TourRepository extends JpaRepository<Tour, UUID>, TourSearchCus
   @Query("SELECT t FROM Tour t WHERE t.id = :id")
   Optional<Tour> findByIdWithDetails(@Param("id") UUID id);
 
+  @EntityGraph(attributePaths = {"destination"})
   List<Tour> findTop10ByIsCustomFalseAndAverageRatingGreaterThanEqualOrderByAverageRatingDesc(
       Double minRating);
 }
