@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
+import com.travery.traverybackend.dtos.request.tour.MemberAttendance;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
@@ -147,5 +149,114 @@ public class GuideTourInstanceServiceTest {
     assertThrows(
         BaseAppException.class,
         () -> guideTourInstanceService.getInstanceDetail(guideId, instanceId));
+  }
+
+  @Test
+  void recordAttendance_withValidAssignment_updatesAttendanceStatus() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    UUID bookingId = UUID.randomUUID();
+    TourBooking tourBooking = TourBooking.builder().id(bookingId).build();
+    when(tourBookingRepository.findByTourInstanceId(instanceId)).thenReturn(List.of(tourBooking));
+
+    UUID memberId = UUID.randomUUID();
+    com.travery.traverybackend.entities.booking.BookingMember member =
+        com.travery.traverybackend.entities.booking.BookingMember.builder()
+            .id(memberId)
+            .bookingId(bookingId)
+            .bookingType(com.travery.traverybackend.enums.booking.BookingType.TOUR_BOOKING)
+            .fullName("John Doe")
+            .attendanceStatus(com.travery.traverybackend.enums.booking.AttendanceStatus.NOT_CHECKED)
+            .build();
+    when(bookingMemberRepository.findByBookingIdInAndBookingType(
+            org.mockito.ArgumentMatchers.anyList(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(List.of(member));
+
+    GuideAttendanceRequest request =
+        GuideAttendanceRequest.builder()
+            .attendances(
+                List.of(
+                    MemberAttendance.builder()
+                        .memberId(memberId)
+                        .status(com.travery.traverybackend.enums.booking.AttendanceStatus.PRESENT)
+                        .build()))
+            .build();
+
+    // Mock getInstanceDetail invocation inside recordAttendance
+    TourBookingResponse bookingResponse = TourBookingResponse.builder().id(bookingId).build();
+    GuideTourInstanceDetailResponse detailResponse =
+        GuideTourInstanceDetailResponse.builder().bookings(List.of(bookingResponse)).build();
+    when(tourInstanceMapper.toGuideTourInstanceDetailResponse(tourInstance, List.of(tourBooking)))
+        .thenReturn(detailResponse);
+
+    com.travery.traverybackend.dtos.response.booking.BookingMemberResponse memberResponse =
+        com.travery.traverybackend.dtos.response.booking.BookingMemberResponse.builder()
+            .fullName("John Doe")
+            .attendanceStatus(com.travery.traverybackend.enums.booking.AttendanceStatus.PRESENT)
+            .build();
+    when(tourInstanceMapper.toBookingMemberResponse(member)).thenReturn(memberResponse);
+
+    GuideTourInstanceDetailResponse result =
+        guideTourInstanceService.recordAttendance(guideId, instanceId, request);
+
+    assertEquals(detailResponse, result);
+    assertEquals(
+        com.travery.traverybackend.enums.booking.AttendanceStatus.PRESENT,
+        member.getAttendanceStatus());
+  }
+
+  @Test
+  void recordAttendance_withInvalidAssignment_throwsForbiddenException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide otherGuide = Guide.builder().id(UUID.randomUUID()).build();
+    tourInstance.setGuide(otherGuide);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    GuideAttendanceRequest request =
+        GuideAttendanceRequest.builder().attendances(List.of()).build();
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.recordAttendance(guideId, instanceId, request));
+  }
+
+  @Test
+  void recordAttendance_withMemberNotBelongingToInstance_throwsBadRequestException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    UUID bookingId = UUID.randomUUID();
+    TourBooking tourBooking = TourBooking.builder().id(bookingId).build();
+    when(tourBookingRepository.findByTourInstanceId(instanceId)).thenReturn(List.of(tourBooking));
+
+    when(bookingMemberRepository.findByBookingIdInAndBookingType(
+            org.mockito.ArgumentMatchers.anyList(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(List.of());
+
+    UUID strangerMemberId = UUID.randomUUID();
+    GuideAttendanceRequest request =
+        GuideAttendanceRequest.builder()
+            .attendances(
+                List.of(
+                    MemberAttendance.builder()
+                        .memberId(strangerMemberId)
+                        .status(com.travery.traverybackend.enums.booking.AttendanceStatus.PRESENT)
+                        .build()))
+            .build();
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.recordAttendance(guideId, instanceId, request));
   }
 }

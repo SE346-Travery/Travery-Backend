@@ -1,5 +1,7 @@
 package com.travery.traverybackend.services.tour.impl;
 
+import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
+import com.travery.traverybackend.dtos.request.tour.MemberAttendance;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.booking.BookingMember;
@@ -14,6 +16,7 @@ import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -100,5 +103,54 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     }
 
     return response;
+  }
+
+  @Override
+  @Transactional
+  public GuideTourInstanceDetailResponse recordAttendance(
+      UUID guideId, UUID instanceId, GuideAttendanceRequest request) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(instanceId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
+    }
+
+    List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
+    List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
+
+    if (bookingIds.isEmpty()) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "There are no bookings for this tour instance");
+    }
+
+    List<BookingMember> bookingMembers =
+        bookingMemberRepository.findByBookingIdInAndBookingType(
+            bookingIds, BookingType.TOUR_BOOKING);
+
+    Map<UUID, BookingMember> membersById =
+        bookingMembers.stream().collect(Collectors.toMap(BookingMember::getId, member -> member));
+
+    List<BookingMember> toUpdate = new ArrayList<>();
+    for (MemberAttendance attendance : request.getAttendances()) {
+      BookingMember member = membersById.get(attendance.getMemberId());
+      if (member == null) {
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST,
+            "Member with ID "
+                + attendance.getMemberId()
+                + " does not belong to this tour instance");
+      }
+      member.setAttendanceStatus(attendance.getStatus());
+      toUpdate.add(member);
+    }
+
+    bookingMemberRepository.saveAll(toUpdate);
+
+    return getInstanceDetail(guideId, instanceId);
   }
 }

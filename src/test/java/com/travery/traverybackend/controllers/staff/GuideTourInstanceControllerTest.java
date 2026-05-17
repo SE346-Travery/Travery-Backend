@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -109,5 +111,32 @@ public class GuideTourInstanceControllerTest {
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.message").value("Fetched assigned tour instance detail successfully"));
+  }
+
+  @Test
+  void recordAttendance_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID memberId = UUID.randomUUID();
+    GuideTourInstanceDetailResponse detail = new GuideTourInstanceDetailResponse();
+
+    when(guideTourInstanceService.recordAttendance(any(), eq(id), any())).thenReturn(detail);
+
+    SingleResponse<GuideTourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(detail);
+    singleResponse.setMessage("Recorded member attendance successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(detail), any())).thenReturn(ResponseEntity.ok(singleResponse));
+
+    String requestBody =
+        "{\"attendances\":[{\"memberId\":\"" + memberId + "\",\"status\":\"PRESENT\"}]}";
+
+    mockMvc
+        .perform(
+            patch("/api/v1/staff/guide/instances/" + id + "/attendance")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Recorded member attendance successfully"));
   }
 }
