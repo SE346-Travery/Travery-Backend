@@ -221,6 +221,54 @@ public class GuideTourInstanceServiceTest {
   }
 
   @Test
+  void recordAttendance_withCancelledOrCompletedTour_throwsBadRequestException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+    tourInstance.setStatus(TourInstanceStatus.CANCELLED);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    GuideAttendanceRequest request =
+        GuideAttendanceRequest.builder().attendances(List.of()).build();
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.recordAttendance(guideId, instanceId, request));
+  }
+
+  @Test
+  void recordAttendance_withDuplicateMemberIdWithDifferentStatuses_throwsBadRequestException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+    tourInstance.setStatus(TourInstanceStatus.OPEN);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    UUID memberId = UUID.randomUUID();
+    GuideAttendanceRequest request =
+        GuideAttendanceRequest.builder()
+            .attendances(
+                List.of(
+                    MemberAttendance.builder()
+                        .memberId(memberId)
+                        .status(AttendanceStatus.PRESENT)
+                        .build(),
+                    MemberAttendance.builder()
+                        .memberId(memberId)
+                        .status(AttendanceStatus.NO_SHOW)
+                        .build()))
+            .build();
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.recordAttendance(guideId, instanceId, request));
+  }
+
+  @Test
   void searchPassengers_withValidAssignment_returnsPassengers() {
     UUID guideId = UUID.randomUUID();
     UUID instanceId = UUID.randomUUID();
@@ -294,5 +342,40 @@ public class GuideTourInstanceServiceTest {
 
     assertEquals("Title", result.getTitle());
     verify(tourIncidentRepository).save(any(TourIncident.class));
+  }
+
+  @Test
+  void updateProgress_withCancelledTour_throwsBadRequestException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+    tourInstance.setStatus(TourInstanceStatus.CANCELLED);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    TourProgressUpdateRequest request =
+        new TourProgressUpdateRequest(TourInstanceStatus.IN_PROGRESS);
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.updateProgress(guideId, instanceId, request));
+  }
+
+  @Test
+  void updateProgress_withInvalidStatusTransition_throwsBadRequestException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+    tourInstance.setStatus(TourInstanceStatus.OPEN);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    TourProgressUpdateRequest request = new TourProgressUpdateRequest(TourInstanceStatus.CANCELLED);
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.updateProgress(guideId, instanceId, request));
   }
 }

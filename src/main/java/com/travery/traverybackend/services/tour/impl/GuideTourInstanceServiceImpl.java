@@ -13,6 +13,7 @@ import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourIncident;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.User;
+import com.travery.traverybackend.enums.booking.AttendanceStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.tour.IncidentStatus;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
@@ -27,6 +28,7 @@ import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -113,7 +115,12 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Transactional
   public GuideTourInstanceDetailResponse recordAttendance(
       UUID guideId, UUID instanceId, GuideAttendanceRequest request) {
-    validateGuideAssignment(guideId, instanceId);
+    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    if (tourInstance.getStatus() == TourInstanceStatus.CANCELLED
+        || tourInstance.getStatus() == TourInstanceStatus.COMPLETED) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot record attendance for a cancelled or completed tour");
+    }
 
     List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
     List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
@@ -130,17 +137,28 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     Map<UUID, BookingMember> membersById =
         bookingMembers.stream().collect(Collectors.toMap(BookingMember::getId, member -> member));
 
-    List<BookingMember> toUpdate = new ArrayList<>();
+    Map<UUID, AttendanceStatus> attendanceMap = new HashMap<>();
     for (MemberAttendance attendance : request.getAttendances()) {
-      BookingMember member = membersById.get(attendance.getMemberId());
+      AttendanceStatus existingStatus = attendanceMap.get(attendance.getMemberId());
+      if (existingStatus != null && existingStatus != attendance.getStatus()) {
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST,
+            "Duplicate member ID "
+                + attendance.getMemberId()
+                + " provided with different attendance statuses");
+      }
+      attendanceMap.put(attendance.getMemberId(), attendance.getStatus());
+    }
+
+    List<BookingMember> toUpdate = new ArrayList<>();
+    for (Map.Entry<UUID, AttendanceStatus> entry : attendanceMap.entrySet()) {
+      BookingMember member = membersById.get(entry.getKey());
       if (member == null) {
         throw new BaseAppException(
             WebErrorCode.BAD_REQUEST,
-            "Member with ID "
-                + attendance.getMemberId()
-                + " does not belong to this tour instance");
+            "Member with ID " + entry.getKey() + " does not belong to this tour instance");
       }
-      member.setAttendanceStatus(attendance.getStatus());
+      member.setAttendanceStatus(entry.getValue());
       toUpdate.add(member);
     }
 
@@ -163,7 +181,21 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   public GuideTourInstanceDetailResponse updateProgress(
       UUID guideId, UUID instanceId, TourProgressUpdateRequest request) {
     TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
-    tourInstance.setStatus(request.getStatus());
+
+    if (tourInstance.getStatus() == TourInstanceStatus.CANCELLED
+        || tourInstance.getStatus() == TourInstanceStatus.COMPLETED) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot update progress of a cancelled or completed tour");
+    }
+
+    TourInstanceStatus newStatus = request.getStatus();
+    if (newStatus != TourInstanceStatus.IN_PROGRESS && newStatus != TourInstanceStatus.COMPLETED) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST,
+          "Guides are only allowed to update tour status to IN_PROGRESS or COMPLETED");
+    }
+
+    tourInstance.setStatus(newStatus);
     tourInstanceRepository.save(tourInstance);
     return getInstanceDetail(guideId, instanceId);
   }
