@@ -83,7 +83,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(tourInstanceMapper.toEntity(request)).thenReturn(tourInstance);
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result =
@@ -183,7 +183,7 @@ public class CoordinatorTourInstanceServiceTest {
   void getInstanceDetail_withValidId_returnsDetail() {
     UUID id = UUID.randomUUID();
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result = coordinatorTourInstanceService.getInstanceDetail(id);
@@ -229,7 +229,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(guideId)).thenReturn(Optional.of(guide));
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result = coordinatorTourInstanceService.updateInstance(id, request);
@@ -284,7 +284,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(tourInstanceRepository.save(any())).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(any()))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(any()))
         .thenReturn(tourInstanceDetailResponse);
 
     coordinatorTourInstanceService.updateInstance(id, request);

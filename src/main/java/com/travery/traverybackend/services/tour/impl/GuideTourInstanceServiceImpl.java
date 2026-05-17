@@ -77,7 +77,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Override
   @Transactional(readOnly = true)
   public GuideTourInstanceDetailResponse getInstanceDetail(UUID guideId, UUID instanceId) {
-    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    TourInstance tourInstance = getAndValidateGuideAssignment(guideId, instanceId);
 
     List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
 
@@ -115,7 +115,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Transactional
   public GuideTourInstanceDetailResponse recordAttendance(
       UUID guideId, UUID instanceId, GuideAttendanceRequest request) {
-    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    TourInstance tourInstance = getAndValidateGuideAssignment(guideId, instanceId);
     if (tourInstance.getStatus() == TourInstanceStatus.CANCELLED
         || tourInstance.getStatus() == TourInstanceStatus.COMPLETED) {
       throw new BaseAppException(
@@ -170,7 +170,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Override
   @Transactional(readOnly = true)
   public List<BookingMemberResponse> searchPassengers(UUID guideId, UUID instanceId, String query) {
-    validateGuideAssignment(guideId, instanceId);
+    getAndValidateGuideAssignment(guideId, instanceId);
     return bookingMemberRepository.searchInTourInstance(instanceId, query).stream()
         .map(tourInstanceMapper::toBookingMemberResponse)
         .collect(Collectors.toList());
@@ -180,7 +180,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Transactional
   public GuideTourInstanceDetailResponse updateProgress(
       UUID guideId, UUID instanceId, TourProgressUpdateRequest request) {
-    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    TourInstance tourInstance = getAndValidateGuideAssignment(guideId, instanceId);
 
     if (tourInstance.getStatus() == TourInstanceStatus.CANCELLED
         || tourInstance.getStatus() == TourInstanceStatus.COMPLETED) {
@@ -204,7 +204,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Transactional
   public TourIncidentResponse reportIncident(
       UUID guideId, UUID instanceId, TourIncidentReportRequest request) {
-    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    TourInstance tourInstance = getAndValidateGuideAssignment(guideId, instanceId);
 
     User reporter =
         userRepository
@@ -225,17 +225,22 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     return tourIncidentMapper.toResponse(incident);
   }
 
-  private TourInstance validateGuideAssignment(UUID guideId, UUID instanceId) {
-    TourInstance tourInstance =
-        tourInstanceRepository
-            .findById(instanceId)
-            .orElseThrow(
-                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+  private TourInstance getAndValidateGuideAssignment(UUID guideId, UUID instanceId) {
+    TourInstance tourInstance = getTourInstanceOrThrow(instanceId);
+    validateGuideAssignment(tourInstance, guideId);
+    return tourInstance;
+  }
 
+  private TourInstance getTourInstanceOrThrow(UUID instanceId) {
+    return tourInstanceRepository
+        .findById(instanceId)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+  }
+
+  private void validateGuideAssignment(TourInstance tourInstance, UUID guideId) {
     if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
       throw new BaseAppException(
           WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
     }
-    return tourInstance;
   }
 }

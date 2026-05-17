@@ -91,7 +91,7 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
             .findById(id)
             .orElseThrow(
                 () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
-    return tourInstanceMapper.toTourInstanceDetailResponse(tourInstance);
+    return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     tourInstance.setStatus(TourInstanceStatus.PLANNING);
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
-    return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);
+    return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(savedInstance);
   }
 
   @Override
@@ -203,7 +203,7 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     }
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
-    return tourInstanceMapper.toTourInstanceDetailResponse(savedInstance);
+    return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(savedInstance);
   }
 
   private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {

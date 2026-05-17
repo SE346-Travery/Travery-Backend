@@ -43,7 +43,7 @@ public interface TourInstanceMapper {
   @Mapping(source = "driver.id", target = "driverId")
   @Mapping(source = "driver.fullName", target = "driverName")
   @Mapping(source = "driver.phoneNumber", target = "driverPhone")
-  TourInstanceDetailResponse toTourInstanceDetailResponse(TourInstance tourInstance);
+  TourInstanceDetailResponse toCoordinatorTourInstanceDetailResponse(TourInstance tourInstance);
 
   @Mapping(source = "tourInstance.coach.licensePlate", target = "coachLicensePlate")
   @Mapping(source = "tourInstance.coach.coachType", target = "coachType")
