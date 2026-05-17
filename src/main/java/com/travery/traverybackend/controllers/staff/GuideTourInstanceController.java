@@ -2,8 +2,12 @@ package com.travery.traverybackend.controllers.staff;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
+import com.travery.traverybackend.dtos.request.tour.TourIncidentReportRequest;
+import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
+import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
@@ -17,6 +21,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,5 +62,38 @@ public class GuideTourInstanceController extends AbstractBaseController {
     GuideTourInstanceDetailResponse response =
         guideTourInstanceService.recordAttendance(userDetails.getUserId(), id, request);
     return success(response, "Recorded member attendance successfully");
+  }
+
+  @GetMapping("/{id}/passengers")
+  @PreAuthorize("hasRole('GUIDE')")
+  public ResponseEntity<SingleResponse<List<BookingMemberResponse>>> searchPassengers(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable UUID id,
+      @RequestParam String query) {
+    List<BookingMemberResponse> passengers =
+        guideTourInstanceService.searchPassengers(userDetails.getUserId(), id, query);
+    return success(passengers, "Searched passengers successfully");
+  }
+
+  @PatchMapping("/{id}/progress")
+  @PreAuthorize("hasRole('GUIDE')")
+  public ResponseEntity<SingleResponse<GuideTourInstanceDetailResponse>> updateProgress(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable UUID id,
+      @Valid @RequestBody TourProgressUpdateRequest request) {
+    GuideTourInstanceDetailResponse response =
+        guideTourInstanceService.updateProgress(userDetails.getUserId(), id, request);
+    return success(response, "Updated tour progress successfully");
+  }
+
+  @PostMapping("/{id}/incidents")
+  @PreAuthorize("hasRole('GUIDE')")
+  public ResponseEntity<SingleResponse<TourIncidentResponse>> reportIncident(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable UUID id,
+      @Valid @RequestBody TourIncidentReportRequest request) {
+    TourIncidentResponse response =
+        guideTourInstanceService.reportIncident(userDetails.getUserId(), id, request);
+    return success(response, "Reported tour incident successfully");
   }
 }

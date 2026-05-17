@@ -29,4 +29,14 @@ public interface BookingMemberRepository extends JpaRepository<BookingMember, UU
           + "GROUP BY bm.bookingId")
   List<Object[]> countByBookingIds(
       @Param("bookingIds") List<UUID> bookingIds, @Param("bookingType") BookingType bookingType);
+
+  @Query(
+      "SELECT bm FROM BookingMember bm "
+          + "JOIN TourBooking tb ON bm.bookingId = tb.id "
+          + "WHERE tb.tourInstance.id = :instanceId "
+          + "AND bm.bookingType = 'TOUR_BOOKING' "
+          + "AND (LOWER(bm.fullName) LIKE LOWER(CONCAT('%', :query, '%')) "
+          + "OR bm.identityNumber LIKE CONCAT('%', :query, '%'))")
+  List<BookingMember> searchInTourInstance(
+      @Param("instanceId") UUID instanceId, @Param("query") String query);
 }

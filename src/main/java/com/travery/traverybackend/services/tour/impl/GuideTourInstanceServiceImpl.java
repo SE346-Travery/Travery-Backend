@@ -2,19 +2,29 @@ package com.travery.traverybackend.services.tour.impl;
 
 import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
 import com.travery.traverybackend.dtos.request.tour.MemberAttendance;
+import com.travery.traverybackend.dtos.request.tour.TourIncidentReportRequest;
+import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
+import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
+import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.TourBooking;
+import com.travery.traverybackend.entities.tour.TourIncident;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.tour.IncidentStatus;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
+import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +42,10 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final TourInstanceRepository tourInstanceRepository;
   private final TourBookingRepository tourBookingRepository;
   private final BookingMemberRepository bookingMemberRepository;
+  private final TourIncidentRepository tourIncidentRepository;
+  private final UserRepository userRepository;
   private final TourInstanceMapper tourInstanceMapper;
+  private final TourIncidentMapper tourIncidentMapper;
 
   @Override
   @Transactional(readOnly = true)
@@ -62,16 +75,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Override
   @Transactional(readOnly = true)
   public GuideTourInstanceDetailResponse getInstanceDetail(UUID guideId, UUID instanceId) {
-    TourInstance tourInstance =
-        tourInstanceRepository
-            .findById(instanceId)
-            .orElseThrow(
-                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
-
-    if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
-      throw new BaseAppException(
-          WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
-    }
+    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
 
     List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
 
@@ -109,16 +113,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   @Transactional
   public GuideTourInstanceDetailResponse recordAttendance(
       UUID guideId, UUID instanceId, GuideAttendanceRequest request) {
-    TourInstance tourInstance =
-        tourInstanceRepository
-            .findById(instanceId)
-            .orElseThrow(
-                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
-
-    if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
-      throw new BaseAppException(
-          WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
-    }
+    validateGuideAssignment(guideId, instanceId);
 
     List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
     List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
@@ -152,5 +147,63 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     bookingMemberRepository.saveAll(toUpdate);
 
     return getInstanceDetail(guideId, instanceId);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<BookingMemberResponse> searchPassengers(UUID guideId, UUID instanceId, String query) {
+    validateGuideAssignment(guideId, instanceId);
+    return bookingMemberRepository.searchInTourInstance(instanceId, query).stream()
+        .map(tourInstanceMapper::toBookingMemberResponse)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  @Transactional
+  public GuideTourInstanceDetailResponse updateProgress(
+      UUID guideId, UUID instanceId, TourProgressUpdateRequest request) {
+    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+    tourInstance.setStatus(request.getStatus());
+    tourInstanceRepository.save(tourInstance);
+    return getInstanceDetail(guideId, instanceId);
+  }
+
+  @Override
+  @Transactional
+  public TourIncidentResponse reportIncident(
+      UUID guideId, UUID instanceId, TourIncidentReportRequest request) {
+    TourInstance tourInstance = validateGuideAssignment(guideId, instanceId);
+
+    User reporter =
+        userRepository
+            .findById(guideId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
+
+    TourIncident incident =
+        TourIncident.builder()
+            .tourInstance(tourInstance)
+            .reporter(reporter)
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .severity(request.getSeverity())
+            .status(IncidentStatus.PENDING)
+            .build();
+
+    incident = tourIncidentRepository.save(incident);
+    return tourIncidentMapper.toResponse(incident);
+  }
+
+  private TourInstance validateGuideAssignment(UUID guideId, UUID instanceId) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(instanceId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
+    }
+    return tourInstance;
   }
 }

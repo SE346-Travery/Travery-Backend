@@ -5,12 +5,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
+import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
@@ -138,5 +141,81 @@ public class GuideTourInstanceControllerTest {
                 .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Recorded member attendance successfully"));
+  }
+
+  @Test
+  void searchPassengers_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    BookingMemberResponse passenger = new BookingMemberResponse();
+    List<BookingMemberResponse> passengers = List.of(passenger);
+
+    when(guideTourInstanceService.searchPassengers(any(), eq(id), eq("John")))
+        .thenReturn(passengers);
+
+    SingleResponse<List<BookingMemberResponse>> singleResponse = new SingleResponse<>();
+    singleResponse.setData(passengers);
+    singleResponse.setMessage("Searched passengers successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(passengers), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(get("/api/v1/staff/guide/instances/" + id + "/passengers").param("query", "John"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Searched passengers successfully"));
+  }
+
+  @Test
+  void updateProgress_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    GuideTourInstanceDetailResponse response = new GuideTourInstanceDetailResponse();
+
+    when(guideTourInstanceService.updateProgress(any(), eq(id), any())).thenReturn(response);
+
+    SingleResponse<GuideTourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Updated tour progress successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(response), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    String requestBody = "{\"status\":\"IN_PROGRESS\"}";
+
+    mockMvc
+        .perform(
+            patch("/api/v1/staff/guide/instances/" + id + "/progress")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Updated tour progress successfully"));
+  }
+
+  @Test
+  void reportIncident_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    TourIncidentResponse response = new TourIncidentResponse();
+
+    when(guideTourInstanceService.reportIncident(any(), eq(id), any())).thenReturn(response);
+
+    SingleResponse<TourIncidentResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(response);
+    singleResponse.setMessage("Reported tour incident successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(response), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    String requestBody =
+        "{\"title\":\"Accident\",\"description\":\"Minor accident\",\"severity\":\"MEDIUM\"}";
+
+    mockMvc
+        .perform(
+            post("/api/v1/staff/guide/instances/" + id + "/incidents")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Reported tour incident successfully"));
   }
 }
