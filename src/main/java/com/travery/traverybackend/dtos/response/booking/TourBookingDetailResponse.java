@@ -1,6 +1,8 @@
 package com.travery.traverybackend.dtos.response.booking;
 
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.finance.PaymentMethod;
+import com.travery.traverybackend.enums.finance.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,23 +19,26 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TourBookingResponse {
+public class TourBookingDetailResponse {
   private UUID id;
-
-  private String customerName;
-  private String customerPhone;
-  private String specialRequests;
   private BookingStatus status;
-
   private BigDecimal totalPrice;
   private BigDecimal pricePerAdultAtBooking;
   private BigDecimal pricePerChildAtBooking;
   private LocalDateTime paymentDeadline;
+  private String specialRequests;
+  private LocalDateTime createdAt;
 
-  // Tour instance summary
+  // Tour instance info
   private String tourName;
   private LocalDate startDate;
   private LocalDate endDate;
 
+  // Members
   private List<BookingMemberResponse> members;
+
+  // Payment info (null if no payment initiated)
+  private PaymentMethod paymentMethod;
+  private PaymentStatus paymentStatus;
+  private UUID transactionId;
 }
