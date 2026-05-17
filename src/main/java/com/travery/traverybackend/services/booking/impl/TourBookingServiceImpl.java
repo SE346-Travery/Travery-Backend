@@ -57,7 +57,7 @@ public class TourBookingServiceImpl implements TourBookingService {
 
   private static final int MIN_DAYS_BEFORE_DEPARTURE = 5;
   private static final int PAYMENT_DEADLINE_MINUTES = 15;
-  private static final int CHILD_AGE_THRESHOLD = 12;
+  private static final int CHILD_AGE_THRESHOLD = 11;
   private static final String BOOKING_HOLD_KEY_PREFIX = "booking:hold:";
 
   private final TourInstanceRepository tourInstanceRepository;
@@ -346,7 +346,7 @@ public class TourBookingServiceImpl implements TourBookingService {
   private BigDecimal calculateTotalPrice(List<BookingMemberRequest> members, Tour tour) {
     long adultCount =
         members.stream()
-            .filter(m -> calculateAge(m.getDateOfBirth()) >= CHILD_AGE_THRESHOLD)
+            .filter(m -> calculateAge(m.getDateOfBirth()) > CHILD_AGE_THRESHOLD)
             .count();
     long childCount = members.size() - adultCount;
 

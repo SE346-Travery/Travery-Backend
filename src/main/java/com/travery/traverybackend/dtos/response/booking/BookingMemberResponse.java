@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.booking;
 
+import com.travery.traverybackend.enums.booking.MemberType;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import lombok.Setter;
 public class BookingMemberResponse {
   private UUID id;
   private String fullName;
-  private String passportNumber;
+  private String identityNumber;
   private LocalDate dateOfBirth;
+  private MemberType memberType;
 }
