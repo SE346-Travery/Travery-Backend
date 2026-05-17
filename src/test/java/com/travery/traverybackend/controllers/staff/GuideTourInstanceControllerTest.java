@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
@@ -87,5 +88,26 @@ public class GuideTourInstanceControllerTest {
         .perform(get("/api/v1/staff/guide/instances").param("filter", "all"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Fetched assigned tour instances successfully"));
+  }
+
+  @Test
+  void getInstanceDetail_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    GuideTourInstanceDetailResponse detail = new GuideTourInstanceDetailResponse();
+
+    when(guideTourInstanceService.getInstanceDetail(any(), eq(id))).thenReturn(detail);
+
+    SingleResponse<GuideTourInstanceDetailResponse> singleResponse = new SingleResponse<>();
+    singleResponse.setData(detail);
+    singleResponse.setMessage("Fetched assigned tour instance detail successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(detail), any())).thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(get("/api/v1/staff/guide/instances/" + id))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$.message").value("Fetched assigned tour instance detail successfully"));
   }
 }

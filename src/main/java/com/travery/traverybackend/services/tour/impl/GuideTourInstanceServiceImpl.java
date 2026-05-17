@@ -1,12 +1,21 @@
 package com.travery.traverybackend.services.tour.impl;
 
+import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.booking.BookingMember;
+import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
+import com.travery.traverybackend.exception.BaseAppException;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
+import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
 
   private final TourInstanceRepository tourInstanceRepository;
+  private final TourBookingRepository tourBookingRepository;
+  private final BookingMemberRepository bookingMemberRepository;
   private final TourInstanceMapper tourInstanceMapper;
 
   @Override
@@ -43,5 +54,51 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     return instances.stream()
         .map(tourInstanceMapper::toTourInstanceResponse)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public GuideTourInstanceDetailResponse getInstanceDetail(UUID guideId, UUID instanceId) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(instanceId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
+    }
+
+    List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
+
+    GuideTourInstanceDetailResponse response =
+        tourInstanceMapper.toGuideTourInstanceDetailResponse(tourInstance, bookings);
+
+    List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
+    if (!bookingIds.isEmpty()) {
+      List<BookingMember> bookingMembers =
+          bookingMemberRepository.findByBookingIdInAndBookingType(
+              bookingIds, BookingType.TOUR_BOOKING);
+
+      Map<UUID, List<BookingMember>> membersByBookingId =
+          bookingMembers.stream().collect(Collectors.groupingBy(BookingMember::getBookingId));
+
+      if (response.getBookings() != null) {
+        response
+            .getBookings()
+            .forEach(
+                b -> {
+                  List<BookingMember> members =
+                      membersByBookingId.getOrDefault(b.getId(), List.of());
+                  b.setMembers(
+                      members.stream()
+                          .map(tourInstanceMapper::toBookingMemberResponse)
+                          .collect(Collectors.toList()));
+                });
+      }
+    }
+
+    return response;
   }
 }

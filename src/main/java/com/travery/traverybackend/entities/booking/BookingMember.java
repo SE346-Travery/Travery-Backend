@@ -1,11 +1,13 @@
 package com.travery.traverybackend.entities.booking;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.enums.booking.AttendanceStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,4 +37,9 @@ public class BookingMember extends AbstractBaseEntity {
 
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "attendance_status", nullable = false, length = 50)
+  @Builder.Default
+  private AttendanceStatus attendanceStatus = AttendanceStatus.NOT_CHECKED;
 }

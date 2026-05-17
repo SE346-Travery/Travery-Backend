@@ -1,16 +1,24 @@
 package com.travery.traverybackend.services.tour;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
+import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
+import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.tour.impl.GuideTourInstanceServiceImpl;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +31,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class GuideTourInstanceServiceTest {
 
   @Mock private TourInstanceRepository tourInstanceRepository;
+  @Mock private TourBookingRepository tourBookingRepository;
+
+  @Mock
+  private com.travery.traverybackend.repositories.booking.BookingMemberRepository
+      bookingMemberRepository;
 
   @Mock private TourInstanceMapper tourInstanceMapper;
 
@@ -76,5 +89,63 @@ public class GuideTourInstanceServiceTest {
 
     assertEquals(1, result.size());
     verify(tourInstanceRepository).findByGuideIdAndStatus(guideId, TourInstanceStatus.COMPLETED);
+  }
+
+  @Test
+  void getInstanceDetail_withValidAssignment_returnsDetail() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide guide = Guide.builder().id(guideId).build();
+    tourInstance.setGuide(guide);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    UUID bookingId = UUID.randomUUID();
+    TourBooking tourBooking = TourBooking.builder().id(bookingId).build();
+    List<TourBooking> bookings = List.of(tourBooking);
+    when(tourBookingRepository.findByTourInstanceId(instanceId)).thenReturn(bookings);
+
+    TourBookingResponse bookingResponse = TourBookingResponse.builder().id(bookingId).build();
+    GuideTourInstanceDetailResponse detailResponse =
+        GuideTourInstanceDetailResponse.builder().bookings(List.of(bookingResponse)).build();
+    when(tourInstanceMapper.toGuideTourInstanceDetailResponse(tourInstance, bookings))
+        .thenReturn(detailResponse);
+
+    com.travery.traverybackend.entities.booking.BookingMember member =
+        com.travery.traverybackend.entities.booking.BookingMember.builder()
+            .bookingId(bookingId)
+            .bookingType(com.travery.traverybackend.enums.booking.BookingType.TOUR_BOOKING)
+            .fullName("John Doe")
+            .build();
+    when(bookingMemberRepository.findByBookingIdInAndBookingType(
+            org.mockito.ArgumentMatchers.anyList(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(List.of(member));
+
+    com.travery.traverybackend.dtos.response.booking.BookingMemberResponse memberResponse =
+        com.travery.traverybackend.dtos.response.booking.BookingMemberResponse.builder()
+            .fullName("John Doe")
+            .attendanceStatus(com.travery.traverybackend.enums.booking.AttendanceStatus.NOT_CHECKED)
+            .build();
+    when(tourInstanceMapper.toBookingMemberResponse(member)).thenReturn(memberResponse);
+
+    GuideTourInstanceDetailResponse result =
+        guideTourInstanceService.getInstanceDetail(guideId, instanceId);
+
+    assertEquals(detailResponse, result);
+    assertEquals(1, result.getBookings().get(0).getMembers().size());
+    assertEquals("John Doe", result.getBookings().get(0).getMembers().get(0).getFullName());
+  }
+
+  @Test
+  void getInstanceDetail_withInvalidAssignment_throwsException() {
+    UUID guideId = UUID.randomUUID();
+    UUID instanceId = UUID.randomUUID();
+    Guide otherGuide = Guide.builder().id(UUID.randomUUID()).build();
+    tourInstance.setGuide(otherGuide);
+
+    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideTourInstanceService.getInstanceDetail(guideId, instanceId));
   }
 }
