@@ -2,6 +2,7 @@ package com.travery.traverybackend.entities.booking;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.booking.MemberType;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -30,9 +31,13 @@ public class BookingMember extends AbstractBaseEntity {
   @Column(name = "full_name", nullable = false, length = 100)
   private String fullName;
 
-  @Column(name = "passport_number", nullable = false, length = 50)
-  private String passportNumber;
+  @Column(name = "identity_number", nullable = false, length = 50)
+  private String identityNumber;
 
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "member_type", nullable = false, length = 20)
+  private MemberType memberType;
 }

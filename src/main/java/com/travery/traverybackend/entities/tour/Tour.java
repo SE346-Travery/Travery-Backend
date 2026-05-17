@@ -54,11 +54,6 @@ public class Tour extends AbstractBaseEntity {
   @JoinColumn(name = "requested_by_user_id")
   private User requestedByUser;
 
-  @IndexedEmbedded
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "destination_id", nullable = false)
-  private Destination destination;
-
   @Column(name = "pickup_location", nullable = false, length = 500)
   private String pickupLocation;
 
@@ -105,4 +100,9 @@ public class Tour extends AbstractBaseEntity {
   @OneToMany(mappedBy = "tour")
   @IndexedEmbedded(structure = ObjectStructure.NESTED)
   private List<TourInstance> tourInstances;
+
+  @IndexedEmbedded
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "destination_id", nullable = false)
+  private Destination destination;
 }
