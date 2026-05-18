@@ -1,9 +1,15 @@
 package com.travery.traverybackend.mappers;
 
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
+import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
+import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
+import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.booking.BookingMember;
+import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -37,5 +43,18 @@ public interface TourInstanceMapper {
   @Mapping(source = "driver.id", target = "driverId")
   @Mapping(source = "driver.fullName", target = "driverName")
   @Mapping(source = "driver.phoneNumber", target = "driverPhone")
-  TourInstanceDetailResponse toTourInstanceDetailResponse(TourInstance tourInstance);
+  TourInstanceDetailResponse toCoordinatorTourInstanceDetailResponse(TourInstance tourInstance);
+
+  @Mapping(source = "tourInstance.coach.licensePlate", target = "coachLicensePlate")
+  @Mapping(source = "tourInstance.coach.coachType", target = "coachType")
+  @Mapping(source = "tourInstance.driver.fullName", target = "driverName")
+  @Mapping(source = "tourInstance.driver.phoneNumber", target = "driverPhone")
+  GuideTourInstanceDetailResponse toGuideTourInstanceDetailResponse(
+      TourInstance tourInstance, List<TourBooking> bookings);
+
+  @Mapping(source = "user.fullName", target = "customerName")
+  @Mapping(source = "user.phoneNumber", target = "customerPhone")
+  TourBookingResponse toTourBookingResponse(TourBooking booking);
+
+  BookingMemberResponse toBookingMemberResponse(BookingMember member);
 }

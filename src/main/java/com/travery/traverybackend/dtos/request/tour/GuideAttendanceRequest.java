@@ -1,4 +1,4 @@
-package com.travery.traverybackend.dtos.request.booking;
+package com.travery.traverybackend.dtos.request.tour;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,11 +14,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateTourBookingRequest {
+public class GuideAttendanceRequest {
 
-  @NotEmpty(message = "At least one booking member is required")
+  @NotEmpty(message = "Attendance list must not be empty")
   @Valid
-  private List<BookingMemberRequest> members;
-
-  private String specialRequests;
+  private List<MemberAttendance> attendances;
 }

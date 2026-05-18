@@ -26,7 +26,7 @@ public class TourBookingDetailResponse {
   private BigDecimal pricePerAdultAtBooking;
   private BigDecimal pricePerChildAtBooking;
   private LocalDateTime paymentDeadline;
-  private String customerNote;
+  private String specialRequests;
   private LocalDateTime createdAt;
 
   // Tour instance info

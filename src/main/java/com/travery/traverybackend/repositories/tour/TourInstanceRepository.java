@@ -20,6 +20,10 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
   @Query("SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.id = :id")
   Optional<TourInstance> findByIdWithLock(@Param("id") UUID id);
 
+  @Query(
+      "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour JOIN FETCH ti.coach JOIN FETCH ti.driver WHERE ti.id = :id")
+  Optional<TourInstance> findByIdWithDetails(@Param("id") UUID id);
+
   List<TourInstance> findByStatus(TourInstanceStatus status);
 
   @Query(
@@ -34,4 +38,8 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
 
   List<TourInstance> findByTourIdAndStatusInAndStartDateGreaterThanEqualOrderByStartDateAsc(
       UUID tourId, List<TourInstanceStatus> statuses, LocalDate currentDate);
+
+  List<TourInstance> findByGuideId(UUID guideId);
+
+  List<TourInstance> findByGuideIdAndStatus(UUID guideId, TourInstanceStatus status);
 }

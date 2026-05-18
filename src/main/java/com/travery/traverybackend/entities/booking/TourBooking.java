@@ -48,6 +48,6 @@ public class TourBooking extends AbstractBaseEntity {
   @Builder.Default
   private BookingStatus status = BookingStatus.PENDING;
 
-  @Column(name = "customer_note", columnDefinition = "TEXT")
-  private String customerNote;
+  @Column(name = "special_requests", columnDefinition = "TEXT")
+  private String specialRequests;
 }

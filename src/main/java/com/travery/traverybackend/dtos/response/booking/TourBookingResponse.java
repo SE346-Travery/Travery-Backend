@@ -19,12 +19,16 @@ import lombok.Setter;
 @Builder
 public class TourBookingResponse {
   private UUID id;
+
+  private String customerName;
+  private String customerPhone;
+  private String specialRequests;
   private BookingStatus status;
+
   private BigDecimal totalPrice;
   private BigDecimal pricePerAdultAtBooking;
   private BigDecimal pricePerChildAtBooking;
   private LocalDateTime paymentDeadline;
-  private String customerNote;
 
   // Tour instance summary
   private String tourName;

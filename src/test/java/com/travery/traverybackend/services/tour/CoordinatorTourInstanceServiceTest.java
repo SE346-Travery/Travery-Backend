@@ -83,7 +83,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(tourInstanceMapper.toEntity(request)).thenReturn(tourInstance);
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result =
@@ -182,25 +182,25 @@ public class CoordinatorTourInstanceServiceTest {
   @Test
   void getInstanceDetail_withValidId_returnsDetail() {
     UUID id = UUID.randomUUID();
-    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceRepository.findByIdWithDetails(id)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result = coordinatorTourInstanceService.getInstanceDetail(id);
 
     assertEquals(tourInstanceDetailResponse, result);
-    verify(tourInstanceRepository).findById(id);
+    verify(tourInstanceRepository).findByIdWithDetails(id);
   }
 
   @Test
   void getInstanceDetail_withInvalidId_throwsException() {
     UUID id = UUID.randomUUID();
-    when(tourInstanceRepository.findById(id)).thenReturn(Optional.empty());
+    when(tourInstanceRepository.findByIdWithDetails(id)).thenReturn(Optional.empty());
 
     assertThrows(
         BaseAppException.class, () -> coordinatorTourInstanceService.getInstanceDetail(id));
 
-    verify(tourInstanceRepository).findById(id);
+    verify(tourInstanceRepository).findByIdWithDetails(id);
   }
 
   @Test
@@ -229,7 +229,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(guideId)).thenReturn(Optional.of(guide));
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(tourInstance))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result = coordinatorTourInstanceService.updateInstance(id, request);
@@ -284,7 +284,7 @@ public class CoordinatorTourInstanceServiceTest {
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(tourInstanceRepository.save(any())).thenReturn(tourInstance);
-    when(tourInstanceMapper.toTourInstanceDetailResponse(any()))
+    when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(any()))
         .thenReturn(tourInstanceDetailResponse);
 
     coordinatorTourInstanceService.updateInstance(id, request);

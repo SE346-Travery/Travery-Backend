@@ -119,7 +119,7 @@ public class TourBookingServiceImpl implements TourBookingService {
             .pricePerAdultAtBooking(tour.getPricePerAdult())
             .pricePerChildAtBooking(tour.getPricePerChild())
             .paymentDeadline(paymentDeadline)
-            .customerNote(request.getCustomerNote())
+            .specialRequests(request.getSpecialRequests())
             .build();
     booking = tourBookingRepository.save(booking);
 

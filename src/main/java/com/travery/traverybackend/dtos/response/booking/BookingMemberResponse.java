@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.booking;
 
+import com.travery.traverybackend.enums.booking.AttendanceStatus;
 import com.travery.traverybackend.enums.booking.MemberType;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -19,5 +20,6 @@ public class BookingMemberResponse {
   private String fullName;
   private String identityNumber;
   private LocalDate dateOfBirth;
+  private AttendanceStatus attendanceStatus;
   private MemberType memberType;
 }

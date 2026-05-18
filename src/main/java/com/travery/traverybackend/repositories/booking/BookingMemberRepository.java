@@ -2,6 +2,7 @@ package com.travery.traverybackend.repositories.booking;
 
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.enums.booking.BookingType;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookingMemberRepository extends JpaRepository<BookingMember, UUID> {
+  List<BookingMember> findByBookingIdInAndBookingType(
+      Collection<UUID> bookingIds, BookingType bookingType);
 
   List<BookingMember> findAllByBookingIdAndBookingType(UUID bookingId, BookingType bookingType);
 
@@ -26,4 +29,14 @@ public interface BookingMemberRepository extends JpaRepository<BookingMember, UU
           + "GROUP BY bm.bookingId")
   List<Object[]> countByBookingIds(
       @Param("bookingIds") List<UUID> bookingIds, @Param("bookingType") BookingType bookingType);
+
+  @Query(
+      "SELECT bm FROM BookingMember bm "
+          + "JOIN TourBooking tb ON bm.bookingId = tb.id "
+          + "WHERE tb.tourInstance.id = :instanceId "
+          + "AND bm.bookingType = 'TOUR_BOOKING' "
+          + "AND (LOWER(bm.fullName) LIKE LOWER(CONCAT('%', :query, '%')) "
+          + "OR bm.identityNumber LIKE CONCAT('%', :query, '%'))")
+  List<BookingMember> searchInTourInstance(
+      @Param("instanceId") UUID instanceId, @Param("query") String query);
 }
