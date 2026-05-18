@@ -114,7 +114,8 @@ public class GuideTourInstanceServiceTest {
     Guide guide = Guide.builder().id(guideId).build();
     tourInstance.setGuide(guide);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
     UUID bookingId = UUID.randomUUID();
     TourBooking tourBooking = TourBooking.builder().id(bookingId).build();
     List<TourBooking> bookings = List.of(tourBooking);
@@ -157,7 +158,8 @@ public class GuideTourInstanceServiceTest {
     Guide otherGuide = Guide.builder().id(UUID.randomUUID()).build();
     tourInstance.setGuide(otherGuide);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     assertThrows(
         BaseAppException.class,
@@ -171,7 +173,8 @@ public class GuideTourInstanceServiceTest {
     Guide guide = Guide.builder().id(guideId).build();
     tourInstance.setGuide(guide);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     UUID bookingId = UUID.randomUUID();
     TourBooking tourBooking = TourBooking.builder().id(bookingId).build();
@@ -228,7 +231,8 @@ public class GuideTourInstanceServiceTest {
     tourInstance.setGuide(guide);
     tourInstance.setStatus(TourInstanceStatus.CANCELLED);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     GuideAttendanceRequest request =
         GuideAttendanceRequest.builder().attendances(List.of()).build();
@@ -246,7 +250,8 @@ public class GuideTourInstanceServiceTest {
     tourInstance.setGuide(guide);
     tourInstance.setStatus(TourInstanceStatus.OPEN);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     UUID memberId = UUID.randomUUID();
     GuideAttendanceRequest request =
@@ -275,7 +280,8 @@ public class GuideTourInstanceServiceTest {
     Guide guide = Guide.builder().id(guideId).build();
     tourInstance.setGuide(guide);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
     BookingMember member = BookingMember.builder().fullName("John Doe").build();
     when(bookingMemberRepository.searchInTourInstance(instanceId, "John"))
         .thenReturn(List.of(member));
@@ -297,7 +303,8 @@ public class GuideTourInstanceServiceTest {
     Guide guide = Guide.builder().id(guideId).build();
     tourInstance.setGuide(guide);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     // Mock getInstanceDetail invocation inside updateProgress
     TourBookingResponse bookingResponse = TourBookingResponse.builder().build();
@@ -327,7 +334,8 @@ public class GuideTourInstanceServiceTest {
 
     User user = User.builder().id(guideId).fullName("Guide Name").build();
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(guideId)).thenReturn(Optional.of(user));
 
     TourIncidentReportRequest request =
@@ -352,7 +360,8 @@ public class GuideTourInstanceServiceTest {
     tourInstance.setGuide(guide);
     tourInstance.setStatus(TourInstanceStatus.CANCELLED);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     TourProgressUpdateRequest request =
         new TourProgressUpdateRequest(TourInstanceStatus.IN_PROGRESS);
@@ -370,7 +379,8 @@ public class GuideTourInstanceServiceTest {
     tourInstance.setGuide(guide);
     tourInstance.setStatus(TourInstanceStatus.OPEN);
 
-    when(tourInstanceRepository.findById(instanceId)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(instanceId))
+        .thenReturn(Optional.of(tourInstance));
 
     TourProgressUpdateRequest request = new TourProgressUpdateRequest(TourInstanceStatus.CANCELLED);
 

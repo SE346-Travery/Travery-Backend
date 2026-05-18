@@ -25,4 +25,6 @@ public interface GuideTourInstanceService {
 
   TourIncidentResponse reportIncident(
       UUID guideId, UUID instanceId, TourIncidentReportRequest request);
+
+  List<TourIncidentResponse> getIncidents(UUID guideId, UUID instanceId);
 }

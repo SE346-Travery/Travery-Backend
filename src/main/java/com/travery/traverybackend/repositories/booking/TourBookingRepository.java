@@ -17,7 +17,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TourBookingRepository extends JpaRepository<TourBooking, UUID> {
 
-  @Query("SELECT tb FROM TourBooking tb JOIN FETCH tb.user WHERE tb.tourInstance.id = :instanceId")
+  @Query(
+      "SELECT tb FROM TourBooking tb JOIN FETCH tb.user JOIN FETCH tb.tourInstance ti JOIN FETCH ti.tour WHERE ti.id = :instanceId")
   List<TourBooking> findByTourInstanceId(@Param("instanceId") UUID instanceId);
 
   Optional<TourBooking> findByIdAndUser_Id(UUID id, UUID userId);

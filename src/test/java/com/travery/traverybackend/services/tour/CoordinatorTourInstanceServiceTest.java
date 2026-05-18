@@ -182,25 +182,25 @@ public class CoordinatorTourInstanceServiceTest {
   @Test
   void getInstanceDetail_withValidId_returnsDetail() {
     UUID id = UUID.randomUUID();
-    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(tourInstanceRepository.findByIdWithDetails(id)).thenReturn(Optional.of(tourInstance));
     when(tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance))
         .thenReturn(tourInstanceDetailResponse);
 
     TourInstanceDetailResponse result = coordinatorTourInstanceService.getInstanceDetail(id);
 
     assertEquals(tourInstanceDetailResponse, result);
-    verify(tourInstanceRepository).findById(id);
+    verify(tourInstanceRepository).findByIdWithDetails(id);
   }
 
   @Test
   void getInstanceDetail_withInvalidId_throwsException() {
     UUID id = UUID.randomUUID();
-    when(tourInstanceRepository.findById(id)).thenReturn(Optional.empty());
+    when(tourInstanceRepository.findByIdWithDetails(id)).thenReturn(Optional.empty());
 
     assertThrows(
         BaseAppException.class, () -> coordinatorTourInstanceService.getInstanceDetail(id));
 
-    verify(tourInstanceRepository).findById(id);
+    verify(tourInstanceRepository).findByIdWithDetails(id);
   }
 
   @Test

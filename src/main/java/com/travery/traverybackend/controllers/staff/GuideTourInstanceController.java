@@ -96,4 +96,13 @@ public class GuideTourInstanceController extends AbstractBaseController {
         guideTourInstanceService.reportIncident(userDetails.getUserId(), id, request);
     return success(response, "Reported tour incident successfully");
   }
+
+  @GetMapping("/{id}/incidents")
+  @PreAuthorize("hasRole('GUIDE')")
+  public ResponseEntity<SingleResponse<List<TourIncidentResponse>>> getIncidents(
+      @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable UUID id) {
+    List<TourIncidentResponse> response =
+        guideTourInstanceService.getIncidents(userDetails.getUserId(), id);
+    return success(response, "Fetched tour incidents successfully");
+  }
 }
