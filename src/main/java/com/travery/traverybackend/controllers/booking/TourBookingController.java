@@ -17,6 +17,9 @@ import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.booking.ReviewService;
 import com.travery.traverybackend.services.booking.TourBookingService;
+import com.travery.traverybackend.utils.RequestUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +50,12 @@ public class TourBookingController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<TourBookingResponse>> createBooking(
       @PathVariable UUID instanceId,
       @Valid @RequestBody CreateTourBookingRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
-    TourBookingResponse response =
-        tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest httpServletRequest) {
+
+    var ipAddress = RequestUtil.getIpAddress(httpServletRequest);
+    request.setIpAddress(ipAddress);
+    TourBookingResponse response = tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
     return created(response, "Tour booking created successfully");
   }
 
@@ -57,11 +63,9 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<Page<TourBookingSummaryResponse>>> getMyBookings(
       @RequestParam(required = false) BookingStatus status,
-      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-          Pageable pageable,
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    Page<TourBookingSummaryResponse> page =
-        tourBookingService.getMyBookings(currentUser.getUserId(), status, pageable);
+    Page<TourBookingSummaryResponse> page = tourBookingService.getMyBookings(currentUser.getUserId(), status, pageable);
     return success(page, "Bookings retrieved successfully");
   }
 
@@ -69,8 +73,7 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<TourBookingDetailResponse>> getBookingDetail(
       @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
-    TourBookingDetailResponse response =
-        tourBookingService.getBookingDetail(bookingId, currentUser.getUserId());
+    TourBookingDetailResponse response = tourBookingService.getBookingDetail(bookingId, currentUser.getUserId());
     return success(response, "Booking detail retrieved successfully");
   }
 
@@ -80,8 +83,7 @@ public class TourBookingController extends AbstractBaseController {
       @PathVariable UUID bookingId,
       @RequestBody(required = false) CancelBookingRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    CancelBookingResponse response =
-        tourBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
+    CancelBookingResponse response = tourBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
     return success(response, "Booking cancelled successfully");
   }
 
@@ -102,8 +104,7 @@ public class TourBookingController extends AbstractBaseController {
       @PathVariable UUID bookingId,
       @Valid @RequestBody CreateReviewRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    ReviewResponse response =
-        reviewService.createReview(bookingId, request, currentUser.getUserId());
+    ReviewResponse response = reviewService.createReview(bookingId, request, currentUser.getUserId());
     return created(response, "Review submitted successfully");
   }
 }

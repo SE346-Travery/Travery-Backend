@@ -36,4 +36,6 @@ public class TourBookingResponse {
   private LocalDate endDate;
 
   private List<BookingMemberResponse> members;
+
+  private PaymentInitiationResponse payment;
 }

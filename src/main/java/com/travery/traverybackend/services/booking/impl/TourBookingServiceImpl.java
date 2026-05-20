@@ -3,6 +3,7 @@ package com.travery.traverybackend.services.booking.impl;
 import com.travery.traverybackend.dtos.request.booking.BookingMemberRequest;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateTourBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
@@ -28,10 +29,11 @@ import com.travery.traverybackend.repositories.finance.PaymentTransactionReposit
 import com.travery.traverybackend.repositories.finance.RefundRequestRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.booking.TourBookingService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -46,7 +48,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.StringRedisTemplate;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +60,6 @@ public class TourBookingServiceImpl implements TourBookingService {
   private static final int MIN_DAYS_BEFORE_DEPARTURE = 5;
   private static final int PAYMENT_DEADLINE_MINUTES = 15;
   private static final int CHILD_AGE_THRESHOLD = 11;
-  private static final String BOOKING_HOLD_KEY_PREFIX = "booking:hold:";
 
   private final TourInstanceRepository tourInstanceRepository;
   private final TourBookingRepository tourBookingRepository;
@@ -67,7 +68,8 @@ public class TourBookingServiceImpl implements TourBookingService {
   private final RefundRequestRepository refundRequestRepository;
   private final UserRepository userRepository;
   private final TourBookingMapper tourBookingMapper;
-  private final StringRedisTemplate redisTemplate;
+
+  private final PaymentService paymentService;
 
   @Override
   @Transactional
@@ -75,10 +77,9 @@ public class TourBookingServiceImpl implements TourBookingService {
       UUID instanceId, CreateTourBookingRequest request, UUID userId) {
 
     // 1. Load TourInstance with PESSIMISTIC_WRITE lock (prevents race condition)
-    TourInstance instance =
-        tourInstanceRepository
-            .findByIdWithLock(instanceId)
-            .orElseThrow(() -> new BaseAppException(BookingErrorCode.TOUR_INSTANCE_NOT_FOUND));
+    TourInstance instance = tourInstanceRepository
+        .findByIdWithLock(instanceId)
+        .orElseThrow(() -> new BaseAppException(BookingErrorCode.TOUR_INSTANCE_NOT_FOUND));
 
     // 2. Validate instance is OPEN for booking
     if (instance.getStatus() != TourInstanceStatus.OPEN) {
@@ -101,26 +102,24 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
 
     // 6. Load user reference
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_ACCESS_DENIED));
+    User user = userRepository
+        .findById(userId)
+        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_ACCESS_DENIED));
 
     // 5. Calculate total price (adult vs child based on dateOfBirth)
     BigDecimal totalPrice = calculateTotalPrice(request.getMembers(), tour);
 
-    // 6. Create TourBooking (use getReferenceById to avoid unnecessary DB query)
+    // 6. Create TourBooking
     LocalDateTime paymentDeadline = LocalDateTime.now().plusMinutes(PAYMENT_DEADLINE_MINUTES);
-    TourBooking booking =
-        TourBooking.builder()
-            .user(user)
-            .tourInstance(instance)
-            .totalPrice(totalPrice)
-            .pricePerAdultAtBooking(tour.getPricePerAdult())
-            .pricePerChildAtBooking(tour.getPricePerChild())
-            .paymentDeadline(paymentDeadline)
-            .specialRequests(request.getSpecialRequests())
-            .build();
+    TourBooking booking = TourBooking.builder()
+        .user(user)
+        .tourInstance(instance)
+        .totalPrice(totalPrice)
+        .pricePerAdultAtBooking(tour.getPricePerAdult())
+        .pricePerChildAtBooking(tour.getPricePerChild())
+        .paymentDeadline(paymentDeadline)
+        .specialRequests(request.getSpecialRequests())
+        .build();
     booking = tourBookingRepository.save(booking);
 
     // 7. Create BookingMember records using mapper (polymorphic: bookingId +
@@ -136,17 +135,21 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
     tourInstanceRepository.save(instance);
 
-    // 9. Set Redis key with TTL for automatic expiry (15-minute payment hold)
-    redisTemplate
-        .opsForValue()
-        .set(
-            BOOKING_HOLD_KEY_PREFIX + booking.getId(),
-            booking.getId().toString(),
-            Duration.ofMinutes(PAYMENT_DEADLINE_MINUTES));
-    log.info("Booking {} created with 15-min hold in Redis", booking.getId());
+    // 9. Initiate VNPAY payment
+    var paymentRequest = InitiatePaymentRequest.builder()
+        .bookingId(booking.getId())
+        .amount(booking.getTotalPrice())
+        .ipAddress(request.getIpAddress())
+        .build();
+
+    var paymentResponse = paymentService.initiatePayment(
+        booking.getId(), paymentRequest, userId);
+
+    log.info("Booking {} created with payment deadline at {}",
+        booking.getId(), paymentDeadline);
 
     // 10. Map to response using mapper
-    return tourBookingMapper.toTourBookingResponse(booking, members);
+    return tourBookingMapper.toTourBookingResponse(booking, members, paymentResponse);
   }
 
   @Override
@@ -181,19 +184,16 @@ public class TourBookingServiceImpl implements TourBookingService {
   @Override
   @Transactional(readOnly = true)
   public TourBookingDetailResponse getBookingDetail(UUID bookingId, UUID userId) {
-    TourBooking booking =
-        tourBookingRepository
-            .findByIdAndUser_Id(bookingId, userId)
-            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    TourBooking booking = tourBookingRepository
+        .findByIdAndUser_Id(bookingId, userId)
+        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
-    List<BookingMember> members =
-        bookingMemberRepository.findAllByBookingIdAndBookingType(
-            booking.getId(), BookingType.TOUR_BOOKING);
+    List<BookingMember> members = bookingMemberRepository.findAllByBookingIdAndBookingType(
+        booking.getId(), BookingType.TOUR_BOOKING);
 
-    var payment =
-        paymentTransactionRepository
-            .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING)
-            .orElse(null);
+    var payment = paymentTransactionRepository
+        .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(booking.getId(), BookingType.TOUR_BOOKING)
+        .orElse(null);
 
     return tourBookingMapper.toTourBookingDetailResponse(booking, members, payment);
   }
@@ -204,10 +204,9 @@ public class TourBookingServiceImpl implements TourBookingService {
       UUID bookingId, CancelBookingRequest request, UUID userId) {
 
     // 1. Load booking with tour details (need RefundPolicy)
-    TourBooking booking =
-        tourBookingRepository
-            .findByIdWithDetails(bookingId)
-            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    TourBooking booking = tourBookingRepository
+        .findByIdWithDetails(bookingId)
+        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     // 2. Verify ownership
     if (!booking.getUser().getId().equals(userId)) {
@@ -232,21 +231,14 @@ public class TourBookingServiceImpl implements TourBookingService {
     booking.setStatus(BookingStatus.CANCELLED);
     tourBookingRepository.save(booking);
 
-    int memberCount =
-        bookingMemberRepository.countByBookingIdAndBookingType(
-            booking.getId(), BookingType.TOUR_BOOKING);
+    int memberCount = bookingMemberRepository.countByBookingIdAndBookingType(
+        booking.getId(), BookingType.TOUR_BOOKING);
 
     // Re-load instance with PESSIMISTIC_WRITE lock for safe participant update
-    TourInstance lockedInstance =
-        tourInstanceRepository
-            .findByIdWithLock(instance.getId())
-            .orElseThrow(() -> new BaseAppException(BookingErrorCode.TOUR_INSTANCE_NOT_FOUND));
+    TourInstance lockedInstance = tourInstanceRepository
+        .findByIdWithLock(instance.getId())
+        .orElseThrow(() -> new BaseAppException(BookingErrorCode.TOUR_INSTANCE_NOT_FOUND));
     releaseSeats(lockedInstance, memberCount);
-
-    // 5. Delete Redis hold key if still PENDING
-    if (currentStatus == BookingStatus.PENDING) {
-      redisTemplate.delete(BOOKING_HOLD_KEY_PREFIX + bookingId);
-    }
 
     // 6. Handle refund if booking was PAID
     if (currentStatus == BookingStatus.PAID) {
@@ -273,10 +265,9 @@ public class TourBookingServiceImpl implements TourBookingService {
   private CancelBookingResponse processRefund(
       TourBooking booking, TourInstance instance, CancelBookingRequest request) {
 
-    PaymentTransaction payment =
-        paymentTransactionRepository
-            .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING)
-            .orElse(null);
+    PaymentTransaction payment = paymentTransactionRepository
+        .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(booking.getId(), BookingType.TOUR_BOOKING)
+        .orElse(null);
 
     if (payment == null) {
       return CancelBookingResponse.builder()
@@ -288,24 +279,21 @@ public class TourBookingServiceImpl implements TourBookingService {
 
     // Calculate refund percentage from RefundPolicy
     long daysBeforeDeparture = ChronoUnit.DAYS.between(LocalDate.now(), instance.getStartDate());
-    BigDecimal refundPct =
-        calculateRefundPercentage(
-            booking.getTourInstance().getTour().getRefundPolicy(), daysBeforeDeparture);
+    BigDecimal refundPct = calculateRefundPercentage(
+        booking.getTourInstance().getTour().getRefundPolicy(), daysBeforeDeparture);
 
-    BigDecimal refundAmount =
-        booking
-            .getTotalPrice()
-            .multiply(refundPct)
-            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    BigDecimal refundAmount = booking
+        .getTotalPrice()
+        .multiply(refundPct)
+        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
     // Create RefundRequest (Coordinator approval is a future feature)
-    RefundRequest refundRequest =
-        RefundRequest.builder()
-            .paymentTransaction(payment)
-            .user(booking.getUser())
-            .requestedAmount(refundAmount)
-            .customerReason(request != null ? request.getReason() : null)
-            .build();
+    RefundRequest refundRequest = RefundRequest.builder()
+        .paymentTransaction(payment)
+        .user(booking.getUser())
+        .requestedAmount(refundAmount)
+        .customerReason(request != null ? request.getReason() : null)
+        .build();
     refundRequestRepository.save(refundRequest);
 
     log.info(
@@ -327,8 +315,10 @@ public class TourBookingServiceImpl implements TourBookingService {
   }
 
   /**
-   * Find the matching refund rule based on days before departure. Rules are ordered by daysBefore
-   * DESC — pick the first rule where daysBeforeDeparture >= rule.daysBefore. If no rule matches,
+   * Find the matching refund rule based on days before departure. Rules are
+   * ordered by daysBefore
+   * DESC — pick the first rule where daysBeforeDeparture >= rule.daysBefore. If
+   * no rule matches,
    * refund is 0%.
    */
   private BigDecimal calculateRefundPercentage(RefundPolicy policy, long daysBeforeDeparture) {
@@ -344,10 +334,9 @@ public class TourBookingServiceImpl implements TourBookingService {
   }
 
   private BigDecimal calculateTotalPrice(List<BookingMemberRequest> members, Tour tour) {
-    long adultCount =
-        members.stream()
-            .filter(m -> calculateAge(m.getDateOfBirth()) > CHILD_AGE_THRESHOLD)
-            .count();
+    long adultCount = members.stream()
+        .filter(m -> calculateAge(m.getDateOfBirth()) > CHILD_AGE_THRESHOLD)
+        .count();
     long childCount = members.size() - adultCount;
 
     BigDecimal adultTotal = tour.getPricePerAdult().multiply(BigDecimal.valueOf(adultCount));

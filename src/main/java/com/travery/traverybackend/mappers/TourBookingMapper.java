@@ -2,6 +2,7 @@ package com.travery.traverybackend.mappers;
 
 import com.travery.traverybackend.dtos.request.booking.BookingMemberRequest;
 import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
+import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingSummaryResponse;
@@ -23,7 +24,9 @@ public interface TourBookingMapper {
   @Mapping(target = "startDate", source = "booking.tourInstance.startDate")
   @Mapping(target = "endDate", source = "booking.tourInstance.endDate")
   @Mapping(target = "members", source = "members")
-  TourBookingResponse toTourBookingResponse(TourBooking booking, List<BookingMember> members);
+  @Mapping(target = "payment", source = "payment")
+  TourBookingResponse toTourBookingResponse(TourBooking booking, List<BookingMember> members,
+      PaymentInitiationResponse payment);
 
   @Mapping(target = "tourName", source = "booking.tourInstance.tour.name")
   @Mapping(target = "startDate", source = "booking.tourInstance.startDate")

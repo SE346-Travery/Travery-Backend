@@ -44,6 +44,7 @@ public class BookingMember extends AbstractBaseEntity {
   @Builder.Default
   private AttendanceStatus attendanceStatus = AttendanceStatus.NOT_CHECKED;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "member_type", nullable = false, length = 20)
   private MemberType memberType;
 }

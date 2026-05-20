@@ -18,7 +18,6 @@ import lombok.Setter;
 public class PaymentInitiationResponse {
   private UUID transactionId;
   private BigDecimal amount;
-  private PaymentMethod paymentMethod;
   private String paymentUrl;
   private LocalDateTime expiresAt;
 }
