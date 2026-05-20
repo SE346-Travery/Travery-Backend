@@ -121,15 +121,23 @@ public class PaymentServiceImpl implements PaymentService {
   @Transactional
   public Map<String, String> handleVnPayIpn(Map<String, String> params) {
     String secureHash = params.get("vnp_SecureHash");
+    String txnRef = params.get("vnp_TxnRef");
+    String vnpAmountStr = params.get("vnp_Amount");
+    String vnpResponseCode = params.get("vnp_ResponseCode");
 
-    // 1. Verify checksum
+    // 1. Validate required parameter presence
+    if (secureHash == null || txnRef == null || vnpAmountStr == null || vnpResponseCode == null) {
+      log.warn("IPN: Missing required parameter(s). Params: {}", params);
+      return ipnResponse("99", "Input data required");
+    }
+
+    // 2. Verify checksum
     if (!VnPayUtil.validateChecksum(params, secureHash, vnPayConfig.getSecretKey())) {
       log.warn("IPN: Invalid checksum for params: {}", params);
       return ipnResponse("97", "Invalid Checksum");
     }
 
-    // 2. Find transaction by vnp_TxnRef (= our PaymentTransaction.id)
-    String txnRef = params.get("vnp_TxnRef");
+    // 3. Find transaction by vnp_TxnRef (= our PaymentTransaction.id)
     UUID transactionId;
     try {
       transactionId = UUID.fromString(txnRef);
@@ -145,8 +153,23 @@ public class PaymentServiceImpl implements PaymentService {
       return ipnResponse("01", "Order not found");
     }
 
-    // 3. Verify amount matches
-    long vnpAmount = Long.parseLong(params.get("vnp_Amount")) / 100;
+    // 4. Validate corresponding TourBooking existence before state updates (ensures data
+    // consistency)
+    TourBooking booking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
+    if (booking == null) {
+      log.warn("IPN: Booking not found for transaction: {}", transactionId);
+      return ipnResponse("01", "Order not found");
+    }
+
+    // 5. Verify amount matches and has valid numeric format
+    long vnpAmount;
+    try {
+      vnpAmount = Long.parseLong(vnpAmountStr) / 100;
+    } catch (NumberFormatException e) {
+      log.warn("IPN: Invalid vnp_Amount format: {}", vnpAmountStr);
+      return ipnResponse("04", "Invalid amount");
+    }
+
     if (transaction.getAmount().longValue() != vnpAmount) {
       log.warn(
           "IPN: Amount mismatch for transaction {} — expected {} but got {}",
@@ -156,7 +179,7 @@ public class PaymentServiceImpl implements PaymentService {
       return ipnResponse("04", "Invalid amount");
     }
 
-    // 4. Check idempotency — already processed?
+    // 6. Check idempotency — already processed?
     if (transaction.getStatus() != PaymentStatus.PENDING) {
       log.info(
           "IPN: Transaction {} already processed (status={})",
@@ -165,13 +188,12 @@ public class PaymentServiceImpl implements PaymentService {
       return ipnResponse("02", "Order already confirmed");
     }
 
-    // 5. Update transaction with VNPAY reference
+    // 7. Update transaction with VNPAY reference
     String vnpTransactionNo = params.get("vnp_TransactionNo");
-    String vnpResponseCode = params.get("vnp_ResponseCode");
     String vnpBankCode = params.get("vnp_BankCode");
     transaction.setTransactionReference(vnpTransactionNo);
 
-    // 6. Process based on response code
+    // 8. Process based on response code
     VnPayResponseCode responseCode = VnPayResponseCode.fromCode(vnpResponseCode);
 
     if (responseCode.isSuccess()) {
@@ -180,11 +202,8 @@ public class PaymentServiceImpl implements PaymentService {
       paymentTransactionRepository.save(transaction);
 
       // Update booking status to PAID
-      TourBooking booking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
-      if (booking != null) {
-        booking.setStatus(BookingStatus.PAID);
-        tourBookingRepository.save(booking);
-      }
+      booking.setStatus(BookingStatus.PAID);
+      tourBookingRepository.save(booking);
 
       log.info(
           "IPN: Payment SUCCESS for transaction {} (booking={}, bank={}, vnpTxn={})",
