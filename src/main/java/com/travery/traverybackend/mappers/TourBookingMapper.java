@@ -25,8 +25,8 @@ public interface TourBookingMapper {
   @Mapping(target = "endDate", source = "booking.tourInstance.endDate")
   @Mapping(target = "members", source = "members")
   @Mapping(target = "payment", source = "payment")
-  TourBookingResponse toTourBookingResponse(TourBooking booking, List<BookingMember> members,
-      PaymentInitiationResponse payment);
+  TourBookingResponse toTourBookingResponse(
+      TourBooking booking, List<BookingMember> members, PaymentInitiationResponse payment);
 
   @Mapping(target = "tourName", source = "booking.tourInstance.tour.name")
   @Mapping(target = "startDate", source = "booking.tourInstance.startDate")

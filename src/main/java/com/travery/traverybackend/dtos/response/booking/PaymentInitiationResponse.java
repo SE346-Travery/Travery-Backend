@@ -1,6 +1,5 @@
 package com.travery.traverybackend.dtos.response.booking;
 
-import com.travery.traverybackend.enums.finance.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
