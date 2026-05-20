@@ -38,7 +38,7 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
     }
 
     cancelAndReleaseSeats(booking);
-    log.info("Booking {} auto-cancelled via Redis TTL expiry", bookingId);
+    log.info("Booking {} auto-cancelled (payment deadline expired)", bookingId);
   }
 
   @Override
@@ -60,8 +60,7 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
 
   /**
    * Cancel a booking and release its seats back to the TourInstance. Acquires PESSIMISTIC_WRITE
-   * lock on TourInstance to prevent concurrent participant count corruption (e.g., Redis listener +
-   * scheduler race).
+   * lock on TourInstance to prevent concurrent participant count corruption.
    */
   private void cancelAndReleaseSeats(TourBooking booking) {
     int memberCount =
