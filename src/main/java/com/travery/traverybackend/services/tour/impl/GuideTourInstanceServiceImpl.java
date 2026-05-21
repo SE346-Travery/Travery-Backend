@@ -13,6 +13,7 @@ import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourIncident;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.User;
+import com.travery.traverybackend.enums.booking.AttendanceStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.tour.IncidentStatus;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
@@ -25,6 +26,7 @@ import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +34,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
 
   private final TourInstanceRepository tourInstanceRepository;
@@ -46,6 +50,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final UserRepository userRepository;
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
+  private final ChatSessionService chatSessionService;
 
   @Override
   @Transactional(readOnly = true)
@@ -147,6 +152,35 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     }
 
     bookingMemberRepository.saveAll(toUpdate);
+
+    Map<UUID, List<BookingMember>> membersByBooking =
+        bookingMembers.stream().collect(Collectors.groupingBy(BookingMember::getBookingId));
+
+    Map<UUID, TourBooking> bookingsById =
+        bookings.stream().collect(Collectors.toMap(TourBooking::getId, b -> b));
+
+    for (Map.Entry<UUID, List<BookingMember>> entry : membersByBooking.entrySet()) {
+      UUID bookingId = entry.getKey();
+      List<BookingMember> members = entry.getValue();
+
+      boolean allNoShow =
+          members.stream().allMatch(m -> m.getAttendanceStatus() == AttendanceStatus.NO_SHOW);
+
+      if (allNoShow) {
+        TourBooking booking = bookingsById.get(bookingId);
+        if (booking != null && booking.getUser() != null) {
+          try {
+            chatSessionService.removeUserFromChat(instanceId, booking.getUser().getId());
+          } catch (Exception e) {
+            log.error(
+                "Failed to remove user {} from chat for instance {}",
+                booking.getUser().getId(),
+                instanceId,
+                e);
+          }
+        }
+      }
+    }
 
     return getInstanceDetail(guideId, instanceId);
   }

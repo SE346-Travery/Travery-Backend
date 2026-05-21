@@ -18,6 +18,7 @@ import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
+import com.travery.traverybackend.services.common.impl.ChatSessionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class ChatSessionServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private CometChatService cometChatService;
 
-  @InjectMocks private ChatSessionService chatSessionService;
+  @InjectMocks private ChatSessionServiceImpl chatSessionService;
 
   private UUID tourId;
   private Tour tour;

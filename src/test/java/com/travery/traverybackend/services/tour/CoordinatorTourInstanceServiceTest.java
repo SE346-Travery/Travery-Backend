@@ -24,6 +24,7 @@ import com.travery.traverybackend.repositories.coach.DriverRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.tour.impl.CoordinatorTourInstanceServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
@@ -49,6 +50,7 @@ public class CoordinatorTourInstanceServiceTest {
   @Mock private CoachRepository coachRepository;
   @Mock private DriverRepository driverRepository;
   @Mock private HotelBookingRepository hotelBookingRepository;
+  @Mock private ChatSessionService chatSessionService;
 
   @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
 
@@ -219,13 +221,20 @@ public class CoordinatorTourInstanceServiceTest {
   void updateInstance_withValidData_updatesFields() {
     UUID id = UUID.randomUUID();
     UUID guideId = UUID.randomUUID();
+    UUID oldGuideId = UUID.randomUUID();
     TourInstanceUpdateRequest request =
         TourInstanceUpdateRequest.builder()
             .guideId(guideId)
             .status(TourInstanceStatus.OPEN)
             .build();
 
+    Guide oldGuide = new Guide();
+    oldGuide.setId(oldGuideId);
+    tourInstance.setGuide(oldGuide);
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+
     Guide guide = new Guide();
+    guide.setId(guideId);
     when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
     when(userRepository.findById(guideId)).thenReturn(Optional.of(guide));
     when(tourInstanceRepository.save(any(TourInstance.class))).thenReturn(tourInstance);
@@ -237,6 +246,8 @@ public class CoordinatorTourInstanceServiceTest {
     assertEquals(tourInstanceDetailResponse, result);
     assertEquals(guide, tourInstance.getGuide());
     assertEquals(TourInstanceStatus.OPEN, tourInstance.getStatus());
+    verify(chatSessionService).removeUserFromChat(id, oldGuideId);
+    verify(chatSessionService).addUserToChat(id, guideId);
   }
 
   @Test
@@ -268,6 +279,7 @@ public class CoordinatorTourInstanceServiceTest {
   void updateInstance_withNewFields_updatesCorrectly() {
     UUID id = UUID.randomUUID();
     UUID coordinatorId = UUID.randomUUID();
+    UUID oldCoordinatorId = UUID.randomUUID();
     LocalDate newStart = LocalDate.now().plusDays(20);
 
     TourInstanceUpdateRequest request =
@@ -276,7 +288,12 @@ public class CoordinatorTourInstanceServiceTest {
             .startDate(newStart)
             .build();
 
+    Coordinator oldCoordinator = new Coordinator();
+    oldCoordinator.setId(oldCoordinatorId);
+    tourInstance.setCoordinator(oldCoordinator);
+    
     Coordinator coordinator = new Coordinator();
+    coordinator.setId(coordinatorId);
     tourInstance.setStatus(TourInstanceStatus.PLANNING);
     tourInstance.setEndDate(LocalDate.now().plusDays(25)); // Ensure valid date range
     tourInstance.setStartDate(LocalDate.now().plusDays(10));
@@ -291,5 +308,7 @@ public class CoordinatorTourInstanceServiceTest {
 
     assertEquals(coordinator, tourInstance.getCoordinator());
     assertEquals(newStart, tourInstance.getStartDate());
+    verify(chatSessionService).removeUserFromChat(id, oldCoordinatorId);
+    verify(chatSessionService).addUserToChat(id, coordinatorId);
   }
 }

@@ -30,6 +30,7 @@ public class CustomUserDetails implements UserDetails {
   private final Collection<? extends GrantedAuthority> authorities; // Từ role của user
   private final UserStatus status; // Thêm hai trường này để sử dụng trong AuthService
   private final AuthProvider authProvider;
+  private final String cometchatUid;
 
   @Override
   public @Nonnull String getUsername() // Spring dùng nó để authentication.getName()
@@ -54,6 +55,7 @@ public class CustomUserDetails implements UserDetails {
         .authorities(authorities)
         .status(user.getStatus())
         .authProvider(user.getAuthProvider())
+        .cometchatUid(user.getCometchatUID())
         .build();
   }
 }

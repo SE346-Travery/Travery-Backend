@@ -31,6 +31,7 @@ import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.booking.TourBookingService;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -65,6 +66,7 @@ public class TourBookingServiceImpl implements TourBookingService {
   private final PaymentTransactionRepository paymentTransactionRepository;
   private final RefundRequestRepository refundRequestRepository;
   private final UserRepository userRepository;
+  private final ChatSessionService chatSessionService;
   private final TourBookingMapper tourBookingMapper;
 
   private final PaymentService paymentService;
@@ -235,6 +237,15 @@ public class TourBookingServiceImpl implements TourBookingService {
     // 4. Cancel booking & release seats (lock instance to prevent race condition)
     booking.setStatus(BookingStatus.CANCELLED);
     tourBookingRepository.save(booking);
+
+    // Remove user from tour chat group
+    try {
+      chatSessionService.removeUserFromChat(
+          booking.getTourInstance().getId(), booking.getUser().getId());
+    } catch (Exception e) {
+      log.error(
+          "Failed to remove user {} from tour chat on cancellation", booking.getUser().getId(), e);
+    }
 
     int memberCount =
         bookingMemberRepository.countByBookingIdAndBookingType(

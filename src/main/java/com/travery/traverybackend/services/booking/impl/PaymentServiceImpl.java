@@ -16,6 +16,7 @@ import com.travery.traverybackend.exception.error.BookingErrorCode;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.PaymentService;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.utils.VnPayUtil;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class PaymentServiceImpl implements PaymentService {
 
   private final TourBookingRepository tourBookingRepository;
   private final PaymentTransactionRepository paymentTransactionRepository;
+  private final ChatSessionService chatSessionService;
   private final VnPayConfig vnPayConfig;
 
   @Override
@@ -184,6 +186,14 @@ public class PaymentServiceImpl implements PaymentService {
       if (booking != null) {
         booking.setStatus(BookingStatus.PAID);
         tourBookingRepository.save(booking);
+
+        // Add user to tour chat group
+        try {
+          chatSessionService.addUserToChat(
+              booking.getTourInstance().getId(), booking.getUser().getId());
+        } catch (Exception e) {
+          log.error("Failed to add user {} to tour chat", booking.getUser().getId(), e);
+        }
       }
 
       log.info(
