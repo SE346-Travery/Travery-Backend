@@ -21,4 +21,7 @@ public class CreateTourBookingRequest {
   private List<BookingMemberRequest> members;
 
   private String specialRequests;
+
+  @NotEmpty(message = " Ip address is required for init payment")
+  private String ipAddress;
 }

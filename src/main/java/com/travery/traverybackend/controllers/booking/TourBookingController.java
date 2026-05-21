@@ -17,6 +17,8 @@ import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.booking.ReviewService;
 import com.travery.traverybackend.services.booking.TourBookingService;
+import com.travery.traverybackend.utils.RequestUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,13 +43,18 @@ public class TourBookingController extends AbstractBaseController {
   private final TourBookingService tourBookingService;
   private final PaymentService paymentService;
   private final ReviewService reviewService;
+  private final RequestUtil requestUtil;
 
   @PostMapping("/api/v1/tour-instances/{instanceId}/bookings")
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<TourBookingResponse>> createBooking(
       @PathVariable UUID instanceId,
       @Valid @RequestBody CreateTourBookingRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest httpServletRequest) {
+
+    var ipAddress = requestUtil.getIpAddress(httpServletRequest);
+    request.setIpAddress(ipAddress);
     TourBookingResponse response =
         tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
     return created(response, "Tour booking created successfully");
@@ -89,8 +96,11 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<PaymentInitiationResponse>> initiatePayment(
       @PathVariable UUID bookingId,
-      @Valid @RequestBody InitiatePaymentRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest httpServletRequest) {
+    String ipAddress = requestUtil.getIpAddress(httpServletRequest);
+    InitiatePaymentRequest request =
+        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
     PaymentInitiationResponse response =
         paymentService.initiatePayment(bookingId, request, currentUser.getUserId());
     return created(response, "Payment initiated successfully");

@@ -3,6 +3,7 @@ package com.travery.traverybackend.services.booking.impl;
 import com.travery.traverybackend.dtos.request.booking.BookingMemberRequest;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateTourBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
@@ -28,10 +29,10 @@ import com.travery.traverybackend.repositories.finance.PaymentTransactionReposit
 import com.travery.traverybackend.repositories.finance.RefundRequestRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.booking.TourBookingService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -46,7 +47,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +58,6 @@ public class TourBookingServiceImpl implements TourBookingService {
   private static final int MIN_DAYS_BEFORE_DEPARTURE = 5;
   private static final int PAYMENT_DEADLINE_MINUTES = 15;
   private static final int CHILD_AGE_THRESHOLD = 11;
-  private static final String BOOKING_HOLD_KEY_PREFIX = "booking:hold:";
 
   private final TourInstanceRepository tourInstanceRepository;
   private final TourBookingRepository tourBookingRepository;
@@ -67,7 +66,8 @@ public class TourBookingServiceImpl implements TourBookingService {
   private final RefundRequestRepository refundRequestRepository;
   private final UserRepository userRepository;
   private final TourBookingMapper tourBookingMapper;
-  private final StringRedisTemplate redisTemplate;
+
+  private final PaymentService paymentService;
 
   @Override
   @Transactional
@@ -109,7 +109,7 @@ public class TourBookingServiceImpl implements TourBookingService {
     // 5. Calculate total price (adult vs child based on dateOfBirth)
     BigDecimal totalPrice = calculateTotalPrice(request.getMembers(), tour);
 
-    // 6. Create TourBooking (use getReferenceById to avoid unnecessary DB query)
+    // 6. Create TourBooking
     LocalDateTime paymentDeadline = LocalDateTime.now().plusMinutes(PAYMENT_DEADLINE_MINUTES);
     TourBooking booking =
         TourBooking.builder()
@@ -136,17 +136,20 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
     tourInstanceRepository.save(instance);
 
-    // 9. Set Redis key with TTL for automatic expiry (15-minute payment hold)
-    redisTemplate
-        .opsForValue()
-        .set(
-            BOOKING_HOLD_KEY_PREFIX + booking.getId(),
-            booking.getId().toString(),
-            Duration.ofMinutes(PAYMENT_DEADLINE_MINUTES));
-    log.info("Booking {} created with 15-min hold in Redis", booking.getId());
+    // 9. Initiate VNPAY payment
+    var paymentRequest =
+        InitiatePaymentRequest.builder()
+            .bookingId(booking.getId())
+            .amount(booking.getTotalPrice())
+            .ipAddress(request.getIpAddress())
+            .build();
+
+    var paymentResponse = paymentService.initiatePayment(booking.getId(), paymentRequest, userId);
+
+    log.info("Booking {} created with payment deadline at {}", booking.getId(), paymentDeadline);
 
     // 10. Map to response using mapper
-    return tourBookingMapper.toTourBookingResponse(booking, members);
+    return tourBookingMapper.toTourBookingResponse(booking, members, paymentResponse);
   }
 
   @Override
@@ -192,7 +195,8 @@ public class TourBookingServiceImpl implements TourBookingService {
 
     var payment =
         paymentTransactionRepository
-            .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING)
+            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                booking.getId(), BookingType.TOUR_BOOKING)
             .orElse(null);
 
     return tourBookingMapper.toTourBookingDetailResponse(booking, members, payment);
@@ -243,11 +247,6 @@ public class TourBookingServiceImpl implements TourBookingService {
             .orElseThrow(() -> new BaseAppException(BookingErrorCode.TOUR_INSTANCE_NOT_FOUND));
     releaseSeats(lockedInstance, memberCount);
 
-    // 5. Delete Redis hold key if still PENDING
-    if (currentStatus == BookingStatus.PENDING) {
-      redisTemplate.delete(BOOKING_HOLD_KEY_PREFIX + bookingId);
-    }
-
     // 6. Handle refund if booking was PAID
     if (currentStatus == BookingStatus.PAID) {
       return processRefund(booking, lockedInstance, request);
@@ -275,7 +274,8 @@ public class TourBookingServiceImpl implements TourBookingService {
 
     PaymentTransaction payment =
         paymentTransactionRepository
-            .findByBookingIdAndBookingType(booking.getId(), BookingType.TOUR_BOOKING)
+            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                booking.getId(), BookingType.TOUR_BOOKING)
             .orElse(null);
 
     if (payment == null) {

@@ -1,6 +1,5 @@
 package com.travery.traverybackend.dtos.response.booking;
 
-import com.travery.traverybackend.enums.finance.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,7 +17,6 @@ import lombok.Setter;
 public class PaymentInitiationResponse {
   private UUID transactionId;
   private BigDecimal amount;
-  private PaymentMethod paymentMethod;
   private String paymentUrl;
   private LocalDateTime expiresAt;
 }

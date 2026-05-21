@@ -1,13 +1,17 @@
 package com.travery.traverybackend.dtos.request.booking;
 
-import com.travery.traverybackend.enums.finance.PaymentMethod;
-import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Internal DTO used by server to pass payment data from TourBookingService to PaymentService. Not
+ * exposed to clients.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,6 +19,9 @@ import lombok.Setter;
 @Builder
 public class InitiatePaymentRequest {
 
-  @NotNull(message = "Payment method is required")
-  private PaymentMethod paymentMethod;
+  private UUID bookingId;
+
+  private BigDecimal amount;
+
+  private String ipAddress;
 }

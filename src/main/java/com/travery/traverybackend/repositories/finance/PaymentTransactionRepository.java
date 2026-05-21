@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, UUID> {
 
-  Optional<PaymentTransaction> findByBookingIdAndBookingType(
+  Optional<PaymentTransaction> findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
       UUID bookingId, BookingType bookingType);
 }

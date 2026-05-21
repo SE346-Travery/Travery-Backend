@@ -117,6 +117,19 @@ app:
       mass-indexer:
         enabled: true
 
+  payment:
+    vnpay:
+      tmn-code: ${VNPAY_TERMINAL_ID}
+      secret-key: ${VNPAY_HASH_SECRET}
+      init-payment-url: ${VNPAY_INIT_PAYMENT_URL}
+      ipn-url: ${VNPAY_IPN_URL}
+      return-url: ${VNPAY_RETURN_URL}
+      timeout: ${VNPAY_TIMEOUT:15}
+      deeplink-scheme: ${VNPAY_DEEPLINK_SCHEME:travery://payment-result}
+
+  backend:
+    ip: ${BACKEND_IP}
+
 logging:
   level:
     root: INFO
