@@ -8,12 +8,15 @@ import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.finance.PaymentTransaction;
+import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.finance.PaymentStatus;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.impl.PaymentServiceImpl;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.utils.VnPayUtil;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -38,6 +42,8 @@ public class PaymentServiceTest {
 
   @Mock private VnPayConfig vnPayConfig;
 
+  @Mock private ChatSessionService chatSessionService;
+
   @InjectMocks private PaymentServiceImpl paymentService;
 
   private UUID bookingId;
@@ -50,9 +56,17 @@ public class PaymentServiceTest {
     bookingId = UUID.randomUUID();
     userId = UUID.randomUUID();
 
+    Tourist mockUser = new Tourist();
+    mockUser.setId(userId);
+
+    TourInstance mockTourInstance = new TourInstance();
+    mockTourInstance.setId(UUID.randomUUID());
+
     booking =
         TourBooking.builder()
             .id(bookingId)
+            .user(mockUser)
+            .tourInstance(mockTourInstance)
             .totalPrice(new BigDecimal("1000000"))
             .status(BookingStatus.PENDING)
             .paymentDeadline(LocalDateTime.now().plusMinutes(15))
@@ -265,7 +279,10 @@ public class PaymentServiceTest {
 
     try (MockedStatic<VnPayUtil> mockedVnPayUtil = mockStatic(VnPayUtil.class)) {
       mockedVnPayUtil
-          .when(() -> VnPayUtil.validateChecksum(any(Map.class), anyString(), anyString()))
+          .when(
+              () ->
+                  VnPayUtil.validateChecksum(
+                      ArgumentMatchers.<Map<String, String>>any(), anyString(), anyString()))
           .thenReturn(true);
 
       // Act
@@ -295,7 +312,10 @@ public class PaymentServiceTest {
 
     try (MockedStatic<VnPayUtil> mockedVnPayUtil = mockStatic(VnPayUtil.class)) {
       mockedVnPayUtil
-          .when(() -> VnPayUtil.validateChecksum(any(Map.class), anyString(), anyString()))
+          .when(
+              () ->
+                  VnPayUtil.validateChecksum(
+                      ArgumentMatchers.<Map<String, String>>any(), anyString(), anyString()))
           .thenReturn(false);
 
       // Act
@@ -334,7 +354,10 @@ public class PaymentServiceTest {
 
     try (MockedStatic<VnPayUtil> mockedVnPayUtil = mockStatic(VnPayUtil.class)) {
       mockedVnPayUtil
-          .when(() -> VnPayUtil.validateChecksum(any(Map.class), anyString(), anyString()))
+          .when(
+              () ->
+                  VnPayUtil.validateChecksum(
+                      ArgumentMatchers.<Map<String, String>>any(), anyString(), anyString()))
           .thenReturn(true);
 
       // Act
