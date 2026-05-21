@@ -1,6 +1,7 @@
 package com.travery.traverybackend.services.common;
 
 import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
+import java.util.List;
 import java.util.UUID;
 
 public interface ChatSessionService {
@@ -11,4 +12,6 @@ public interface ChatSessionService {
   void addUserToChat(UUID tourInstanceId, UUID userId);
 
   void removeUserFromChat(UUID tourInstanceId, UUID userId);
+
+  void removeUsersFromChat(UUID tourInstanceId, List<UUID> userIds);
 }

@@ -1,6 +1,8 @@
 package com.travery.traverybackend.services.common.impl;
 
 import com.travery.traverybackend.dtos.request.cometchat.CometChatGroupRequest;
+import com.travery.traverybackend.exception.BaseAppException;
+import com.travery.traverybackend.exception.error.SystemErrorCode;
 import com.travery.traverybackend.services.common.CometChatService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +55,8 @@ public class CometChatServiceImpl implements CometChatService {
       log.info("Successfully created CometChat group: {}", guid);
     } catch (Exception e) {
       log.error("Error creating CometChat group: {}", guid, e);
+      throw new BaseAppException(
+          SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to create chat group");
     }
   }
 
@@ -66,21 +70,25 @@ public class CometChatServiceImpl implements CometChatService {
       log.info("Successfully deleted CometChat group: {}", guid);
     } catch (Exception e) {
       log.error("Error deleting CometChat group: {}", guid, e);
+      throw new BaseAppException(
+          SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to delete chat group");
     }
   }
 
-  public void addMemberToGroup(String guid, String uid) {
+  public void addMemberToGroup(String guid, String uid, String role) {
     String url = getBaseUrl() + "/groups/" + guid + "/members";
 
-    Map<String, Object> request = Map.of("admins", java.util.List.of(uid));
+    Map<String, Object> request = Map.of(role, java.util.List.of(uid));
 
     HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, getHeaders());
 
     try {
       restTemplate.postForEntity(url, entity, Map.class);
-      log.info("Successfully added user {} to CometChat group {}", uid, guid);
+      log.info("Successfully added user {} to CometChat group {} as {}", uid, guid, role);
     } catch (Exception e) {
       log.error("Error adding user {} to CometChat group {}", uid, guid, e);
+      throw new BaseAppException(
+          SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to add member to chat group");
     }
   }
 
@@ -94,6 +102,8 @@ public class CometChatServiceImpl implements CometChatService {
       log.info("Successfully removed user {} from CometChat group {}", uid, guid);
     } catch (Exception e) {
       log.error("Error removing user {} from CometChat group {}", uid, guid, e);
+      throw new BaseAppException(
+          SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to remove member from chat group");
     }
   }
 
@@ -109,6 +119,8 @@ public class CometChatServiceImpl implements CometChatService {
       log.info("Successfully created CometChat user: {}", uid);
     } catch (Exception e) {
       log.error("Error creating CometChat user: {}", uid, e);
+      throw new BaseAppException(
+          SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to create chat user");
     }
   }
 }

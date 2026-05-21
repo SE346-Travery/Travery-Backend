@@ -159,6 +159,8 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     Map<UUID, TourBooking> bookingsById =
         bookings.stream().collect(Collectors.toMap(TourBooking::getId, b -> b));
 
+    List<UUID> usersToRemoveFromChat = new ArrayList<>();
+
     for (Map.Entry<UUID, List<BookingMember>> entry : membersByBooking.entrySet()) {
       UUID bookingId = entry.getKey();
       List<BookingMember> members = entry.getValue();
@@ -169,16 +171,16 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
       if (allNoShow) {
         TourBooking booking = bookingsById.get(bookingId);
         if (booking != null && booking.getUser() != null) {
-          try {
-            chatSessionService.removeUserFromChat(instanceId, booking.getUser().getId());
-          } catch (Exception e) {
-            log.error(
-                "Failed to remove user {} from chat for instance {}",
-                booking.getUser().getId(),
-                instanceId,
-                e);
-          }
+          usersToRemoveFromChat.add(booking.getUser().getId());
         }
+      }
+    }
+
+    if (!usersToRemoveFromChat.isEmpty()) {
+      try {
+        chatSessionService.removeUsersFromChat(instanceId, usersToRemoveFromChat);
+      } catch (Exception e) {
+        log.error("Failed to batch remove users from chat for instance {}", instanceId, e);
       }
     }
 

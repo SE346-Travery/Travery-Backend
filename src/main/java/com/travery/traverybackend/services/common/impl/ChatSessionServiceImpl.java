@@ -4,10 +4,10 @@ import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
 import com.travery.traverybackend.entities.common.ChatSession;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
+import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.common.ChatSessionStatus;
 import com.travery.traverybackend.exception.BaseAppException;
-import com.travery.traverybackend.exception.error.SystemErrorCode;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.repositories.common.ChatSessionRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
@@ -15,6 +15,7 @@ import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.common.CometChatService;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     return chatSessionRepository
         .findByTourInstanceId(tourInstanceId)
         .map(this::toResponse)
-        .orElseGet(() -> createInstanceChatSession(tourInstanceId));
+        .orElseGet(() -> toResponse(createInstanceChatSession(tourInstanceId)));
   }
 
   private ChatSessionResponse createChatSession(UUID tourId) {
@@ -72,10 +73,10 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     cometChatService.createGroup(guid, name);
 
     if (tour.getCoordinator() != null && tour.getCoordinator().getCometchatUID() != null) {
-      cometChatService.addMemberToGroup(guid, tour.getCoordinator().getCometchatUID());
+      cometChatService.addMemberToGroup(guid, tour.getCoordinator().getCometchatUID(), "admins");
     }
     if (user.getCometchatUID() != null) {
-      cometChatService.addMemberToGroup(guid, user.getCometchatUID());
+      cometChatService.addMemberToGroup(guid, user.getCometchatUID(), "participants");
     }
 
     ChatSession chatSession =
@@ -91,7 +92,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     return toResponse(chatSession);
   }
 
-  private ChatSessionResponse createInstanceChatSession(UUID tourInstanceId) {
+  private ChatSession createInstanceChatSession(UUID tourInstanceId) {
     TourInstance instance =
         tourInstanceRepository
             .findById(tourInstanceId)
@@ -114,10 +115,11 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     cometChatService.createGroup(guid, name);
 
     if (guide != null && guide.getCometchatUID() != null) {
-      cometChatService.addMemberToGroup(guid, guide.getCometchatUID());
+      cometChatService.addMemberToGroup(guid, guide.getCometchatUID(), "admins");
     }
     if (instance.getCoordinator() != null && instance.getCoordinator().getCometchatUID() != null) {
-      cometChatService.addMemberToGroup(guid, instance.getCoordinator().getCometchatUID());
+      cometChatService.addMemberToGroup(
+          guid, instance.getCoordinator().getCometchatUID(), "admins");
     }
 
     ChatSession chatSession =
@@ -131,7 +133,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             .build();
 
     chatSession = chatSessionRepository.save(chatSession);
-    return toResponse(chatSession);
+    return chatSession;
   }
 
   @Transactional
@@ -139,7 +141,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     ChatSession chatSession =
         chatSessionRepository
             .findByTourInstanceId(tourInstanceId)
-            .orElseGet(() -> createInstanceChatSessionEntityOnly(tourInstanceId));
+            .orElseGet(() -> createInstanceChatSession(tourInstanceId));
 
     User user =
         userRepository
@@ -147,32 +149,29 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
 
     ensureCometChatUser(user);
-    cometChatService.addMemberToGroup(chatSession.getCometchatGuid(), user.getCometchatUID());
+    String role = (user instanceof Tourist) ? "participants" : "admins";
+    cometChatService.addMemberToGroup(chatSession.getCometchatGuid(), user.getCometchatUID(), role);
   }
 
   @Transactional
   public void removeUserFromChat(UUID tourInstanceId, UUID userId) {
+    removeUsersFromChat(tourInstanceId, List.of(userId));
+  }
+
+  @Transactional
+  public void removeUsersFromChat(UUID tourInstanceId, List<UUID> userIds) {
     chatSessionRepository
         .findByTourInstanceId(tourInstanceId)
         .ifPresent(
             chatSession -> {
-              userRepository
-                  .findById(userId)
-                  .ifPresent(
-                      user -> {
-                        if (user.getCometchatUID() != null) {
-                          cometChatService.removeMemberFromGroup(
-                              chatSession.getCometchatGuid(), user.getCometchatUID());
-                        }
-                      });
+              List<User> users = userRepository.findAllById(userIds);
+              for (User user : users) {
+                if (user.getCometchatUID() != null) {
+                  cometChatService.removeMemberFromGroup(
+                      chatSession.getCometchatGuid(), user.getCometchatUID());
+                }
+              }
             });
-  }
-
-  private ChatSession createInstanceChatSessionEntityOnly(UUID tourInstanceId) {
-    createInstanceChatSession(tourInstanceId);
-    return chatSessionRepository
-        .findByTourInstanceId(tourInstanceId)
-        .orElseThrow(() -> new BaseAppException(SystemErrorCode.INTERNAL_SERVER_ERROR));
   }
 
   private void ensureCometChatUser(User user) {

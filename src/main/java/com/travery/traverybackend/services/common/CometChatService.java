@@ -5,7 +5,7 @@ public interface CometChatService {
 
   void deleteGroup(String guid);
 
-  void addMemberToGroup(String guid, String uid);
+  void addMemberToGroup(String guid, String uid, String role);
 
   void removeMemberFromGroup(String guid, String uid);
 
