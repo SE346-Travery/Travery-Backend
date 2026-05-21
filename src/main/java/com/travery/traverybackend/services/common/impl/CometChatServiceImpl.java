@@ -1,6 +1,7 @@
 package com.travery.traverybackend.services.common.impl;
-import com.travery.traverybackend.services.common.CometChatService;
+
 import com.travery.traverybackend.dtos.request.cometchat.CometChatGroupRequest;
+import com.travery.traverybackend.services.common.CometChatService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,10 +44,7 @@ public class CometChatServiceImpl implements CometChatService {
   public void createGroup(String guid, String name) {
     String url = getBaseUrl() + "/groups";
 
-    CometChatGroupRequest request = CometChatGroupRequest.builder()
-        .guid(guid)
-        .name(name)
-        .build();
+    CometChatGroupRequest request = CometChatGroupRequest.builder().guid(guid).name(name).build();
 
     HttpEntity<CometChatGroupRequest> entity = new HttpEntity<>(request, getHeaders());
 

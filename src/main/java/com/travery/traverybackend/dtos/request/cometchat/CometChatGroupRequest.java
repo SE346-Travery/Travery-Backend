@@ -13,7 +13,6 @@ public class CometChatGroupRequest {
   private String guid;
   private String name;
   private String description;
-  @Builder.Default
-  private String type = "public";
+  @Builder.Default private String type = "public";
   private Object metadata;
 }

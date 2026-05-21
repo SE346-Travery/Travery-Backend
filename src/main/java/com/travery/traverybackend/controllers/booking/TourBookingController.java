@@ -43,6 +43,7 @@ public class TourBookingController extends AbstractBaseController {
   private final TourBookingService tourBookingService;
   private final PaymentService paymentService;
   private final ReviewService reviewService;
+  private final RequestUtil requestUtil;
 
   @PostMapping("/api/v1/tour-instances/{instanceId}/bookings")
   @PreAuthorize("hasRole('TOURIST')")
@@ -52,7 +53,7 @@ public class TourBookingController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest httpServletRequest) {
 
-    var ipAddress = RequestUtil.getIpAddress(httpServletRequest);
+    var ipAddress = requestUtil.getIpAddress(httpServletRequest);
     request.setIpAddress(ipAddress);
     TourBookingResponse response =
         tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
@@ -95,8 +96,11 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<PaymentInitiationResponse>> initiatePayment(
       @PathVariable UUID bookingId,
-      @Valid @RequestBody InitiatePaymentRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest httpServletRequest) {
+    String ipAddress = requestUtil.getIpAddress(httpServletRequest);
+    InitiatePaymentRequest request =
+        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
     PaymentInitiationResponse response =
         paymentService.initiatePayment(bookingId, request, currentUser.getUserId());
     return created(response, "Payment initiated successfully");

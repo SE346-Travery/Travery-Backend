@@ -1,6 +1,5 @@
 package com.travery.traverybackend.services.common.impl;
-import com.travery.traverybackend.services.common.ChatSessionService;
-import com.travery.traverybackend.services.common.CometChatService;
+
 import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
 import com.travery.traverybackend.entities.common.ChatSession;
 import com.travery.traverybackend.entities.tour.Tour;
@@ -14,6 +13,8 @@ import com.travery.traverybackend.repositories.common.ChatSessionRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.CometChatService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

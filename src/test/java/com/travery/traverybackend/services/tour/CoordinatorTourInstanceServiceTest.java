@@ -291,7 +291,7 @@ public class CoordinatorTourInstanceServiceTest {
     Coordinator oldCoordinator = new Coordinator();
     oldCoordinator.setId(oldCoordinatorId);
     tourInstance.setCoordinator(oldCoordinator);
-    
+
     Coordinator coordinator = new Coordinator();
     coordinator.setId(coordinatorId);
     tourInstance.setStatus(TourInstanceStatus.PLANNING);
