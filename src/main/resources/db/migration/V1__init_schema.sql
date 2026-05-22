@@ -41,8 +41,10 @@ create table booking_members (
     booking_id uuid not null,
     id uuid not null,
     booking_type varchar(50) not null check ((booking_type in ('TOUR_BOOKING','HOTEL_BOOKING','COACH_BOOKING'))),
-    passport_number varchar(50) not null,
+    identity_number varchar(50) not null,
     full_name varchar(100) not null,
+    member_type varchar(20) not null,
+    attendance_status varchar(50) not null default 'NOT_CHECKED' check (attendance_status in ('NOT_CHECKED', 'PRESENT', 'NO_SHOW')),
     primary key (id)
 );
 
@@ -297,7 +299,8 @@ create table reviews (
     booking_type varchar(50) not null check ((booking_type in ('TOUR_BOOKING','HOTEL_BOOKING','COACH_BOOKING'))),
     target_type varchar(50) not null check ((target_type in ('TOUR','HOTEL','ROUTE'))),
     content TEXT,
-    primary key (id)
+    primary key (id),
+    constraint uq_review_booking unique (booking_id)
 );
 
 create table room_assignments (
@@ -375,6 +378,9 @@ create table tour_bookings (
     tour_instance_id uuid not null,
     user_id uuid not null,
     status varchar(50) check ((status in ('PENDING','PAID','CHECKED_IN','CHECKED_OUT','CANCELLED'))),
+    special_requests TEXT,
+    price_per_adult_at_booking numeric(12,2) not null,
+    price_per_child_at_booking numeric(12,2) not null,
     primary key (id)
 );
 
@@ -467,6 +473,19 @@ create table users (
     phone_number varchar(255) unique,
     role varchar(255) not null check ((role in ('TOURIST','RECEPTIONIST','COORDINATOR','GUIDE','ADMIN'))),
     status varchar(255) not null check ((status in ('ACTIVE','PENDING','DELETED','BANNED'))),
+    primary key (id)
+);
+
+create table tour_incidents (
+    id uuid not null,
+    tour_instance_id uuid not null,
+    reporter_id uuid not null,
+    title varchar(255) not null,
+    description text not null,
+    severity varchar(20) not null check (severity in ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    status varchar(20) not null default 'PENDING' check (status in ('PENDING', 'PROCESSING', 'RESOLVED', 'CLOSED')),
+    created_at timestamp(6) not null,
+    updated_at timestamp(6) not null,
     primary key (id)
 );
 
@@ -732,3 +751,12 @@ alter table tours
 alter table tours
     add constraint fk_tours_requested_by_user
     foreign key (requested_by_user_id) references users;
+
+-- tour_incidents
+alter table tour_incidents
+    add constraint fk_tour_incidents_instance
+    foreign key (tour_instance_id) references tour_instances;
+
+alter table tour_incidents
+    add constraint fk_tour_incidents_reporter
+    foreign key (reporter_id) references users;

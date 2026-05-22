@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -32,16 +31,18 @@ public class SecurityConfig {
     "/api/v1/payments/vnpay-return",
     "/v3/api-docs/**",
     "/docs",
+    "/docs/**",
+    "/scalar",
     "/scalar/**",
     "/scalar.html",
-    "/actuator/prometheus"
+    "/actuator/prometheus",
+    "/favicon.ico"
   };
 
   private static final String[] PUBLIC_GET_ENDPOINTS = {"/api/v1/tours", "/api/v1/tours/**"};
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  private final DaoAuthenticationProvider daoAuthenticationProvider;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -59,7 +60,6 @@ public class SecurityConfig {
                     .authenticated())
         .exceptionHandling(
             exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
-        .authenticationProvider(daoAuthenticationProvider)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return httpSecurity.build();
   }

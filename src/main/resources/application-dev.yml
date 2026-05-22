@@ -18,13 +18,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        default_batch_fetch_size: 50
         search:
           backend:
             directory:
               root: ./travery-lucene-indexes
-          mapping:
-            automatic_indexing:
-              synchronization.strategy: sync
+            lucene_version: 9.12.3
           schema_management:
             strategy: drop-and-create
     open-in-view: false
