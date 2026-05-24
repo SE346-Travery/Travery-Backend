@@ -2,6 +2,7 @@ package com.travery.traverybackend.entities.common;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.tour.Tour;
+import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.common.ChatSessionStatus;
@@ -36,6 +37,10 @@ public class ChatSession extends AbstractBaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "tour_id")
   private Tour tour;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "tour_instance_id")
+  private TourInstance tourInstance;
 
   @Enumerated(EnumType.STRING)
   @Column(length = 20)

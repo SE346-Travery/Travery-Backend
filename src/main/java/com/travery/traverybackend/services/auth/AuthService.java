@@ -146,7 +146,11 @@ public class AuthService {
 
     refreshTokenService.save(refreshToken, customUserDetails.getUserId());
 
-    return LoginResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    return LoginResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .cometchatUid(customUserDetails.getCometchatUid())
+        .build();
   }
 
   @Transactional

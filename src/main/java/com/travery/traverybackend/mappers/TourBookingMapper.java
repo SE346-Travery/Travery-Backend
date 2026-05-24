@@ -25,6 +25,8 @@ public interface TourBookingMapper {
   @Mapping(target = "endDate", source = "booking.tourInstance.endDate")
   @Mapping(target = "members", source = "members")
   @Mapping(target = "payment", source = "payment")
+  @Mapping(target = "customerName", source = "booking.user.fullName")
+  @Mapping(target = "customerPhone", source = "booking.user.phoneNumber")
   TourBookingResponse toTourBookingResponse(
       TourBooking booking, List<BookingMember> members, PaymentInitiationResponse payment);
 
@@ -52,5 +54,6 @@ public interface TourBookingMapper {
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "bookingId", ignore = true)
   @Mapping(target = "bookingType", ignore = true)
+  @Mapping(target = "attendanceStatus", ignore = true)
   BookingMember toBookingMember(BookingMemberRequest request);
 }

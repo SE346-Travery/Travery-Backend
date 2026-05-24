@@ -22,16 +22,19 @@ import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstanceService {
 
   private final TourInstanceRepository tourInstanceRepository;
@@ -43,6 +46,7 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final TourIncidentRepository tourIncidentRepository;
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
+  private final ChatSessionService chatSessionService;
 
   @Override
   @Transactional(readOnly = true)
@@ -155,7 +159,26 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
               .map(user -> (Coordinator) user)
               .orElseThrow(
                   () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
+
+      if (tourInstance.getCoordinator() != null
+          && !tourInstance.getCoordinator().getId().equals(coordinator.getId())) {
+        try {
+          chatSessionService.removeUserFromChat(id, tourInstance.getCoordinator().getId());
+        } catch (Exception e) {
+          log.error(
+              "Failed to remove old coordinator {} from chat",
+              tourInstance.getCoordinator().getId(),
+              e);
+        }
+      }
+
       tourInstance.setCoordinator(coordinator);
+
+      try {
+        chatSessionService.addUserToChat(id, coordinator.getId());
+      } catch (Exception e) {
+        log.error("Failed to add new coordinator {} to chat", coordinator.getId(), e);
+      }
     }
 
     if (request.getGuideId() != null) {
@@ -165,7 +188,23 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
               .filter(user -> user instanceof Guide)
               .map(user -> (Guide) user)
               .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Guide not found"));
+
+      if (tourInstance.getGuide() != null
+          && !tourInstance.getGuide().getId().equals(guide.getId())) {
+        try {
+          chatSessionService.removeUserFromChat(id, tourInstance.getGuide().getId());
+        } catch (Exception e) {
+          log.error("Failed to remove old guide {} from chat", tourInstance.getGuide().getId(), e);
+        }
+      }
+
       tourInstance.setGuide(guide);
+
+      try {
+        chatSessionService.addUserToChat(id, guide.getId());
+      } catch (Exception e) {
+        log.error("Failed to add new guide {} to chat", guide.getId(), e);
+      }
     }
 
     if (request.getCoachId() != null) {
