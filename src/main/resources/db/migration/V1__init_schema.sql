@@ -135,6 +135,8 @@ create table drivers (
     status varchar(20) check ((status in ('AVAILABLE','ON_TRIP','ON_LEAVE'))),
     license_number varchar(50) not null unique,
     full_name varchar(100) not null,
+    avatar_url varchar(500),
+    avatar_public_id varchar(255),
     primary key (id)
 );
 
@@ -216,8 +218,9 @@ create table images (
     updated_at timestamp(6) not null,
     entity_id uuid not null,
     id uuid not null,
-    entity_type varchar(50) not null check ((entity_type in ('HOTEL','ROOM_TYPE','TOUR','TOUR_ITINERARY'))),
+    entity_type varchar(50) not null check ((entity_type in ('HOTEL','ROOM_TYPE','TOUR','TOUR_ITINERARY','USER','DRIVER'))),
     url varchar(500) not null,
+    public_id varchar(255),
     primary key (id)
 );
 
@@ -467,6 +470,7 @@ create table users (
     auth_provider varchar(20) not null check ((auth_provider in ('LOCAL','GOOGLE'))),
     cometchat_uid varchar(100) unique,
     avatar_url varchar(500),
+    avatar_public_id varchar(255),
     email varchar(255) unique,
     full_name varchar(255) not null,
     password_hashed varchar(255),

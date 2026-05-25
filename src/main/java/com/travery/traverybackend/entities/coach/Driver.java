@@ -28,6 +28,12 @@ public class Driver extends AbstractBaseEntity {
   @Column(name = "license_number", nullable = false, unique = true, length = 50)
   private String licenseNumber;
 
+  @Column(name = "avatar_url", length = 500)
+  private String avatarUrl;
+
+  @Column(name = "avatar_public_id", length = 255)
+  private String avatarPublicId;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 20)
   @Builder.Default
