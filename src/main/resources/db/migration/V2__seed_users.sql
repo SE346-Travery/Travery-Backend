@@ -1,7 +1,6 @@
 -- =============================================
 -- Travery Backend - Seed Users (V2)
 -- =============================================
--- Password for all seeded users: Password@123
 
 -- 1. ADMIN
 INSERT INTO users (id, full_name, email, password_hashed, role, status, auth_provider, created_at, updated_at) VALUES ('a0000000-0000-0000-0000-000000000001', 'Super Admin', 'admin@travery.com', '$2a$10$pKTPEFUQahBhZC83Fg6ZC.w2YTqAjYmM8/RTYaGC0aupsczcwe9e.', 'ADMIN', 'ACTIVE', 'LOCAL', NOW(), NOW());
