@@ -15,6 +15,6 @@ public class VnPayConfig {
   private String secretKey;
   private String initPaymentUrl;
   private String returnUrl;
-  private int timeout = 15;
+  private int timeout;
   private String deeplinkScheme;
 }
