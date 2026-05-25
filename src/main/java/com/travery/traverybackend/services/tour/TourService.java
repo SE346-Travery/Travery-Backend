@@ -22,6 +22,9 @@ public interface TourService {
 
   List<TourInstanceResponse> getTourInstances(UUID tourId);
 
-  TourResponse createTemplate(TourTemplateRequest request, List<MultipartFile> tourImages,
-      List<MultipartFile> itineraryImages, UUID coordinatorId);
+  TourResponse createTemplate(
+      TourTemplateRequest request,
+      List<MultipartFile> tourImages,
+      List<MultipartFile> itineraryImages,
+      UUID coordinatorId);
 }

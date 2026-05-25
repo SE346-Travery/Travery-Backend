@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Payment callback endpoints for VNPAY. These endpoints are called by VNPAY
- * servers or browser
+ * Payment callback endpoints for VNPAY. These endpoints are called by VNPAY servers or browser
  * redirects and do NOT require authentication.
  */
 @RestController
@@ -26,10 +25,8 @@ public class PaymentController {
   private final PaymentService paymentService;
 
   /**
-   * VNPAY IPN (Instant Payment Notification) callback. Called by VNPAY server
-   * after payment
-   * processing. Updates payment transaction and booking status. Returns
-   * RspCode/Message JSON for
+   * VNPAY IPN (Instant Payment Notification) callback. Called by VNPAY server after payment
+   * processing. Updates payment transaction and booking status. Returns RspCode/Message JSON for
    * VNPAY.
    */
   @GetMapping("/vnpay-ipn")
@@ -40,10 +37,8 @@ public class PaymentController {
   }
 
   /**
-   * VNPAY Return URL. Browser redirects here after user completes payment on
-   * VNPAY. Verifies
-   * checksum and redirects to mobile app via deeplink. Does NOT update DB (IPN
-   * handles that).
+   * VNPAY Return URL. Browser redirects here after user completes payment on VNPAY. Verifies
+   * checksum and redirects to mobile app via deeplink. Does NOT update DB (IPN handles that).
    */
   @GetMapping("/vnpay-return")
   public ResponseEntity<Void> handleVnPayReturn(@RequestParam Map<String, String> params) {

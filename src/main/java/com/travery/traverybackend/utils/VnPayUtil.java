@@ -13,8 +13,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Utility class for VNPAY payment URL construction and checksum verification.
- * Follows VNPAY API
+ * Utility class for VNPAY payment URL construction and checksum verification. Follows VNPAY API
  * v2.1.0 specification.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -32,14 +31,14 @@ public final class VnPayUtil {
   /**
    * Build a complete VNPAY payment URL.
    *
-   * @param tmnCode        VNPAY terminal code
-   * @param payUrl         VNPAY payment base URL
-   * @param returnUrl      Return URL after payment
-   * @param secretKey      VNPAY secret key for HMAC signing
-   * @param txnRef         Transaction reference (unique per day)
-   * @param amount         Payment amount in VND (will be multiplied by 100)
-   * @param orderInfo      Payment description (no diacritics, no special chars)
-   * @param ipAddress      Client IP address
+   * @param tmnCode VNPAY terminal code
+   * @param payUrl VNPAY payment base URL
+   * @param returnUrl Return URL after payment
+   * @param secretKey VNPAY secret key for HMAC signing
+   * @param txnRef Transaction reference (unique per day)
+   * @param amount Payment amount in VND (will be multiplied by 100)
+   * @param orderInfo Payment description (no diacritics, no special chars)
+   * @param ipAddress Client IP address
    * @param timeoutMinutes Payment expiry in minutes
    * @return Complete VNPAY payment URL with signature
    */
@@ -91,9 +90,13 @@ public final class VnPayUtil {
           query.append('&');
         }
         // URLEncode value (key is URL-safe); matches PHP urlencode() official sample
-        hashData.append(key).append('=').append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+        hashData
+            .append(key)
+            .append('=')
+            .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
         // query string: values must be URL-encoded for HTTP transport
-        query.append(URLEncoder.encode(key, StandardCharsets.US_ASCII))
+        query
+            .append(URLEncoder.encode(key, StandardCharsets.US_ASCII))
             .append('=')
             .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
       }
@@ -108,10 +111,9 @@ public final class VnPayUtil {
   /**
    * Validate the checksum of parameters received from VNPAY (IPN/Return URL).
    *
-   * @param params       All query parameters from VNPAY (excluding
-   *                     vnp_SecureHash)
+   * @param params All query parameters from VNPAY (excluding vnp_SecureHash)
    * @param receivedHash The vnp_SecureHash value from VNPAY
-   * @param secretKey    VNPAY secret key
+   * @param secretKey VNPAY secret key
    * @return true if checksum is valid
    */
   public static boolean validateChecksum(
@@ -128,7 +130,10 @@ public final class VnPayUtil {
         if (!hashData.isEmpty()) {
           hashData.append('&');
         }
-        hashData.append(entry.getKey()).append('=').append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+        hashData
+            .append(entry.getKey())
+            .append('=')
+            .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
       }
     }
 
@@ -140,14 +145,15 @@ public final class VnPayUtil {
   /**
    * Compute HMAC-SHA512 hash.
    *
-   * @param key  Secret key
+   * @param key Secret key
    * @param data Data to hash
    * @return Hex-encoded hash string
    */
   public static String hmacSHA512(String key, String data) {
     try {
       Mac hmac = Mac.getInstance(HMAC_ALGORITHM);
-      SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM);
+      SecretKeySpec secretKeySpec =
+          new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM);
       hmac.init(secretKeySpec);
       byte[] hash = hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 

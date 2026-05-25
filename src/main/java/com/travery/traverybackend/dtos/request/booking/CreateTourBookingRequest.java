@@ -23,6 +23,5 @@ public class CreateTourBookingRequest {
 
   private String specialRequests;
 
-  @JsonIgnore
-  private String ipAddress;
+  @JsonIgnore private String ipAddress;
 }
