@@ -4,5 +4,7 @@ public enum ImageType {
   HOTEL,
   ROOM_TYPE,
   TOUR,
-  TOUR_ITINERARY
+  TOUR_ITINERARY,
+  USER,
+  DRIVER
 }

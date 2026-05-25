@@ -3,7 +3,7 @@ package com.travery.traverybackend.controllers.tour;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,6 +17,8 @@ import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,7 +49,9 @@ public class TourControllerTest {
   @Mock private ResponseFactory responseFactory;
   @InjectMocks private TourController tourController;
 
-  private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  @Spy private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  @Spy private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
   private UUID coordinatorId = UUID.randomUUID();
   private CustomUserDetails userDetails;
 
@@ -110,7 +115,8 @@ public class TourControllerTest {
 
     TourResponse response = TourResponse.builder().id(UUID.randomUUID()).name("Dalat Trip").build();
 
-    when(tourService.createTemplate(any(TourTemplateRequest.class), eq(coordinatorId)))
+    when(tourService.createTemplate(
+            any(TourTemplateRequest.class), any(), any(), eq(coordinatorId)))
         .thenReturn(response);
 
     SingleResponse<TourResponse> singleResponse = new SingleResponse<>();
@@ -121,11 +127,15 @@ public class TourControllerTest {
     when(responseFactory.success(eq(HttpStatus.CREATED), eq(response), any()))
         .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(singleResponse));
 
+    org.springframework.mock.web.MockMultipartFile dataFile =
+        new org.springframework.mock.web.MockMultipartFile(
+            "data", "", "application/json", objectMapper.writeValueAsBytes(request));
+
     mockMvc
         .perform(
-            post("/api/v1/tours/templates")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
+            multipart("/api/v1/tours/templates")
+                .file(dataFile)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
                 .principal(new UsernamePasswordAuthenticationToken(userDetails, null)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.message").value("Tour template created successfully"));

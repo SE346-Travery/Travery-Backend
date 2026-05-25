@@ -53,9 +53,9 @@ public final class VnPayUtil {
       String ipAddress,
       int timeoutMinutes) {
 
-    var vnCalendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+    var vnCalendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
     var formatter = new SimpleDateFormat(DATE_FORMAT);
-    formatter.setTimeZone(TimeZone.getTimeZone("Etc/GMT+7"));
+    formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 
     String createDate = formatter.format(vnCalendar.getTime());
     vnCalendar.add(Calendar.MINUTE, timeoutMinutes);
@@ -89,10 +89,12 @@ public final class VnPayUtil {
           hashData.append('&');
           query.append('&');
         }
+        // URLEncode value (key is URL-safe); matches PHP urlencode() official sample
         hashData
-            .append(URLEncoder.encode(key, StandardCharsets.US_ASCII))
+            .append(key)
             .append('=')
             .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
+        // query string: values must be URL-encoded for HTTP transport
         query
             .append(URLEncoder.encode(key, StandardCharsets.US_ASCII))
             .append('=')
@@ -129,13 +131,14 @@ public final class VnPayUtil {
           hashData.append('&');
         }
         hashData
-            .append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
+            .append(entry.getKey())
             .append('=')
             .append(URLEncoder.encode(value, StandardCharsets.US_ASCII));
       }
     }
 
     String calculatedHash = hmacSHA512(secretKey, hashData.toString());
+
     return calculatedHash.equalsIgnoreCase(receivedHash);
   }
 

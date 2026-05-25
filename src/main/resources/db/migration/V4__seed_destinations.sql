@@ -1,0 +1,35 @@
+-- =============================================
+-- Travery Backend - Seed Destinations (V4)
+-- =============================================
+
+INSERT INTO destinations (id, code, name, region, image_url, description, created_at, updated_at) VALUES
+('dd000000-0000-0000-0000-000000000001', 'LC', 'Lào Cai', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Lào Cai.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000002', 'QN', 'Quảng Ninh', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Quảng Ninh.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000003', 'NB', 'Ninh Bình', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Ninh Bình.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000004', 'HG', 'Hà Giang', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Hà Giang.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000005', 'HN', 'Hà Nội', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Hà Nội.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000006', 'DN', 'Đà Nẵng', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Đà Nẵng.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000007', 'TTH', 'Thừa Thiên Huế', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Thừa Thiên Huế.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000008', 'QB', 'Quảng Bình', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Quảng Bình.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000009', 'BD', 'Bình Định', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Bình Định.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000010', 'PY', 'Phú Yên', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Phú Yên.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000011', 'LD', 'Lâm Đồng', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Lâm Đồng.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000012', 'KH', 'Khánh Hòa', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Khánh Hòa.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000013', 'DL', 'Đắk Lắk', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Đắk Lắk.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000014', 'BT', 'Bình Thuận', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Bình Thuận.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000015', 'GL', 'Gia Lai', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Gia Lai.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000016', 'KG', 'Kiên Giang', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Kiên Giang.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000017', 'CT', 'Cần Thơ', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Cần Thơ.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000018', 'BRVT', 'Bà Rịa - Vũng Tàu', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Bà Rịa - Vũng Tàu.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000019', 'AG', 'An Giang', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại An Giang.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000020', 'BTE', 'Bến Tre', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Bến Tre.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000021', 'SL', 'Sơn La', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Sơn La.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000022', 'DB', 'Điện Biên', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Điện Biên.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000023', 'CB', 'Cao Bằng', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Cao Bằng.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000024', 'XV', 'Xuyên Việt', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Xuyên Việt.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000025', 'LS', 'Lạng Sơn', 'NORTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Lạng Sơn.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000026', 'QNG', 'Quảng Ngãi', 'CENTRAL', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Quảng Ngãi.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000027', 'NT', 'Ninh Thuận', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Ninh Thuận.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000028', 'DNAI', 'Đồng Nai', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Đồng Nai.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000029', 'TN', 'Tây Ninh', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Tây Ninh.', NOW(), NOW()),
+('dd000000-0000-0000-0000-000000000030', 'CM', 'Cà Mau', 'SOUTH', NULL, 'Khám phá vẻ đẹp tuyệt vời và văn hóa độc đáo tại Cà Mau.', NOW(), NOW());

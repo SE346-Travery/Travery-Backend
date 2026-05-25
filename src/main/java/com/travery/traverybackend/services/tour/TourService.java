@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface TourService {
 
@@ -21,5 +22,9 @@ public interface TourService {
 
   List<TourInstanceResponse> getTourInstances(UUID tourId);
 
-  TourResponse createTemplate(TourTemplateRequest request, UUID coordinatorId);
+  TourResponse createTemplate(
+      TourTemplateRequest request,
+      List<MultipartFile> tourImages,
+      List<MultipartFile> itineraryImages,
+      UUID coordinatorId);
 }

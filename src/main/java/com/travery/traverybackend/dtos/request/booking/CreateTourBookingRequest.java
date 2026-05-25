@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.request.booking;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
@@ -22,6 +23,5 @@ public class CreateTourBookingRequest {
 
   private String specialRequests;
 
-  @NotEmpty(message = " Ip address is required for init payment")
-  private String ipAddress;
+  @JsonIgnore private String ipAddress;
 }

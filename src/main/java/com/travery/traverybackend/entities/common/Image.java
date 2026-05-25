@@ -34,6 +34,9 @@ public class Image extends AbstractBaseEntity {
   @Column(nullable = false, length = 500)
   private String url;
 
+  @Column(name = "public_id", length = 255)
+  private String publicId;
+
   @Column(name = "is_thumbnail", nullable = false)
   @Builder.Default
   private boolean isThumbnail = false;

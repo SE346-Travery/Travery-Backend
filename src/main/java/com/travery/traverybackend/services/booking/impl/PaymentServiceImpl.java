@@ -129,13 +129,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     // 1. Validate required parameter presence
     if (secureHash == null || txnRef == null || vnpAmountStr == null || vnpResponseCode == null) {
-      log.warn("IPN: Missing required parameter(s). Params: {}", params);
+      log.warn("IPN: Missing required parameter(s).");
       return ipnResponse("99", "Input data required");
     }
 
     // 2. Verify checksum
     if (!VnPayUtil.validateChecksum(params, secureHash, vnPayConfig.getSecretKey())) {
-      log.warn("IPN: Invalid checksum for params: {}", params);
+      log.warn("IPN: Invalid checksum.");
       return ipnResponse("97", "Invalid Checksum");
     }
 
@@ -195,6 +195,7 @@ public class PaymentServiceImpl implements PaymentService {
     String vnpTransactionNo = params.get("vnp_TransactionNo");
     String vnpBankCode = params.get("vnp_BankCode");
     transaction.setTransactionReference(vnpTransactionNo);
+    log.info("IPN: Update transaction reference for booking {}", vnpTransactionNo);
 
     // 8. Process based on response code
     VnPayResponseCode responseCode = VnPayResponseCode.fromCode(vnpResponseCode);
@@ -271,6 +272,9 @@ public class PaymentServiceImpl implements PaymentService {
   private String buildVnPayUrl(PaymentTransaction transaction, String ipAddress) {
     String orderInfo =
         String.format("Thanh toan booking %s", transaction.getBookingId().toString());
+
+    log.debug("[VNPAY BUILD] tmnCode   = {}", vnPayConfig.getTmnCode());
+    log.debug("[VNPAY BUILD] returnUrl = {}", vnPayConfig.getReturnUrl());
 
     return VnPayUtil.buildPaymentUrl(
         vnPayConfig.getTmnCode(),

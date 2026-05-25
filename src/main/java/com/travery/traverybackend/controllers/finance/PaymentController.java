@@ -32,10 +32,6 @@ public class PaymentController {
   @GetMapping("/vnpay-ipn")
   public ResponseEntity<Map<String, String>> handleVnPayIpn(
       @RequestParam Map<String, String> params) {
-    log.info(
-        "Received VNPAY IPN callback: vnp_TxnRef={}, vnp_ResponseCode={}",
-        params.get("vnp_TxnRef"),
-        params.get("vnp_ResponseCode"));
     Map<String, String> response = paymentService.handleVnPayIpn(params);
     return ResponseEntity.ok(response);
   }
@@ -46,10 +42,6 @@ public class PaymentController {
    */
   @GetMapping("/vnpay-return")
   public ResponseEntity<Void> handleVnPayReturn(@RequestParam Map<String, String> params) {
-    log.info(
-        "Received VNPAY Return redirect: vnp_TxnRef={}, vnp_ResponseCode={}",
-        params.get("vnp_TxnRef"),
-        params.get("vnp_ResponseCode"));
     String deeplinkUrl = paymentService.handleVnPayReturn(params);
     return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(deeplinkUrl)).build();
   }
