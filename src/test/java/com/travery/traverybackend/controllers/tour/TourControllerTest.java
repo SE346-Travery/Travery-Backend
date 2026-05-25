@@ -17,6 +17,8 @@ import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import com.travery.traverybackend.services.tour.TourService;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -27,8 +29,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +51,7 @@ public class TourControllerTest {
 
   @Spy private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
   @Spy private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-  
+
   private UUID coordinatorId = UUID.randomUUID();
   private CustomUserDetails userDetails;
 
