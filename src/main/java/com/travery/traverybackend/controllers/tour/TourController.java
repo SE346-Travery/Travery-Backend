@@ -14,6 +14,7 @@ import com.travery.traverybackend.services.tour.TourService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import java.util.List;
@@ -84,7 +85,7 @@ public class TourController extends AbstractBaseController {
     TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
     Set<ConstraintViolation<TourTemplateRequest>> violations = validator.validate(request);
     if (!violations.isEmpty()) {
-      throw new jakarta.validation.ConstraintViolationException(violations);
+      throw new ConstraintViolationException(violations);
     }
 
     TourResponse response =
