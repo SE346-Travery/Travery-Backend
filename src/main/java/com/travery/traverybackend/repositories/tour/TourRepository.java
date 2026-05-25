@@ -18,7 +18,7 @@ public interface TourRepository extends JpaRepository<Tour, UUID>, TourSearchCus
   Page<Tour> findAllByIsCustomFalse(Pageable pageable);
 
   @Query(
-      "SELECT t FROM Tour t LEFT JOIN FETCH t.destination LEFT JOIN FETCH t.refundPolicy WHERE t.id = :id")
+      "SELECT t FROM Tour t LEFT JOIN FETCH t.destination LEFT JOIN FETCH t.refundPolicy LEFT JOIN FETCH t.itineraries WHERE t.id = :id")
   Optional<Tour> findByIdWithDetails(@Param("id") UUID id);
 
   @EntityGraph(attributePaths = {"destination"})
