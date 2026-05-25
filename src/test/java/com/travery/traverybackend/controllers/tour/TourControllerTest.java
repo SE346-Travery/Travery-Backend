@@ -25,7 +25,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +49,9 @@ public class TourControllerTest {
   @Mock private ResponseFactory responseFactory;
   @InjectMocks private TourController tourController;
 
-  private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  @Spy private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  @Spy private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+  
   private UUID coordinatorId = UUID.randomUUID();
   private CustomUserDetails userDetails;
 
