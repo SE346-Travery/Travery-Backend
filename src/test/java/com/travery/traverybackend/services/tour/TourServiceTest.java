@@ -108,7 +108,7 @@ public class TourServiceTest {
     response.setName("Dalat Trip");
     when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
-    TourResponse result = tourService.createTemplate(request, coordinatorId);
+    TourResponse result = tourService.createTemplate(request, null, null, coordinatorId);
 
     assertNotNull(result);
     assertEquals("Dalat Trip", result.getName());
@@ -138,7 +138,7 @@ public class TourServiceTest {
     response.setCustom(true);
     when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
-    TourResponse result = tourService.createTemplate(request, coordinatorId);
+    TourResponse result = tourService.createTemplate(request, null, null, coordinatorId);
 
     assertNotNull(result);
     assertEquals(true, result.isCustom());
@@ -160,7 +160,7 @@ public class TourServiceTest {
     when(hotelRepository.findById(request.getHotelId())).thenReturn(Optional.of(hotel));
     when(userRepository.findById(requestedByUserId)).thenReturn(Optional.of(nonTouristUser));
 
-    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, null, null, coordinatorId));
   }
 
   @Test
@@ -179,7 +179,7 @@ public class TourServiceTest {
     TourResponse response = new TourResponse();
     when(tourMapper.toTourResponse(tour)).thenReturn(response);
 
-    TourResponse result = tourService.createTemplate(request, coordinatorId);
+    TourResponse result = tourService.createTemplate(request, null, null, coordinatorId);
 
     assertNotNull(result);
     verify(refundPolicyRepository)
@@ -190,7 +190,7 @@ public class TourServiceTest {
   void createTemplate_invalidCoordinator_throwsException() {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, null, null, coordinatorId));
   }
 
   @Test
@@ -198,6 +198,6 @@ public class TourServiceTest {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(destinationRepository.findById(request.getDestinationId())).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, coordinatorId));
+    assertThrows(BaseAppException.class, () -> tourService.createTemplate(request, null, null, coordinatorId));
   }
 }

@@ -2,6 +2,7 @@ package com.travery.traverybackend.services.media.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.travery.traverybackend.enums.common.CloudinaryFolder;
 import com.travery.traverybackend.services.media.MediaService;
 import java.io.IOException;
 import java.util.Map;
@@ -18,11 +19,12 @@ public class MediaServiceImpl implements MediaService {
   private final Cloudinary cloudinary;
 
   @Override
-  public Map<String, Object> uploadImage(MultipartFile file, String folder) {
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> uploadImage(MultipartFile file, CloudinaryFolder folder) {
     try {
       return cloudinary
           .uploader()
-          .upload(file.getBytes(), ObjectUtils.asMap("folder", "travery/" + folder));
+          .upload(file.getBytes(), ObjectUtils.asMap("folder", "travery/" + folder.getPath()));
     } catch (IOException e) {
       log.error("Failed to upload image to Cloudinary", e);
       throw new RuntimeException("Image upload failed");
@@ -30,11 +32,12 @@ public class MediaServiceImpl implements MediaService {
   }
 
   @Override
-  public Map<String, Object> uploadImageFromUrl(String url, String folder) {
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> uploadImageFromUrl(String url, CloudinaryFolder folder) {
     try {
       return cloudinary
           .uploader()
-          .upload(url, ObjectUtils.asMap("folder", "travery/" + folder));
+          .upload(url, ObjectUtils.asMap("folder", "travery/" + folder.getPath()));
     } catch (IOException e) {
       log.error("Failed to upload image from URL to Cloudinary", e);
       throw new RuntimeException("Image upload failed");
