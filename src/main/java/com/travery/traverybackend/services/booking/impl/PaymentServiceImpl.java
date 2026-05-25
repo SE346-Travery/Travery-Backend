@@ -125,13 +125,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     // 1. Validate required parameter presence
     if (secureHash == null || txnRef == null || vnpAmountStr == null || vnpResponseCode == null) {
-      log.warn("IPN: Missing required parameter(s). Params: {}", params);
+      log.warn("IPN: Missing required parameter(s).");
       return ipnResponse("99", "Input data required");
     }
 
     // 2. Verify checksum
     if (!VnPayUtil.validateChecksum(params, secureHash, vnPayConfig.getSecretKey())) {
-      log.warn("IPN: Invalid checksum for params: {}", params);
+      log.warn("IPN: Invalid checksum.");
       return ipnResponse("97", "Invalid Checksum");
     }
 
