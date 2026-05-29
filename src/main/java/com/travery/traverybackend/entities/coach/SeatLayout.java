@@ -1,41 +1,34 @@
 package com.travery.traverybackend.entities.coach;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
-import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "coaches")
+@Table(name = "seat_layouts")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class Coach extends AbstractBaseEntity {
+public class SeatLayout extends AbstractBaseEntity {
 
-  @Column(name = "license_plate", nullable = false, unique = true, length = 20)
-  private String licensePlate;
+  @Column(nullable = false, length = 100)
+  private String name;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "coach_type", nullable = false, length = 50)
   private CoachType coachType;
 
-  @Column(nullable = false)
-  private int capacity;
+  @Column(name = "total_seats", nullable = false)
+  private int totalSeats;
 
-  @Enumerated(EnumType.STRING)
-  @Column(length = 20)
-  @Builder.Default
-  private CoachStatus status = CoachStatus.ACTIVE;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "seat_layout_id")
-  private SeatLayout seatLayout;
+  @OneToMany(mappedBy = "seatLayout", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<SeatLayoutItem> items;
 }
