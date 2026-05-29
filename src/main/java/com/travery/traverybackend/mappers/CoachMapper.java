@@ -85,9 +85,8 @@ public abstract class CoachMapper {
             trip.getId(), BookingStatus.PAID);
     int unavailableSeats =
         coachBookingSeatRepository
-            .findByTripIdAndBookingStatusNotIn(
-                trip.getId(), List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW))
-            .size();
+            .countByTripIdAndBookingStatusNotIn(
+                trip.getId(), List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW));
 
     response.setBookingsCount(bookingsCount);
     response.setPassengersCount(passengersCount);

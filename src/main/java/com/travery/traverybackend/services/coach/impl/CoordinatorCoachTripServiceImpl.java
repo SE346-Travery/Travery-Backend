@@ -110,7 +110,7 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
         trip -> {
           int totalSeats =
               trip.getCoach().getSeatLayout() != null
-                  ? trip.getCoach().getSeatLayout().getItems().size()
+                  ? trip.getCoach().getSeatLayout().getTotalSeats()
                   : 0;
           long bookedSeats = bookedSeatsMap.getOrDefault(trip.getId(), 0L);
           int availableSeats = totalSeats - (int) bookedSeats;

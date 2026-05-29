@@ -71,12 +71,12 @@ public class CoachBookingController extends AbstractBaseController {
 
   @GetMapping
   @PreAuthorize("hasRole('TOURIST')")
-  public ResponseEntity<Page<CoachBookingSummaryResponse>> getMyBookings(
+  public ResponseEntity<SingleResponse<Page<CoachBookingSummaryResponse>>> getMyBookings(
       @RequestParam(required = false) BookingStatus status,
       @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     var response = coachBookingService.getMyBookings(userDetails.getUserId(), status, pageable);
-    return ResponseEntity.ok(response);
+    return success(response, "Fetched my bookings successfully");
   }
 
   @GetMapping("/{bookingId}")
