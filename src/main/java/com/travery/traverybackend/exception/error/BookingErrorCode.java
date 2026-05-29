@@ -19,6 +19,11 @@ public enum BookingErrorCode implements AppErrorCode {
       "BOOKING_104",
       "Booking requires at least 5 days before departure date",
       HttpStatus.BAD_REQUEST),
+      
+  COACH_TRIP_NOT_FOUND("BOOKING_105", "Coach trip not found", HttpStatus.NOT_FOUND),
+  COACH_TRIP_NOT_OPEN("BOOKING_106", "Coach trip is not open for booking", HttpStatus.CONFLICT),
+  SEAT_ALREADY_BOOKED("BOOKING_107", "One or more requested seats are already booked", HttpStatus.CONFLICT),
+  INVALID_SEAT_LAYOUT("BOOKING_108", "One or more requested seats are invalid for this coach", HttpStatus.BAD_REQUEST),
 
   // === BOOKING ACCESS ===
   BOOKING_NOT_FOUND("BOOKING_201", "Booking not found", HttpStatus.NOT_FOUND),
@@ -28,6 +33,7 @@ public enum BookingErrorCode implements AppErrorCode {
   // === PAYMENT ===
   BOOKING_NOT_PENDING("BOOKING_301", "Booking is not in PENDING status", HttpStatus.CONFLICT),
   PAYMENT_DEADLINE_EXPIRED("BOOKING_302", "Payment deadline has expired", HttpStatus.CONFLICT),
+  BOOKING_NOT_PAID("BOOKING_303", "Booking must be in PAID status", HttpStatus.CONFLICT),
 
   // === CANCELLATION ===
   BOOKING_ALREADY_CANCELLED("BOOKING_401", "Booking is already cancelled", HttpStatus.CONFLICT),
