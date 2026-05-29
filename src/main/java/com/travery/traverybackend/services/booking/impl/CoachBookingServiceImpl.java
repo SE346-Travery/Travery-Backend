@@ -90,7 +90,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
 
     // 3. Load requested seats
     List<SeatLayoutItem> requestedSeats = new ArrayList<>();
-    
+
     // Validate for duplicate seat IDs in the request
     long uniqueSeatCount = request.getSeatLayoutItemIds().stream().distinct().count();
     if (uniqueSeatCount != request.getSeatLayoutItemIds().size()) {
@@ -100,7 +100,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     if (trip.getCoach() == null || trip.getCoach().getSeatLayout() == null) {
       throw new BaseAppException(BookingErrorCode.INVALID_SEAT_LAYOUT);
     }
-    
+
     Map<UUID, SeatLayoutItem> layoutSeatMap =
         trip.getCoach().getSeatLayout().getItems().stream()
             .collect(Collectors.toMap(SeatLayoutItem::getId, item -> item));

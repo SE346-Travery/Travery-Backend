@@ -23,8 +23,7 @@ public interface CoachBookingSeatRepository extends JpaRepository<CoachBookingSe
       "SELECT COUNT(cbs) FROM CoachBookingSeat cbs "
           + "WHERE cbs.coachBooking.coachTrip.id = :tripId "
           + "AND cbs.coachBooking.status NOT IN :excludedStatuses")
-  int countByTripIdAndBookingStatusNotIn(
-      UUID tripId, List<BookingStatus> excludedStatuses);
+  int countByTripIdAndBookingStatusNotIn(UUID tripId, List<BookingStatus> excludedStatuses);
 
   @Query(
       "SELECT COUNT(cbs) FROM CoachBookingSeat cbs WHERE cbs.coachBooking.coachTrip.id = :tripId AND cbs.coachBooking.status = :status")
