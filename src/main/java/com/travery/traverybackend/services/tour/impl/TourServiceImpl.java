@@ -23,6 +23,7 @@ import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.mappers.TourMapper;
 import com.travery.traverybackend.repositories.common.DestinationRepository;
 import com.travery.traverybackend.repositories.common.ImageRepository;
@@ -57,6 +58,7 @@ public class TourServiceImpl implements TourService {
   private final TourRepository tourRepository;
   private final TourInstanceRepository tourInstanceRepository;
   private final TourMapper tourMapper;
+  private final TourInstanceMapper tourInstanceMapper;
   private final ImageRepository imageRepository;
   private final DestinationRepository destinationRepository;
   private final HotelRepository hotelRepository;
@@ -168,13 +170,7 @@ public class TourServiceImpl implements TourService {
                 tourId, statuses, LocalDate.now());
 
     return instances.stream()
-        .map(
-            instance -> {
-              TourInstanceResponse response = tourMapper.toTourInstanceResponse(instance);
-              response.setAvailableSlots(
-                  Math.max(0, tour.getMaxParticipants() - instance.getCurrentParticipants()));
-              return response;
-            })
+        .map(tourInstanceMapper::toTourInstanceResponse)
         .collect(Collectors.toList());
   }
 

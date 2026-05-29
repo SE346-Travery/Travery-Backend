@@ -39,7 +39,9 @@ public class SecurityConfig {
     "/favicon.ico"
   };
 
-  private static final String[] PUBLIC_GET_ENDPOINTS = {"/api/v1/tours", "/api/v1/tours/**"};
+  private static final String[] PUBLIC_GET_ENDPOINTS = {
+    "/api/v1/tours", "/api/v1/tours/**", "/api/v1/destinations", "/api/v1/destinations/**"
+  };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;

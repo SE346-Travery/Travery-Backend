@@ -13,7 +13,10 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
+@Mapper(
+    componentModel = "spring",
+    builder = @org.mapstruct.Builder(disableBuilder = true),
+    unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface TourInstanceMapper {
 
   @Mapping(target = "id", ignore = true)
@@ -29,6 +32,8 @@ public interface TourInstanceMapper {
   @Mapping(target = "updatedAt", ignore = true)
   TourInstance toEntity(TourInstanceCreateRequest request);
 
+  @Mapping(source = "tour.name", target = "tourName")
+  @Mapping(source = "tour.maxParticipants", target = "maxParticipants")
   TourInstanceResponse toTourInstanceResponse(TourInstance tourInstance);
 
   @Mapping(source = "tour.name", target = "tourName")

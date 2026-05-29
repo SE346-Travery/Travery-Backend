@@ -32,11 +32,6 @@ public abstract class TourMapper {
   public abstract TourDetailResponse toTourDetailResponse(Tour tour);
 
   @Mapping(
-      target = "availableSlots",
-      ignore = true) // Cần logic tính availableSlots nếu chưa có sẵn trong DB
-  public abstract TourInstanceResponse toTourInstanceResponse(TourInstance instance);
-
-  @Mapping(
       target = "images",
       ignore = true) // Hình ảnh sẽ được map sau hoặc bỏ qua nếu không cần thiết
   public abstract TourItineraryResponse toTourItineraryResponse(TourItinerary itinerary);
