@@ -46,5 +46,5 @@ public class CoachTrip extends AbstractBaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(length = 50)
   @Builder.Default
-  private CoachTripStatus status = CoachTripStatus.SCHEDULED;
+  private CoachTripStatus status = CoachTripStatus.OPEN;
 }
