@@ -55,11 +55,22 @@ class AdminCoachServiceTest {
     layoutId = UUID.randomUUID();
     coachId = UUID.randomUUID();
 
-    seatLayout = SeatLayout.builder().name("Standard 29 Seat").coachType(CoachType.SEAT).totalSeats(29).build();
+    seatLayout =
+        SeatLayout.builder()
+            .name("Standard 29 Seat")
+            .coachType(CoachType.SEAT)
+            .totalSeats(29)
+            .build();
     seatLayout.setId(layoutId);
     seatLayout.setItems(List.of());
 
-    coach = Coach.builder().licensePlate("51B-10000").coachType(CoachType.SEAT).capacity(29).seatLayout(seatLayout).build();
+    coach =
+        Coach.builder()
+            .licensePlate("51B-10000")
+            .coachType(CoachType.SEAT)
+            .capacity(29)
+            .seatLayout(seatLayout)
+            .build();
     coach.setId(coachId);
 
     layoutResponse =
@@ -176,8 +187,7 @@ class AdminCoachServiceTest {
     when(seatLayoutRepository.findByIdWithItems(layoutId)).thenReturn(Optional.empty());
 
     assertThrows(
-        EntityNotFoundException.class,
-        () -> adminCoachService.getSeatLayoutDetail(layoutId));
+        EntityNotFoundException.class, () -> adminCoachService.getSeatLayoutDetail(layoutId));
   }
 
   // ===== createCoach =====
@@ -216,8 +226,7 @@ class AdminCoachServiceTest {
 
     when(seatLayoutRepository.findById(layoutId)).thenReturn(Optional.empty());
 
-    assertThrows(
-        EntityNotFoundException.class, () -> adminCoachService.createCoach(request));
+    assertThrows(EntityNotFoundException.class, () -> adminCoachService.createCoach(request));
   }
 
   // ===== getCoaches =====
@@ -250,7 +259,6 @@ class AdminCoachServiceTest {
   void getCoachDetail_invalidId_throwsException() {
     when(coachRepository.findById(coachId)).thenReturn(Optional.empty());
 
-    assertThrows(
-        EntityNotFoundException.class, () -> adminCoachService.getCoachDetail(coachId));
+    assertThrows(EntityNotFoundException.class, () -> adminCoachService.getCoachDetail(coachId));
   }
 }

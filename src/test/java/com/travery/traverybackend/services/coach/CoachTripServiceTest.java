@@ -3,7 +3,6 @@ package com.travery.traverybackend.services.coach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -52,19 +51,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class CoachTripServiceTest {
 
-  @Mock
-  private StationRepository stationRepository;
-  @Mock
-  private RouteRepository routeRepository;
-  @Mock
-  private CoachTripRepository coachTripRepository;
-  @Mock
-  private CoachBookingSeatRepository coachBookingSeatRepository;
-  @Mock
-  private CoachMapper coachMapper;
+  @Mock private StationRepository stationRepository;
+  @Mock private RouteRepository routeRepository;
+  @Mock private CoachTripRepository coachTripRepository;
+  @Mock private CoachBookingSeatRepository coachBookingSeatRepository;
+  @Mock private CoachMapper coachMapper;
 
-  @InjectMocks
-  private CoachTripServiceImpl coachTripService;
+  @InjectMocks private CoachTripServiceImpl coachTripService;
 
   private Station station1;
   private Station station2;
@@ -103,38 +96,62 @@ class CoachTripServiceTest {
     route.setDestinationDestination(dest2);
     route.setBasePrice(new BigDecimal("100000"));
 
-    seat1 = SeatLayoutItem.builder().id(UUID.randomUUID()).seatName("A1").tier(SeatTier.LOWER)
-        .position(SeatPosition.FRONT).rowNumber(0).columnNumber(0).build();
-    seat2 = SeatLayoutItem.builder().id(UUID.randomUUID()).seatName("A2").tier(SeatTier.LOWER)
-        .position(SeatPosition.FRONT).rowNumber(0).columnNumber(1).build();
+    seat1 =
+        SeatLayoutItem.builder()
+            .id(UUID.randomUUID())
+            .seatName("A1")
+            .tier(SeatTier.LOWER)
+            .position(SeatPosition.FRONT)
+            .rowNumber(0)
+            .columnNumber(0)
+            .build();
+    seat2 =
+        SeatLayoutItem.builder()
+            .id(UUID.randomUUID())
+            .seatName("A2")
+            .tier(SeatTier.LOWER)
+            .position(SeatPosition.FRONT)
+            .rowNumber(0)
+            .columnNumber(1)
+            .build();
 
-    layout = SeatLayout.builder().id(UUID.randomUUID()).totalSeats(2).items(List.of(seat1, seat2)).build();
+    layout =
+        SeatLayout.builder()
+            .id(UUID.randomUUID())
+            .totalSeats(2)
+            .items(List.of(seat1, seat2))
+            .build();
 
-    coach = Coach.builder().id(UUID.randomUUID()).coachType(CoachType.SEAT).seatLayout(layout).build();
+    coach =
+        Coach.builder().id(UUID.randomUUID()).coachType(CoachType.SEAT).seatLayout(layout).build();
 
-    trip1 = CoachTrip.builder()
-        .id(UUID.randomUUID())
-        .route(route)
-        .coach(coach)
-        .departureTime(LocalDateTime.now().withHour(8))
-        .status(CoachTripStatus.OPEN)
-        .build();
+    trip1 =
+        CoachTrip.builder()
+            .id(UUID.randomUUID())
+            .route(route)
+            .coach(coach)
+            .departureTime(LocalDateTime.now().withHour(8))
+            .status(CoachTripStatus.OPEN)
+            .build();
 
-    trip2 = CoachTrip.builder()
-        .id(UUID.randomUUID())
-        .route(route)
-        .coach(coach)
-        .departureTime(LocalDateTime.now().withHour(15))
-        .status(CoachTripStatus.OPEN)
-        .build();
+    trip2 =
+        CoachTrip.builder()
+            .id(UUID.randomUUID())
+            .route(route)
+            .coach(coach)
+            .departureTime(LocalDateTime.now().withHour(15))
+            .status(CoachTripStatus.OPEN)
+            .build();
   }
 
   @Test
   void getStations_returnsList() {
     when(stationRepository.findAll()).thenReturn(List.of(station1, station2));
 
-    StationResponse resp1 = StationResponse.builder().id(station1.getId()).name("Station 1").build();
-    StationResponse resp2 = StationResponse.builder().id(station2.getId()).name("Station 2").build();
+    StationResponse resp1 =
+        StationResponse.builder().id(station1.getId()).name("Station 1").build();
+    StationResponse resp2 =
+        StationResponse.builder().id(station2.getId()).name("Station 2").build();
 
     when(coachMapper.toStationResponseList(anyList())).thenReturn(List.of(resp1, resp2));
 
@@ -145,11 +162,12 @@ class CoachTripServiceTest {
 
   @Test
   void searchTrips_validRequest_returnsTrips() {
-    SearchCoachTripRequest request = SearchCoachTripRequest.builder()
-        .originId(dest1.getId())
-        .destinationId(dest2.getId())
-        .departureDate(LocalDate.now())
-        .build();
+    SearchCoachTripRequest request =
+        SearchCoachTripRequest.builder()
+            .originId(dest1.getId())
+            .destinationId(dest2.getId())
+            .departureDate(LocalDate.now())
+            .build();
 
     LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
     LocalDateTime endOfDay = request.getDepartureDate().atTime(LocalTime.MAX);
@@ -170,12 +188,13 @@ class CoachTripServiceTest {
 
   @Test
   void searchTrips_withTimeSlotFilter_returnsFilteredTrips() {
-    SearchCoachTripRequest request = SearchCoachTripRequest.builder()
-        .originId(dest1.getId())
-        .destinationId(dest2.getId())
-        .departureDate(LocalDate.now())
-        .departureTimeSlot(DepartureTimeSlot.MORNING) // 07:00 - 12:00
-        .build();
+    SearchCoachTripRequest request =
+        SearchCoachTripRequest.builder()
+            .originId(dest1.getId())
+            .destinationId(dest2.getId())
+            .departureDate(LocalDate.now())
+            .departureTimeSlot(DepartureTimeSlot.MORNING) // 07:00 - 12:00
+            .build();
 
     LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
     LocalDateTime endOfDay = request.getDepartureDate().atTime(LocalTime.MAX);
@@ -194,11 +213,12 @@ class CoachTripServiceTest {
 
   @Test
   void searchTrips_invalidRoute_throwsException() {
-    SearchCoachTripRequest request = SearchCoachTripRequest.builder()
-        .originId(dest1.getId())
-        .destinationId(dest2.getId())
-        .departureDate(LocalDate.now())
-        .build();
+    SearchCoachTripRequest request =
+        SearchCoachTripRequest.builder()
+            .originId(dest1.getId())
+            .destinationId(dest2.getId())
+            .departureDate(LocalDate.now())
+            .build();
 
     LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
     LocalDateTime endOfDay = request.getDepartureDate().atTime(LocalTime.MAX);

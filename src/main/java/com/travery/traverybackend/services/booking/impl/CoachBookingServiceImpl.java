@@ -1,51 +1,51 @@
 package com.travery.traverybackend.services.booking.impl;
 
+import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
+import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.booking.CoachBookingSeat;
 import com.travery.traverybackend.entities.coach.CoachTrip;
 import com.travery.traverybackend.entities.coach.SeatLayoutItem;
+import com.travery.traverybackend.entities.finance.PaymentTransaction;
+import com.travery.traverybackend.entities.finance.RefundPolicy;
+import com.travery.traverybackend.entities.finance.RefundPolicyRule;
+import com.travery.traverybackend.entities.finance.RefundRequest;
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
+import com.travery.traverybackend.enums.finance.RefundTimeUnit;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.BookingErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
-import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.repositories.finance.RefundRequestRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.booking.CoachBookingService;
 import com.travery.traverybackend.services.booking.PaymentService;
-import com.travery.traverybackend.mappers.CoachMapper;
-import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
-import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.entities.finance.PaymentTransaction;
-import com.travery.traverybackend.entities.finance.RefundPolicy;
-import com.travery.traverybackend.entities.finance.RefundPolicyRule;
-import com.travery.traverybackend.entities.finance.RefundRequest;
-import com.travery.traverybackend.enums.booking.BookingType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import java.math.RoundingMode;
-import java.time.temporal.ChronoUnit;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import com.travery.traverybackend.enums.finance.RefundTimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +67,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
   @Transactional
   public CoachBookingResponse createBooking(
       CreateCoachBookingRequest request, UUID userId, String ipAddress) {
-    
+
     // 1. Validate User
     var user =
         userRepository
@@ -90,7 +90,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
 
     // 3. Load requested seats
     List<SeatLayoutItem> requestedSeats = new ArrayList<>();
-    Map<UUID, SeatLayoutItem> layoutSeatMap = 
+    Map<UUID, SeatLayoutItem> layoutSeatMap =
         trip.getCoach().getSeatLayout().getItems().stream()
             .collect(Collectors.toMap(SeatLayoutItem::getId, item -> item));
 
@@ -143,7 +143,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
             .status(BookingStatus.PENDING)
             .paymentDeadline(LocalDateTime.now().plusMinutes(15)) // 15 mins to pay
             .build();
-    
+
     booking = coachBookingRepository.save(booking);
 
     // 8. Create CoachBookingSeats
@@ -180,7 +180,8 @@ public class CoachBookingServiceImpl implements CoachBookingService {
         .contactName(booking.getContactName())
         .contactPhone(booking.getContactPhone())
         .status(booking.getStatus())
-        .bookedSeatNames(requestedSeats.stream().map(SeatLayoutItem::getSeatName).collect(Collectors.toList()))
+        .bookedSeatNames(
+            requestedSeats.stream().map(SeatLayoutItem::getSeatName).collect(Collectors.toList()))
         .payment(paymentResponse)
         .build();
   }
@@ -205,15 +206,18 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     List<UUID> bookingIds = bookingPage.getContent().stream().map(CoachBooking::getId).toList();
-    
+
     java.util.Map<UUID, Integer> seatCountMap = new java.util.HashMap<>();
     if (!bookingIds.isEmpty()) {
-      coachBookingSeatRepository.countSeatsByBookingIds(bookingIds)
+      coachBookingSeatRepository
+          .countSeatsByBookingIds(bookingIds)
           .forEach(row -> seatCountMap.put((UUID) row[0], ((Number) row[1]).intValue()));
     }
 
     return bookingPage.map(
-        booking -> coachMapper.toCoachBookingSummaryResponse(booking, seatCountMap.getOrDefault(booking.getId(), 0)));
+        booking ->
+            coachMapper.toCoachBookingSummaryResponse(
+                booking, seatCountMap.getOrDefault(booking.getId(), 0)));
   }
 
   @Override
@@ -228,9 +232,10 @@ public class CoachBookingServiceImpl implements CoachBookingService {
       throw new BaseAppException(BookingErrorCode.BOOKING_ACCESS_DENIED);
     }
 
-    List<String> bookedSeatNames = booking.getBookedSeats().stream()
-        .map(bs -> bs.getSeatLayoutItem().getSeatName())
-        .collect(Collectors.toList());
+    List<String> bookedSeatNames =
+        booking.getBookedSeats().stream()
+            .map(bs -> bs.getSeatLayoutItem().getSeatName())
+            .collect(Collectors.toList());
 
     PaymentTransaction payment =
         paymentTransactionRepository
@@ -309,8 +314,10 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     // Calculate refund percentage from RefundPolicy (HOURS)
-    long hoursBeforeDeparture = ChronoUnit.HOURS.between(LocalDateTime.now(), trip.getDepartureTime());
-    BigDecimal refundPct = calculateRefundPercentage(trip.getRoute().getRefundPolicy(), hoursBeforeDeparture);
+    long hoursBeforeDeparture =
+        ChronoUnit.HOURS.between(LocalDateTime.now(), trip.getDepartureTime());
+    BigDecimal refundPct =
+        calculateRefundPercentage(trip.getRoute().getRefundPolicy(), hoursBeforeDeparture);
 
     BigDecimal refundAmount =
         booking

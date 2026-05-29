@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public interface GuideCoachTripService {
   CoachTripDetailResponse updateTripStatus(UUID tripId, UpdateCoachTripStatusRequest request);
+
   void markPassengerNoShow(UUID tripId, UUID bookingId);
 }

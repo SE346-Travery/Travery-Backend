@@ -27,9 +27,12 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
 
   @Override
   @Transactional
-  public CoachTripDetailResponse updateTripStatus(UUID tripId, UpdateCoachTripStatusRequest request) {
-    CoachTrip trip = coachTripRepository.findById(tripId)
-        .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
+  public CoachTripDetailResponse updateTripStatus(
+      UUID tripId, UpdateCoachTripStatusRequest request) {
+    CoachTrip trip =
+        coachTripRepository
+            .findById(tripId)
+            .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
 
     trip.setStatus(request.getStatus());
     trip = coachTripRepository.save(trip);
@@ -39,11 +42,15 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
   @Override
   @Transactional
   public void markPassengerNoShow(UUID tripId, UUID bookingId) {
-    CoachTrip trip = coachTripRepository.findById(tripId)
-        .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
+    CoachTrip trip =
+        coachTripRepository
+            .findById(tripId)
+            .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
 
-    CoachBooking booking = coachBookingRepository.findById(bookingId)
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    CoachBooking booking =
+        coachBookingRepository
+            .findById(bookingId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     if (!booking.getCoachTrip().getId().equals(trip.getId())) {
       throw new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND);
@@ -56,5 +63,4 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
     booking.setStatus(BookingStatus.NO_SHOW);
     coachBookingRepository.save(booking);
   }
-
 }

@@ -1,36 +1,36 @@
 package com.travery.traverybackend.controllers.booking;
 
+import com.travery.traverybackend.controllers.AbstractBaseController;
+import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
+import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.CoachBookingService;
 import com.travery.traverybackend.utils.RequestUtil;
-import com.travery.traverybackend.controllers.AbstractBaseController;
-import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
-import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
-import com.travery.traverybackend.enums.booking.BookingStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,7 +48,8 @@ public class CoachBookingController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       HttpServletRequest httpRequest) {
     String ipAddress = requestUtil.getIpAddress(httpRequest);
-    CoachBookingResponse response = coachBookingService.createBooking(request, userDetails.getUserId(), ipAddress);
+    CoachBookingResponse response =
+        coachBookingService.createBooking(request, userDetails.getUserId(), ipAddress);
     return created(response, "Coach booking created successfully");
   }
 
@@ -60,13 +61,11 @@ public class CoachBookingController extends AbstractBaseController {
       HttpServletRequest httpRequest) {
 
     String ipAddress = requestUtil.getIpAddress(httpRequest);
-    InitiatePaymentRequest request = InitiatePaymentRequest.builder()
-        .bookingId(bookingId)
-        .ipAddress(ipAddress)
-        .build();
+    InitiatePaymentRequest request =
+        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
 
-    PaymentInitiationResponse response = coachBookingService.generatePaymentUrl(bookingId, request,
-        userDetails.getUserId());
+    PaymentInitiationResponse response =
+        coachBookingService.generatePaymentUrl(bookingId, request, userDetails.getUserId());
     return success(response, "Payment URL generated successfully");
   }
 
@@ -83,8 +82,7 @@ public class CoachBookingController extends AbstractBaseController {
   @GetMapping("/{bookingId}")
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<CoachBookingDetailResponse>> getBookingDetail(
-      @PathVariable UUID bookingId,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
+      @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails userDetails) {
     var response = coachBookingService.getBookingDetail(bookingId, userDetails.getUserId());
     return success(response, "Coach booking detail retrieved successfully");
   }

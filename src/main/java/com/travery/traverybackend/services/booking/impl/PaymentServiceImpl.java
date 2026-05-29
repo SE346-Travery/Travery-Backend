@@ -45,9 +45,10 @@ public class PaymentServiceImpl implements PaymentService {
       UUID bookingId, InitiatePaymentRequest request, UUID userId) {
 
     // 1. Load booking and verify ownership
-    TourBooking booking = tourBookingRepository
-        .findByIdAndUser_Id(bookingId, userId)
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    TourBooking booking =
+        tourBookingRepository
+            .findByIdAndUser_Id(bookingId, userId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     // 2. Validate booking is PENDING
     if (booking.getStatus() != BookingStatus.PENDING) {
@@ -60,17 +61,19 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // 4. Check for existing PENDING transaction (prevent double-click duplicates)
-    var existingTransaction = paymentTransactionRepository.findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
-        booking.getId(), BookingType.TOUR_BOOKING);
+    var existingTransaction =
+        paymentTransactionRepository.findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+            booking.getId(), BookingType.TOUR_BOOKING);
 
     if (existingTransaction.isPresent()) {
       PaymentTransaction existing = existingTransaction.get();
       if (existing.getStatus() == PaymentStatus.PENDING) {
         // Check if the VNPAY payment session is expired (created_at + timeout < now)
-        boolean isSessionExpired = existing
-            .getCreatedAt()
-            .plusMinutes(vnPayConfig.getTimeout())
-            .isBefore(LocalDateTime.now());
+        boolean isSessionExpired =
+            existing
+                .getCreatedAt()
+                .plusMinutes(vnPayConfig.getTimeout())
+                .isBefore(LocalDateTime.now());
 
         if (isSessionExpired) {
           log.info(
@@ -92,15 +95,16 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     // 5. Create PaymentTransaction
-    PaymentTransaction transaction = PaymentTransaction.builder()
-        .user(booking.getUser())
-        .bookingId(booking.getId())
-        .bookingType(BookingType.TOUR_BOOKING)
-        .amount(booking.getTotalPrice())
-        .paymentMethod(PaymentMethod.VNPAY)
-        .transactionType(TransactionType.PAYMENT)
-        .status(PaymentStatus.PENDING)
-        .build();
+    PaymentTransaction transaction =
+        PaymentTransaction.builder()
+            .user(booking.getUser())
+            .bookingId(booking.getId())
+            .bookingType(BookingType.TOUR_BOOKING)
+            .amount(booking.getTotalPrice())
+            .paymentMethod(PaymentMethod.VNPAY)
+            .transactionType(TransactionType.PAYMENT)
+            .status(PaymentStatus.PENDING)
+            .build();
     transaction = paymentTransactionRepository.save(transaction);
 
     // 6. Build VNPAY payment URL (transactionReference set later by IPN callback)
@@ -123,28 +127,32 @@ public class PaymentServiceImpl implements PaymentService {
   public PaymentInitiationResponse initiateCoachPayment(
       UUID bookingId, InitiatePaymentRequest request, UUID userId) {
 
-    CoachBooking booking = coachBookingRepository
-        .findByIdAndUser_Id(bookingId, userId)
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    CoachBooking booking =
+        coachBookingRepository
+            .findByIdAndUser_Id(bookingId, userId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     if (booking.getStatus() != BookingStatus.PENDING) {
       throw new BaseAppException(BookingErrorCode.BOOKING_NOT_PENDING);
     }
 
-    if (booking.getPaymentDeadline() != null && booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
+    if (booking.getPaymentDeadline() != null
+        && booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
       throw new BaseAppException(BookingErrorCode.PAYMENT_DEADLINE_EXPIRED);
     }
 
-    var existingTransaction = paymentTransactionRepository.findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
-        booking.getId(), BookingType.COACH_BOOKING);
+    var existingTransaction =
+        paymentTransactionRepository.findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+            booking.getId(), BookingType.COACH_BOOKING);
 
     if (existingTransaction.isPresent()) {
       PaymentTransaction existing = existingTransaction.get();
       if (existing.getStatus() == PaymentStatus.PENDING) {
-        boolean isSessionExpired = existing
-            .getCreatedAt()
-            .plusMinutes(vnPayConfig.getTimeout())
-            .isBefore(LocalDateTime.now());
+        boolean isSessionExpired =
+            existing
+                .getCreatedAt()
+                .plusMinutes(vnPayConfig.getTimeout())
+                .isBefore(LocalDateTime.now());
 
         if (isSessionExpired) {
           existing.setStatus(PaymentStatus.FAILED);
@@ -161,15 +169,16 @@ public class PaymentServiceImpl implements PaymentService {
       }
     }
 
-    PaymentTransaction transaction = PaymentTransaction.builder()
-        .user(booking.getUser())
-        .bookingId(booking.getId())
-        .bookingType(BookingType.COACH_BOOKING)
-        .amount(booking.getTotalPrice())
-        .paymentMethod(PaymentMethod.VNPAY)
-        .transactionType(TransactionType.PAYMENT)
-        .status(PaymentStatus.PENDING)
-        .build();
+    PaymentTransaction transaction =
+        PaymentTransaction.builder()
+            .user(booking.getUser())
+            .bookingId(booking.getId())
+            .bookingType(BookingType.COACH_BOOKING)
+            .amount(booking.getTotalPrice())
+            .paymentMethod(PaymentMethod.VNPAY)
+            .transactionType(TransactionType.PAYMENT)
+            .status(PaymentStatus.PENDING)
+            .build();
     transaction = paymentTransactionRepository.save(transaction);
 
     String paymentUrl = buildVnPayUrl(transaction, request.getIpAddress());
@@ -211,7 +220,8 @@ public class PaymentServiceImpl implements PaymentService {
       return ipnResponse("01", "Order not found");
     }
 
-    PaymentTransaction transaction = paymentTransactionRepository.findById(transactionId).orElse(null);
+    PaymentTransaction transaction =
+        paymentTransactionRepository.findById(transactionId).orElse(null);
     if (transaction == null) {
       log.warn("IPN: Transaction not found: {}", transactionId);
       return ipnResponse("01", "Order not found");
@@ -226,8 +236,8 @@ public class PaymentServiceImpl implements PaymentService {
         return ipnResponse("01", "Order not found");
       }
     } else if (transaction.getBookingType() == BookingType.COACH_BOOKING) {
-      CoachBooking booking = coachBookingRepository
-          .findById(transaction.getBookingId()).orElse(null);
+      CoachBooking booking =
+          coachBookingRepository.findById(transaction.getBookingId()).orElse(null);
       if (booking == null) {
         log.warn("IPN: CoachBooking not found for transaction: {}", transactionId);
         return ipnResponse("01", "Order not found");
@@ -277,7 +287,8 @@ public class PaymentServiceImpl implements PaymentService {
 
       // Update booking status to PAID
       if (transaction.getBookingType() == BookingType.TOUR_BOOKING) {
-        TourBooking booking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
+        TourBooking booking =
+            tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
         if (booking != null) {
           booking.setStatus(BookingStatus.PAID);
           tourBookingRepository.save(booking);
@@ -291,8 +302,8 @@ public class PaymentServiceImpl implements PaymentService {
           }
         }
       } else if (transaction.getBookingType() == BookingType.COACH_BOOKING) {
-        CoachBooking booking = coachBookingRepository
-            .findById(transaction.getBookingId()).orElse(null);
+        CoachBooking booking =
+            coachBookingRepository.findById(transaction.getBookingId()).orElse(null);
         if (booking != null) {
           booking.setStatus(BookingStatus.PAID);
           coachBookingRepository.save(booking);
@@ -327,16 +338,18 @@ public class PaymentServiceImpl implements PaymentService {
     String vnpResponseCode = params.get("vnp_ResponseCode");
 
     // Verify checksum — if invalid, redirect with error status
-    boolean validChecksum = VnPayUtil.validateChecksum(params, secureHash, vnPayConfig.getSecretKey());
+    boolean validChecksum =
+        VnPayUtil.validateChecksum(params, secureHash, vnPayConfig.getSecretKey());
 
     VnPayResponseCode responseCode = VnPayResponseCode.fromCode(vnpResponseCode);
     String status = (validChecksum && responseCode.isSuccess()) ? "success" : "failed";
 
     // Build deeplink:
     // travery://payment-result?txnRef=xxx&status=success&responseCode=00
-    String deeplink = String.format(
-        "%s?txnRef=%s&status=%s&responseCode=%s",
-        vnPayConfig.getDeeplinkScheme(), txnRef, status, vnpResponseCode);
+    String deeplink =
+        String.format(
+            "%s?txnRef=%s&status=%s&responseCode=%s",
+            vnPayConfig.getDeeplinkScheme(), txnRef, status, vnpResponseCode);
 
     log.info(
         "VNPAY Return: txnRef={}, responseCode={}, redirecting to deeplink",
@@ -350,7 +363,8 @@ public class PaymentServiceImpl implements PaymentService {
   }
 
   private String buildVnPayUrl(PaymentTransaction transaction, String ipAddress) {
-    String orderInfo = String.format("Thanh toan booking %s", transaction.getBookingId().toString());
+    String orderInfo =
+        String.format("Thanh toan booking %s", transaction.getBookingId().toString());
 
     log.debug("[VNPAY BUILD] tmnCode   = {}", vnPayConfig.getTmnCode());
     log.debug("[VNPAY BUILD] returnUrl = {}", vnPayConfig.getReturnUrl());

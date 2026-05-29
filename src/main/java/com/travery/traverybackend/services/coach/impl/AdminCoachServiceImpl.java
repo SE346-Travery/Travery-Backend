@@ -68,9 +68,7 @@ public class AdminCoachServiceImpl implements AdminCoachService {
         seatLayoutRepository
             .findByIdWithItems(layoutId)
             .orElseThrow(
-                () ->
-                    new EntityNotFoundException(
-                        "Seat layout not found with id: " + layoutId));
+                () -> new EntityNotFoundException("Seat layout not found with id: " + layoutId));
 
     return coachMapper.toSeatLayoutResponse(layout);
   }
@@ -116,9 +114,7 @@ public class AdminCoachServiceImpl implements AdminCoachService {
     Coach coach =
         coachRepository
             .findById(coachId)
-            .orElseThrow(
-                () ->
-                    new EntityNotFoundException("Coach not found with id: " + coachId));
+            .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + coachId));
 
     return coachMapper.toCoachResponse(coach);
   }

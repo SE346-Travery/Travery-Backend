@@ -55,29 +55,32 @@ class GuideCoachTripControllerTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(controller, "responseFactory", responseFactory);
-    mockMvc = MockMvcBuilders.standaloneSetup(controller)
-        .setCustomArgumentResolvers(new HandlerMethodArgumentResolver() {
-          @Override
-          public boolean supportsParameter(MethodParameter parameter) {
-            return parameter.hasParameterAnnotation(
-                org.springframework.security.core.annotation.AuthenticationPrincipal.class);
-          }
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setCustomArgumentResolvers(
+                new HandlerMethodArgumentResolver() {
+                  @Override
+                  public boolean supportsParameter(MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(
+                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                  }
 
-          @Override
-          public Object resolveArgument(
-              MethodParameter parameter,
-              ModelAndViewContainer mavContainer,
-              NativeWebRequest webRequest,
-              WebDataBinderFactory binderFactory) {
-            return CustomUserDetails.builder().userId(guideId).build();
-          }
-        })
-        .build();
+                  @Override
+                  public Object resolveArgument(
+                      MethodParameter parameter,
+                      ModelAndViewContainer mavContainer,
+                      NativeWebRequest webRequest,
+                      WebDataBinderFactory binderFactory) {
+                    return CustomUserDetails.builder().userId(guideId).build();
+                  }
+                })
+            .build();
   }
 
   @Test
   void updateTripStatus_ReturnsOk() throws Exception {
-    UpdateCoachTripStatusRequest request = new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
+    UpdateCoachTripStatusRequest request =
+        new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
 
     when(guideService.updateTripStatus(eq(tripId), any(UpdateCoachTripStatusRequest.class)))
@@ -91,9 +94,11 @@ class GuideCoachTripControllerTest {
     when(responseFactory.success(eq(responseDto), anyString()))
         .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(put("/api/v1/guide/coach-trips/" + tripId + "/status")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+    mockMvc
+        .perform(
+            put("/api/v1/guide/coach-trips/" + tripId + "/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Update coach trip status successfully"));
   }
@@ -106,7 +111,8 @@ class GuideCoachTripControllerTest {
 
     when(responseFactory.success(any(String.class))).thenReturn(ResponseEntity.ok(successResponse));
 
-    mockMvc.perform(put("/api/v1/guide/coach-trips/" + tripId + "/bookings/" + bookingId + "/no-show"))
+    mockMvc
+        .perform(put("/api/v1/guide/coach-trips/" + tripId + "/bookings/" + bookingId + "/no-show"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Mark passenger as no-show successfully"));
   }

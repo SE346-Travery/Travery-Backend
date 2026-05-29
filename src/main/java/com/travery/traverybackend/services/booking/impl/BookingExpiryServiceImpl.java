@@ -1,18 +1,18 @@
 package com.travery.traverybackend.services.booking.impl;
 
+import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.booking.TourBooking;
+import com.travery.traverybackend.entities.coach.CoachTrip;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
-import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
-import com.travery.traverybackend.entities.booking.CoachBooking;
-import com.travery.traverybackend.entities.coach.CoachTrip;
-import com.travery.traverybackend.enums.coach.CoachTripStatus;
+import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.booking.BookingExpiryService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -80,7 +80,8 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
         coachBookingRepository.findExpiredPendingBookings(LocalDateTime.now());
 
     if (!expiredCoachBookings.isEmpty()) {
-      log.info("Backup cleanup: found {} expired PENDING coach bookings", expiredCoachBookings.size());
+      log.info(
+          "Backup cleanup: found {} expired PENDING coach bookings", expiredCoachBookings.size());
       for (CoachBooking booking : expiredCoachBookings) {
         cancelAndReleaseCoachSeats(booking);
       }
@@ -122,7 +123,8 @@ public class BookingExpiryServiceImpl implements BookingExpiryService {
     booking.setStatus(BookingStatus.CANCELLED);
     coachBookingRepository.save(booking);
 
-    CoachTrip trip = coachTripRepository.findByIdForUpdate(booking.getCoachTrip().getId()).orElse(null);
+    CoachTrip trip =
+        coachTripRepository.findByIdForUpdate(booking.getCoachTrip().getId()).orElse(null);
     if (trip == null) {
       log.warn("CoachTrip not found for booking {}", booking.getId());
       return;

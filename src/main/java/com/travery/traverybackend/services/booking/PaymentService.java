@@ -15,8 +15,8 @@ public interface PaymentService {
       UUID bookingId, InitiatePaymentRequest request, UUID userId);
 
   /**
-   * Initiate VNPAY payment for a PENDING coach booking. Validates ownership, deadline, and creates a
-   * PaymentTransaction. Returns a VNPAY payment URL.
+   * Initiate VNPAY payment for a PENDING coach booking. Validates ownership, deadline, and creates
+   * a PaymentTransaction. Returns a VNPAY payment URL.
    */
   PaymentInitiationResponse initiateCoachPayment(
       UUID bookingId, InitiatePaymentRequest request, UUID userId);

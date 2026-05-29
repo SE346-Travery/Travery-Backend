@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CoachErrorCode implements AppErrorCode {
-
   COACH_NOT_FOUND("COACH_101", "Coach not found", HttpStatus.NOT_FOUND),
   DRIVER_NOT_FOUND("COACH_102", "Driver not found", HttpStatus.NOT_FOUND),
   ROUTE_NOT_FOUND("COACH_103", "Route not found", HttpStatus.NOT_FOUND),

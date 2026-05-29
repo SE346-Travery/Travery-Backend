@@ -30,7 +30,7 @@ public class CoachBookingResponse {
   private String contactPhone;
   private BookingStatus status;
   private List<String> bookedSeatNames;
-  
+
   // Payment URL if generated during booking creation
   private PaymentInitiationResponse payment;
 }

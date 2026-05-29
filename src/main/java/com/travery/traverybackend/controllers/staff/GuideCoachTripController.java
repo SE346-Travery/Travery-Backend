@@ -1,9 +1,9 @@
 package com.travery.traverybackend.controllers.staff;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachTripStatusRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.base.SuccessResponse;
-import com.travery.traverybackend.dtos.request.coach.UpdateCoachTripStatusRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.services.coach.GuideCoachTripService;
 import jakarta.validation.Valid;

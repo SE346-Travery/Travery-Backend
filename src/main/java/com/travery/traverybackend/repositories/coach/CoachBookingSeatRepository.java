@@ -12,27 +12,31 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CoachBookingSeatRepository extends JpaRepository<CoachBookingSeat, UUID> {
 
-    @Query("SELECT cbs FROM CoachBookingSeat cbs "
-            + "WHERE cbs.coachBooking.coachTrip.id = :tripId "
-            + "AND cbs.coachBooking.status NOT IN :excludedStatuses")
-    List<CoachBookingSeat> findByTripIdAndBookingStatusNotIn(
-            UUID tripId, List<BookingStatus> excludedStatuses);
+  @Query(
+      "SELECT cbs FROM CoachBookingSeat cbs "
+          + "WHERE cbs.coachBooking.coachTrip.id = :tripId "
+          + "AND cbs.coachBooking.status NOT IN :excludedStatuses")
+  List<CoachBookingSeat> findByTripIdAndBookingStatusNotIn(
+      UUID tripId, List<BookingStatus> excludedStatuses);
 
-    @Query("SELECT COUNT(cbs) FROM CoachBookingSeat cbs WHERE cbs.coachBooking.coachTrip.id = :tripId AND cbs.coachBooking.status = :status")
-    int countByCoachTripIdAndBookingStatus(UUID tripId, BookingStatus status);
+  @Query(
+      "SELECT COUNT(cbs) FROM CoachBookingSeat cbs WHERE cbs.coachBooking.coachTrip.id = :tripId AND cbs.coachBooking.status = :status")
+  int countByCoachTripIdAndBookingStatus(UUID tripId, BookingStatus status);
 
-    @Query("SELECT cbs.coachBooking.coachTrip.id, COUNT(cbs) "
-            + "FROM CoachBookingSeat cbs "
-            + "WHERE cbs.coachBooking.coachTrip.id IN :tripIds "
-            + "AND cbs.coachBooking.status NOT IN :excludedStatuses "
-            + "GROUP BY cbs.coachBooking.coachTrip.id")
-    List<Object[]> countBookedSeatsForTrips(
-            @Param("tripIds") List<UUID> tripIds,
-            @Param("excludedStatuses") List<BookingStatus> excludedStatuses);
+  @Query(
+      "SELECT cbs.coachBooking.coachTrip.id, COUNT(cbs) "
+          + "FROM CoachBookingSeat cbs "
+          + "WHERE cbs.coachBooking.coachTrip.id IN :tripIds "
+          + "AND cbs.coachBooking.status NOT IN :excludedStatuses "
+          + "GROUP BY cbs.coachBooking.coachTrip.id")
+  List<Object[]> countBookedSeatsForTrips(
+      @Param("tripIds") List<UUID> tripIds,
+      @Param("excludedStatuses") List<BookingStatus> excludedStatuses);
 
-    @Query("SELECT cbs.coachBooking.id, COUNT(cbs) "
-            + "FROM CoachBookingSeat cbs "
-            + "WHERE cbs.coachBooking.id IN :bookingIds "
-            + "GROUP BY cbs.coachBooking.id")
-    List<Object[]> countSeatsByBookingIds(@Param("bookingIds") List<UUID> bookingIds);
+  @Query(
+      "SELECT cbs.coachBooking.id, COUNT(cbs) "
+          + "FROM CoachBookingSeat cbs "
+          + "WHERE cbs.coachBooking.id IN :bookingIds "
+          + "GROUP BY cbs.coachBooking.id")
+  List<Object[]> countSeatsByBookingIds(@Param("bookingIds") List<UUID> bookingIds);
 }

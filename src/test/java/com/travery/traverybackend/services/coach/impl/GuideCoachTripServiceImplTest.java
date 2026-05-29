@@ -18,7 +18,6 @@ import com.travery.traverybackend.repositories.coach.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,17 +28,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class GuideCoachTripServiceImplTest {
 
-  @Mock
-  private CoachTripRepository coachTripRepository;
-  @Mock
-  private CoachBookingRepository coachBookingRepository;
-  @Mock
-  private CoachBookingSeatRepository coachBookingSeatRepository;
-  @Mock
-  private CoachMapper coachMapper;
+  @Mock private CoachTripRepository coachTripRepository;
+  @Mock private CoachBookingRepository coachBookingRepository;
+  @Mock private CoachBookingSeatRepository coachBookingSeatRepository;
+  @Mock private CoachMapper coachMapper;
 
-  @InjectMocks
-  private GuideCoachTripServiceImpl guideService;
+  @InjectMocks private GuideCoachTripServiceImpl guideService;
 
   private UUID tripId;
   private UUID bookingId;
@@ -51,35 +45,42 @@ class GuideCoachTripServiceImplTest {
     tripId = UUID.randomUUID();
     bookingId = UUID.randomUUID();
 
-    Route route = Route.builder().id(UUID.randomUUID()).originDestination(new Destination())
-        .destinationDestination(new Destination()).build();
+    Route route =
+        Route.builder()
+            .id(UUID.randomUUID())
+            .originDestination(new Destination())
+            .destinationDestination(new Destination())
+            .build();
     SeatLayout seatLayout = SeatLayout.builder().totalSeats(40).items(List.of()).build();
-    Coach coach = Coach.builder().id(UUID.randomUUID()).coachType(CoachType.BED).seatLayout(seatLayout).build();
+    Coach coach =
+        Coach.builder()
+            .id(UUID.randomUUID())
+            .coachType(CoachType.BED)
+            .seatLayout(seatLayout)
+            .build();
     Driver driver = Driver.builder().id(UUID.randomUUID()).fullName("John Doe").build();
 
-    trip = CoachTrip.builder()
-        .id(tripId)
-        .route(route)
-        .coach(coach)
-        .driver(driver)
-        .status(CoachTripStatus.OPEN)
-        .build();
+    trip =
+        CoachTrip.builder()
+            .id(tripId)
+            .route(route)
+            .coach(coach)
+            .driver(driver)
+            .status(CoachTripStatus.OPEN)
+            .build();
 
-    booking = CoachBooking.builder()
-        .id(bookingId)
-        .coachTrip(trip)
-        .status(BookingStatus.PAID)
-        .build();
+    booking =
+        CoachBooking.builder().id(bookingId).coachTrip(trip).status(BookingStatus.PAID).build();
   }
 
   @Test
   void updateTripStatus_Success() {
-    UpdateCoachTripStatusRequest request = new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
+    UpdateCoachTripStatusRequest request =
+        new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
-    when(coachMapper.toCoachTripDetailResponse(any()))
-        .thenReturn(new CoachTripDetailResponse());
+    when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
     CoachTripDetailResponse response = guideService.updateTripStatus(tripId, request);
 

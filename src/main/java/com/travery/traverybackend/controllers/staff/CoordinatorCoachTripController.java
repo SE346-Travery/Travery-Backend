@@ -1,16 +1,16 @@
 package com.travery.traverybackend.controllers.staff;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
-import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachTripRequest;
 import com.travery.traverybackend.dtos.request.coach.ReassignCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.ReassignDriverRequest;
+import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
+import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.coach.CoordinatorCoachTripService;
 import jakarta.validation.Valid;
-import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,7 +39,8 @@ public class CoordinatorCoachTripController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<CoachTripDetailResponse>> createTrip(
       @Valid @RequestBody CreateCoachTripRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-    CoachTripDetailResponse response = coordinatorService.createTrip(request, userDetails.getUserId());
+    CoachTripDetailResponse response =
+        coordinatorService.createTrip(request, userDetails.getUserId());
     return success(response, "Create coach trip successfully");
   }
 
@@ -48,12 +49,14 @@ public class CoordinatorCoachTripController extends AbstractBaseController {
       @RequestParam(required = false) CoachTripStatus status,
       Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-    Page<CoachTripResponse> response = coordinatorService.getTrips(userDetails.getUserId(), status, pageable);
+    Page<CoachTripResponse> response =
+        coordinatorService.getTrips(userDetails.getUserId(), status, pageable);
     return success(response, "Get coach trips successfully");
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<SingleResponse<CoachTripDetailResponse>> getTripDetail(@PathVariable UUID id) {
+  public ResponseEntity<SingleResponse<CoachTripDetailResponse>> getTripDetail(
+      @PathVariable UUID id) {
     CoachTripDetailResponse response = coordinatorService.getTripDetail(id);
     return success(response, "Get coach trip detail successfully");
   }

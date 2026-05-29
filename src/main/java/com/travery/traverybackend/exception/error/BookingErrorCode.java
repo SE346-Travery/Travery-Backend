@@ -19,11 +19,15 @@ public enum BookingErrorCode implements AppErrorCode {
       "BOOKING_104",
       "Booking requires at least 5 days before departure date",
       HttpStatus.BAD_REQUEST),
-      
+
   COACH_TRIP_NOT_FOUND("BOOKING_105", "Coach trip not found", HttpStatus.NOT_FOUND),
   COACH_TRIP_NOT_OPEN("BOOKING_106", "Coach trip is not open for booking", HttpStatus.CONFLICT),
-  SEAT_ALREADY_BOOKED("BOOKING_107", "One or more requested seats are already booked", HttpStatus.CONFLICT),
-  INVALID_SEAT_LAYOUT("BOOKING_108", "One or more requested seats are invalid for this coach", HttpStatus.BAD_REQUEST),
+  SEAT_ALREADY_BOOKED(
+      "BOOKING_107", "One or more requested seats are already booked", HttpStatus.CONFLICT),
+  INVALID_SEAT_LAYOUT(
+      "BOOKING_108",
+      "One or more requested seats are invalid for this coach",
+      HttpStatus.BAD_REQUEST),
 
   // === BOOKING ACCESS ===
   BOOKING_NOT_FOUND("BOOKING_201", "Booking not found", HttpStatus.NOT_FOUND),

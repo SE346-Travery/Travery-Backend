@@ -34,25 +34,16 @@ import org.springframework.data.domain.Pageable;
 @ExtendWith(MockitoExtension.class)
 class CoordinatorCoachTripServiceImplTest {
 
-  @Mock
-  private CoachTripRepository coachTripRepository;
-  @Mock
-  private RouteRepository routeRepository;
-  @Mock
-  private CoachRepository coachRepository;
-  @Mock
-  private DriverRepository driverRepository;
-  @Mock
-  private UserRepository userRepository;
-  @Mock
-  private CoachBookingRepository coachBookingRepository;
-  @Mock
-  private CoachBookingSeatRepository coachBookingSeatRepository;
-  @Mock
-  private CoachMapper coachMapper;
+  @Mock private CoachTripRepository coachTripRepository;
+  @Mock private RouteRepository routeRepository;
+  @Mock private CoachRepository coachRepository;
+  @Mock private DriverRepository driverRepository;
+  @Mock private UserRepository userRepository;
+  @Mock private CoachBookingRepository coachBookingRepository;
+  @Mock private CoachBookingSeatRepository coachBookingSeatRepository;
+  @Mock private CoachMapper coachMapper;
 
-  @InjectMocks
-  private CoordinatorCoachTripServiceImpl coordinatorService;
+  @InjectMocks private CoordinatorCoachTripServiceImpl coordinatorService;
 
   private UUID tripId;
   private UUID coordinatorId;
@@ -78,32 +69,35 @@ class CoordinatorCoachTripServiceImplTest {
 
     Destination origin = Destination.builder().name("HN").build();
     Destination dest = Destination.builder().name("HCM").build();
-    route = Route.builder().id(routeId).originDestination(origin).destinationDestination(dest).build();
+    route =
+        Route.builder().id(routeId).originDestination(origin).destinationDestination(dest).build();
 
     SeatLayout seatLayout = SeatLayout.builder().totalSeats(40).items(List.of()).build();
     coach = Coach.builder().id(coachId).coachType(CoachType.BED).seatLayout(seatLayout).build();
 
     driver = Driver.builder().id(driverId).fullName("John Doe").build();
 
-    trip = CoachTrip.builder()
-        .id(tripId)
-        .route(route)
-        .coach(coach)
-        .driver(driver)
-        .coordinator(coordinator)
-        .departureTime(LocalDateTime.now().plusDays(1))
-        .status(CoachTripStatus.OPEN)
-        .build();
+    trip =
+        CoachTrip.builder()
+            .id(tripId)
+            .route(route)
+            .coach(coach)
+            .driver(driver)
+            .coordinator(coordinator)
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .status(CoachTripStatus.OPEN)
+            .build();
   }
 
   @Test
   void createTrip_Success() {
-    CreateCoachTripRequest request = CreateCoachTripRequest.builder()
-        .routeId(routeId)
-        .coachId(coachId)
-        .driverId(driverId)
-        .departureTime(LocalDateTime.now().plusDays(1))
-        .build();
+    CreateCoachTripRequest request =
+        CreateCoachTripRequest.builder()
+            .routeId(routeId)
+            .coachId(coachId)
+            .driverId(driverId)
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .build();
 
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
@@ -111,8 +105,7 @@ class CoordinatorCoachTripServiceImplTest {
     when(driverRepository.findById(driverId)).thenReturn(Optional.of(driver));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     // removed unused stubs
-    when(coachMapper.toCoachTripDetailResponse(any()))
-        .thenReturn(new CoachTripDetailResponse());
+    when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
     CoachTripDetailResponse response = coordinatorService.createTrip(request, coordinatorId);
 
@@ -126,7 +119,8 @@ class CoordinatorCoachTripServiceImplTest {
     Page<CoachTrip> tripPage = new PageImpl<>(List.of(trip));
 
     when(coachTripRepository.findByCoordinator_Id(coordinatorId, pageable)).thenReturn(tripPage);
-    when(coachBookingSeatRepository.countBookedSeatsForTrips(any(), any())).thenReturn(java.util.Collections.emptyList());
+    when(coachBookingSeatRepository.countBookedSeatsForTrips(any(), any()))
+        .thenReturn(java.util.Collections.emptyList());
     when(coachMapper.toCoachTripResponse(eq(trip), anyInt())).thenReturn(new CoachTripResponse());
 
     Page<CoachTripResponse> response = coordinatorService.getTrips(coordinatorId, null, pageable);
@@ -151,14 +145,17 @@ class CoordinatorCoachTripServiceImplTest {
   @Test
   void reassignCoach_Success() {
     UUID newCoachId = UUID.randomUUID();
-    Coach newCoach = Coach.builder().id(newCoachId).coachType(CoachType.LIMOUSINE).seatLayout(coach.getSeatLayout())
-        .build();
+    Coach newCoach =
+        Coach.builder()
+            .id(newCoachId)
+            .coachType(CoachType.LIMOUSINE)
+            .seatLayout(coach.getSeatLayout())
+            .build();
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
     when(coachRepository.findById(newCoachId)).thenReturn(Optional.of(newCoach));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
-    when(coachMapper.toCoachTripDetailResponse(any()))
-        .thenReturn(new CoachTripDetailResponse());
+    when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
     CoachTripDetailResponse response = coordinatorService.reassignCoach(tripId, newCoachId);
 
@@ -174,8 +171,7 @@ class CoordinatorCoachTripServiceImplTest {
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
     when(driverRepository.findById(newDriverId)).thenReturn(Optional.of(newDriver));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
-    when(coachMapper.toCoachTripDetailResponse(any()))
-        .thenReturn(new CoachTripDetailResponse());
+    when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
     CoachTripDetailResponse response = coordinatorService.reassignDriver(tripId, newDriverId);
 

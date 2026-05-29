@@ -49,14 +49,11 @@ class CoordinatorCoachTripControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock
-  private CoordinatorCoachTripService coordinatorService;
+  @Mock private CoordinatorCoachTripService coordinatorService;
 
-  @Mock
-  private ResponseFactory responseFactory;
+  @Mock private ResponseFactory responseFactory;
 
-  @InjectMocks
-  private CoordinatorCoachTripController controller;
+  @InjectMocks private CoordinatorCoachTripController controller;
 
   private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
   private UUID coordinatorId = UUID.randomUUID();
@@ -65,36 +62,38 @@ class CoordinatorCoachTripControllerTest {
   @BeforeEach
   void setUp() {
     ReflectionTestUtils.setField(controller, "responseFactory", responseFactory);
-    mockMvc = MockMvcBuilders.standaloneSetup(controller)
-        .setCustomArgumentResolvers(
-            new PageableHandlerMethodArgumentResolver(),
-            new HandlerMethodArgumentResolver() {
-              @Override
-              public boolean supportsParameter(MethodParameter parameter) {
-                return parameter.hasParameterAnnotation(
-                    org.springframework.security.core.annotation.AuthenticationPrincipal.class);
-              }
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setCustomArgumentResolvers(
+                new PageableHandlerMethodArgumentResolver(),
+                new HandlerMethodArgumentResolver() {
+                  @Override
+                  public boolean supportsParameter(MethodParameter parameter) {
+                    return parameter.hasParameterAnnotation(
+                        org.springframework.security.core.annotation.AuthenticationPrincipal.class);
+                  }
 
-              @Override
-              public Object resolveArgument(
-                  MethodParameter parameter,
-                  ModelAndViewContainer mavContainer,
-                  NativeWebRequest webRequest,
-                  WebDataBinderFactory binderFactory) {
-                return CustomUserDetails.builder().userId(coordinatorId).build();
-              }
-            })
-        .build();
+                  @Override
+                  public Object resolveArgument(
+                      MethodParameter parameter,
+                      ModelAndViewContainer mavContainer,
+                      NativeWebRequest webRequest,
+                      WebDataBinderFactory binderFactory) {
+                    return CustomUserDetails.builder().userId(coordinatorId).build();
+                  }
+                })
+            .build();
   }
 
   @Test
   void createTrip_ReturnsOk() throws Exception {
-    CreateCoachTripRequest request = CreateCoachTripRequest.builder()
-        .routeId(UUID.randomUUID())
-        .coachId(UUID.randomUUID())
-        .driverId(UUID.randomUUID())
-        .departureTime(LocalDateTime.now().plusDays(1))
-        .build();
+    CreateCoachTripRequest request =
+        CreateCoachTripRequest.builder()
+            .routeId(UUID.randomUUID())
+            .coachId(UUID.randomUUID())
+            .driverId(UUID.randomUUID())
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .build();
 
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
     when(coordinatorService.createTrip(any(CreateCoachTripRequest.class), eq(coordinatorId)))
@@ -108,9 +107,11 @@ class CoordinatorCoachTripControllerTest {
     when(responseFactory.success(eq(responseDto), anyString()))
         .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(post("/api/v1/coordinator/coach-trips")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)))
+    mockMvc
+        .perform(
+            post("/api/v1/coordinator/coach-trips")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Create coach trip successfully"));
   }
@@ -118,18 +119,23 @@ class CoordinatorCoachTripControllerTest {
   @Test
   void getTrips_ReturnsOk() throws Exception {
     Page<CoachTripResponse> page = new PageImpl<>(List.of(new CoachTripResponse()));
-    when(coordinatorService.getTrips(eq(coordinatorId), org.mockito.ArgumentMatchers.nullable(com.travery.traverybackend.enums.coach.CoachTripStatus.class), any())).thenReturn(page);
+    when(coordinatorService.getTrips(
+            eq(coordinatorId),
+            org.mockito.ArgumentMatchers.nullable(
+                com.travery.traverybackend.enums.coach.CoachTripStatus.class),
+            any()))
+        .thenReturn(page);
 
     SingleResponse<Page<CoachTripResponse>> singleResponse = new SingleResponse<>();
     singleResponse.setData(null); // Avoid PageImpl Jackson serialization issue
     singleResponse.setMessage("Get coach trips successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(page), anyString())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(page), anyString()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(get("/api/v1/coordinator/coach-trips")
-        .param("page", "0")
-        .param("size", "10"))
+    mockMvc
+        .perform(get("/api/v1/coordinator/coach-trips").param("page", "0").param("size", "10"))
         .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Get coach trips successfully"));
@@ -145,16 +151,19 @@ class CoordinatorCoachTripControllerTest {
     singleResponse.setMessage("Get coach trip detail successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(responseDto), anyString())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(responseDto), anyString()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(get("/api/v1/coordinator/coach-trips/" + tripId))
+    mockMvc
+        .perform(get("/api/v1/coordinator/coach-trips/" + tripId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Get coach trip detail successfully"));
   }
 
   @Test
   void reassignCoach_ReturnsOk() throws Exception {
-    ReassignCoachRequest request = ReassignCoachRequest.builder().coachId(UUID.randomUUID()).build();
+    ReassignCoachRequest request =
+        ReassignCoachRequest.builder().coachId(UUID.randomUUID()).build();
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
 
     when(coordinatorService.reassignCoach(eq(tripId), any(UUID.class))).thenReturn(responseDto);
@@ -164,18 +173,22 @@ class CoordinatorCoachTripControllerTest {
     singleResponse.setMessage("Reassign coach successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(responseDto), anyString())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(responseDto), anyString()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(put("/api/v1/coordinator/coach-trips/" + tripId + "/coach")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)))
+    mockMvc
+        .perform(
+            put("/api/v1/coordinator/coach-trips/" + tripId + "/coach")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Reassign coach successfully"));
   }
 
   @Test
   void reassignDriver_ReturnsOk() throws Exception {
-    ReassignDriverRequest request = ReassignDriverRequest.builder().driverId(UUID.randomUUID()).build();
+    ReassignDriverRequest request =
+        ReassignDriverRequest.builder().driverId(UUID.randomUUID()).build();
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
 
     when(coordinatorService.reassignDriver(eq(tripId), any(UUID.class))).thenReturn(responseDto);
@@ -185,11 +198,14 @@ class CoordinatorCoachTripControllerTest {
     singleResponse.setMessage("Reassign driver successfully");
     singleResponse.setHttpStatus(200);
 
-    when(responseFactory.success(eq(responseDto), anyString())).thenReturn(ResponseEntity.ok(singleResponse));
+    when(responseFactory.success(eq(responseDto), anyString()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
 
-    mockMvc.perform(put("/api/v1/coordinator/coach-trips/" + tripId + "/driver")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(request)))
+    mockMvc
+        .perform(
+            put("/api/v1/coordinator/coach-trips/" + tripId + "/driver")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Reassign driver successfully"));
   }

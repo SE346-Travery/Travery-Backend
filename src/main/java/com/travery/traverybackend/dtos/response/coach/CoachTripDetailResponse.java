@@ -18,23 +18,23 @@ public class CoachTripDetailResponse {
   private LocalDateTime departureTime;
   private LocalDateTime arrivalTime;
   private CoachTripStatus status;
-  
+
   // Route info
   private UUID routeId;
   private String originDestinationName;
   private String destinationDestinationName;
   private BigDecimal basePrice;
-  
+
   // Coach info
   private UUID coachId;
   private String coachLicensePlate;
   private String coachType;
-  
+
   // Driver info
   private UUID driverId;
   private String driverName;
   private String driverPhone;
-  
+
   // Booking statistics
   private int totalSeats;
   private int availableSeats;

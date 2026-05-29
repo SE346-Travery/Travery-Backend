@@ -3,7 +3,6 @@ package com.travery.traverybackend.dtos.response.coach;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.finance.PaymentMethod;
 import com.travery.traverybackend.enums.finance.PaymentStatus;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;

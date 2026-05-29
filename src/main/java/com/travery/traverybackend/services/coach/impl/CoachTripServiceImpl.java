@@ -7,7 +7,6 @@ import com.travery.traverybackend.dtos.response.coach.SeatStatusResponse;
 import com.travery.traverybackend.dtos.response.coach.StationResponse;
 import com.travery.traverybackend.entities.booking.CoachBookingSeat;
 import com.travery.traverybackend.entities.coach.CoachTrip;
-import com.travery.traverybackend.entities.coach.Route;
 import com.travery.traverybackend.entities.coach.SeatLayoutItem;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.coach.DepartureTimeSlot;
@@ -80,8 +79,9 @@ public class CoachTripServiceImpl implements CoachTripService {
 
     List<UUID> tripIds = trips.stream().map(CoachTrip::getId).collect(Collectors.toList());
     List<BookingStatus> excludedStatuses = List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW);
-    List<Object[]> bookedCounts = coachBookingSeatRepository.countBookedSeatsForTrips(tripIds, excludedStatuses);
-    
+    List<Object[]> bookedCounts =
+        coachBookingSeatRepository.countBookedSeatsForTrips(tripIds, excludedStatuses);
+
     java.util.Map<UUID, Integer> bookedSeatsMap = new java.util.HashMap<>();
     for (Object[] count : bookedCounts) {
       bookedSeatsMap.put((UUID) count[0], ((Number) count[1]).intValue());
@@ -91,7 +91,7 @@ public class CoachTripServiceImpl implements CoachTripService {
 
     for (CoachTrip trip : trips) {
       int totalSeats = trip.getCoach().getSeatLayout().getTotalSeats();
-      
+
       // Count booked seats from map
       int bookedSeats = bookedSeatsMap.getOrDefault(trip.getId(), 0);
       int availableSeats = totalSeats - bookedSeats;
@@ -105,8 +105,12 @@ public class CoachTripServiceImpl implements CoachTripService {
               .totalSeats(totalSeats)
               .availableSeats(availableSeats)
               .basePrice(trip.getRoute().getBasePrice())
-              .originDestination(coachMapper.toDestinationWithStationsResponse(trip.getRoute().getOriginDestination()))
-              .destinationDestination(coachMapper.toDestinationWithStationsResponse(trip.getRoute().getDestinationDestination()))
+              .originDestination(
+                  coachMapper.toDestinationWithStationsResponse(
+                      trip.getRoute().getOriginDestination()))
+              .destinationDestination(
+                  coachMapper.toDestinationWithStationsResponse(
+                      trip.getRoute().getDestinationDestination()))
               .status(trip.getStatus())
               .build();
       responses.add(response);
@@ -137,13 +141,10 @@ public class CoachTripServiceImpl implements CoachTripService {
 
     List<BookingStatus> excludedStatuses = List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW);
     List<CoachBookingSeat> bookedSeats =
-        coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(
-            tripId, excludedStatuses);
+        coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(tripId, excludedStatuses);
 
     Set<UUID> bookedSeatItemIds =
-        bookedSeats.stream()
-            .map(bs -> bs.getSeatLayoutItem().getId())
-            .collect(Collectors.toSet());
+        bookedSeats.stream().map(bs -> bs.getSeatLayoutItem().getId()).collect(Collectors.toSet());
 
     List<SeatLayoutItem> items = trip.getCoach().getSeatLayout().getItems();
     List<SeatStatusResponse> seatStatuses = new ArrayList<>();

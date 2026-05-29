@@ -37,27 +37,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CoachTripController.class)
 @AutoConfigureMockMvc(addFilters = false) // Ignore security filters for public endpoints testing
-@Import({ ResponseFactory.class, SecurityConfig.class, AppExceptionHandler.class })
+@Import({ResponseFactory.class, SecurityConfig.class, AppExceptionHandler.class})
 class CoachTripControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
   private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private CoachTripService coachTripService;
+  @MockitoBean private CoachTripService coachTripService;
 
-  @MockitoBean
-  private JwtService jwtService;
-  @MockitoBean
-  private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  @MockitoBean
-  private TokenBlacklistService tokenBlacklistService;
-  @MockitoBean
-  private DaoAuthenticationProvider daoAuthenticationProvider;
-  @MockitoBean
-  private UserDetailsService userDetailsService;
+  @MockitoBean private JwtService jwtService;
+  @MockitoBean private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+  @MockitoBean private TokenBlacklistService tokenBlacklistService;
+  @MockitoBean private DaoAuthenticationProvider daoAuthenticationProvider;
+  @MockitoBean private UserDetailsService userDetailsService;
 
   @BeforeEach
   void setUp() {
@@ -81,17 +74,17 @@ class CoachTripControllerTest {
 
   @Test
   void searchTrips_ValidRequest_ReturnsOk() throws Exception {
-    SearchCoachTripRequest request = SearchCoachTripRequest.builder()
-        .originId(UUID.randomUUID())
-        .destinationId(UUID.randomUUID())
-        .departureDate(LocalDate.now())
-        .build();
+    SearchCoachTripRequest request =
+        SearchCoachTripRequest.builder()
+            .originId(UUID.randomUUID())
+            .destinationId(UUID.randomUUID())
+            .departureDate(LocalDate.now())
+            .build();
 
     CoachTripResponse resp = new CoachTripResponse();
     resp.setTotalSeats(34);
 
-    when(coachTripService.searchTrips(any(SearchCoachTripRequest.class)))
-        .thenReturn(List.of(resp));
+    when(coachTripService.searchTrips(any(SearchCoachTripRequest.class))).thenReturn(List.of(resp));
 
     mockMvc
         .perform(
