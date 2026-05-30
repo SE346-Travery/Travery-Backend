@@ -1,11 +1,13 @@
 package com.travery.traverybackend.services.booking.impl;
 
+import com.travery.traverybackend.entities.booking.HotelBooking;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
+import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.services.booking.BookingExpiryService;
@@ -23,39 +25,52 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookingExpiryServiceImpl implements BookingExpiryService {
 
   private final TourBookingRepository tourBookingRepository;
+  private final HotelBookingRepository hotelBookingRepository;
   private final TourInstanceRepository tourInstanceRepository;
   private final BookingMemberRepository bookingMemberRepository;
 
   @Override
   @Transactional
   public void cancelExpiredBooking(UUID bookingId) {
-    TourBooking booking = tourBookingRepository.findById(bookingId).orElse(null);
-
-    // Idempotent: if booking not found or already cancelled/paid, do nothing
-    if (booking == null || booking.getStatus() != BookingStatus.PENDING) {
-      log.debug("Booking {} skipped — not found or not PENDING", bookingId);
+    TourBooking tourBooking = tourBookingRepository.findById(bookingId).orElse(null);
+    if (tourBooking != null && tourBooking.getStatus() == BookingStatus.PENDING) {
+      cancelAndReleaseSeats(tourBooking);
+      log.info("TourBooking {} auto-cancelled (payment deadline expired)", bookingId);
       return;
     }
 
-    cancelAndReleaseSeats(booking);
-    log.info("Booking {} auto-cancelled (payment deadline expired)", bookingId);
+    HotelBooking hotelBooking = hotelBookingRepository.findById(bookingId).orElse(null);
+    if (hotelBooking != null && hotelBooking.getStatus() == BookingStatus.PENDING) {
+      hotelBooking.setStatus(BookingStatus.CANCELLED);
+      hotelBookingRepository.save(hotelBooking);
+      log.info("HotelBooking {} auto-cancelled (payment deadline expired)", bookingId);
+    }
   }
 
   @Override
   @Transactional
   public void cleanupExpiredBookings() {
-    List<TourBooking> expiredBookings =
+    List<TourBooking> expiredTourBookings =
         tourBookingRepository.findExpiredPendingBookings(LocalDateTime.now());
 
-    if (expiredBookings.isEmpty()) {
-      return;
-    }
-
-    log.info("Backup cleanup: found {} expired PENDING bookings", expiredBookings.size());
-    for (TourBooking booking : expiredBookings) {
+    for (TourBooking booking : expiredTourBookings) {
       cancelAndReleaseSeats(booking);
     }
-    log.info("Backup cleanup: cancelled {} expired bookings", expiredBookings.size());
+
+    List<HotelBooking> expiredHotelBookings =
+        hotelBookingRepository.findExpiredPendingBookings(LocalDateTime.now());
+
+    for (HotelBooking booking : expiredHotelBookings) {
+      booking.setStatus(BookingStatus.CANCELLED);
+      hotelBookingRepository.save(booking);
+    }
+
+    if (!expiredTourBookings.isEmpty() || !expiredHotelBookings.isEmpty()) {
+      log.info(
+          "Cleanup: cancelled {} tour bookings and {} hotel bookings",
+          expiredTourBookings.size(),
+          expiredHotelBookings.size());
+    }
   }
 
   /**

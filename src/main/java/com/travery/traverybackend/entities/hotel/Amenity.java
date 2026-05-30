@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Entity
 @Table(name = "amenities")
@@ -22,6 +24,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Amenity extends AbstractBaseEntity {
 
+  @FullTextField(analyzer = "standard")
   @Column(nullable = false, unique = true, length = 100)
   private String name;
 
@@ -30,5 +33,6 @@ public class Amenity extends AbstractBaseEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 50)
+  @GenericField
   private AmenityType type;
 }

@@ -37,6 +37,12 @@ public class HotelBooking extends AbstractBaseEntity {
   @Column(name = "payment_deadline")
   private LocalDateTime paymentDeadline;
 
+  @Column(name = "actual_check_in_time")
+  private LocalDateTime actualCheckInTime;
+
+  @Column(name = "actual_check_out_time")
+  private LocalDateTime actualCheckOutTime;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 50)
   @Builder.Default
