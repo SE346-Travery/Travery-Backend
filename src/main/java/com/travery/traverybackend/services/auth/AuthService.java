@@ -132,8 +132,10 @@ public class AuthService {
           authenticationManager.authenticate(
               new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
     } catch (DisabledException ex) {
-      User user = userRepository.findByEmail(request.getEmail())
-          .orElseThrow(() -> new BaseAppException(AuthErrorCode.BAD_CREDENTIALS));
+      User user =
+          userRepository
+              .findByEmail(request.getEmail())
+              .orElseThrow(() -> new BaseAppException(AuthErrorCode.BAD_CREDENTIALS));
       if (user.getStatus() == UserStatus.PENDING) {
         throw new BaseAppException(AuthErrorCode.USER_NOT_VERIFIED);
       }

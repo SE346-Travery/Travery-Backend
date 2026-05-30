@@ -49,8 +49,7 @@ public class UserProfileServiceImpl implements UserProfileService {
             .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
 
     if (!(user instanceof Tourist tourist)) {
-      throw new BaseAppException(
-          UserErrorCode.UNAUTHORIZED_ROLE);
+      throw new BaseAppException(UserErrorCode.UNAUTHORIZED_ROLE);
     }
 
     if (request.getFullName() != null && !request.getFullName().isBlank()) {
