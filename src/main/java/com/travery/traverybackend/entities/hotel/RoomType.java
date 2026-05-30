@@ -11,6 +11,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 
 @Entity
 @Table(name = "room_types")
@@ -25,18 +29,23 @@ public class RoomType extends AbstractBaseEntity {
   @JoinColumn(name = "hotel_id", nullable = false)
   private Hotel hotel;
 
+  @FullTextField(analyzer = "standard")
   @Column(nullable = false, length = 255)
   private String name;
 
+  @FullTextField(analyzer = "standard")
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  @GenericField(sortable = Sortable.YES)
   @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal basePrice;
 
+  @GenericField
   @Column(name = "capacity_adults", nullable = false)
   private int capacityAdults;
 
+  @GenericField
   @Column(name = "capacity_children")
   @Builder.Default
   private int capacityChildren = 0;
@@ -50,5 +59,6 @@ public class RoomType extends AbstractBaseEntity {
       name = "room_type_amenities",
       joinColumns = @JoinColumn(name = "room_type_id"),
       inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @IndexedEmbedded
   private Set<Amenity> amenities;
 }

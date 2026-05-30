@@ -102,7 +102,8 @@ public class TourBookingController extends AbstractBaseController {
     InitiatePaymentRequest request =
         InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
     PaymentInitiationResponse response =
-        paymentService.initiatePayment(bookingId, request, currentUser.getUserId());
+        paymentService.initiatePayment(
+            bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
     return created(response, "Payment initiated successfully");
   }
 
@@ -113,7 +114,8 @@ public class TourBookingController extends AbstractBaseController {
       @Valid @RequestBody CreateReviewRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
     ReviewResponse response =
-        reviewService.createReview(bookingId, request, currentUser.getUserId());
+        reviewService.createReview(
+            bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
     return created(response, "Review submitted successfully");
   }
 }
