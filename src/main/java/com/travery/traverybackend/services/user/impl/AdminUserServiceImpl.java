@@ -105,6 +105,10 @@ public class AdminUserServiceImpl implements AdminUserService {
   @Override
   @Transactional
   public BaseUserProfileResponse updateAvatar(UUID targetUserId, MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "File must not be empty");
+    }
+
     User user =
         userRepository
             .findById(targetUserId)
@@ -115,9 +119,7 @@ public class AdminUserServiceImpl implements AdminUserService {
           UserErrorCode.UNAUTHORIZED_ROLE); // Admin shouldn't change tourist's avatar
     }
 
-    if (user.getAvatarPublicId() != null) {
-      mediaService.deleteImage(user.getAvatarPublicId());
-    }
+    String oldAvatarPublicId = user.getAvatarPublicId();
 
     Map<String, Object> uploadResult =
         mediaService.uploadImage(file, CloudinaryFolder.USER_AVATARS);
@@ -125,6 +127,10 @@ public class AdminUserServiceImpl implements AdminUserService {
     user.setAvatarPublicId((String) uploadResult.get("public_id"));
 
     userRepository.save(user);
+
+    if (oldAvatarPublicId != null) {
+      mediaService.deleteImage(oldAvatarPublicId);
+    }
     return userMapper.toResponse(user);
   }
 

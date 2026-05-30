@@ -107,7 +107,7 @@ class UserProfileServiceImplTest {
         assertThrows(
             BaseAppException.class, () -> userProfileService.updateTouristProfile(userId, request));
 
-    assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+    assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.UNAUTHORIZED_ROLE);
   }
 
   @Test

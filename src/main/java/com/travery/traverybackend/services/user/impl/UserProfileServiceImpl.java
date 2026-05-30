@@ -9,6 +9,7 @@ import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.common.CloudinaryFolder;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.UserErrorCode;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.media.MediaService;
@@ -49,7 +50,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     if (!(user instanceof Tourist tourist)) {
       throw new BaseAppException(
-          UserErrorCode.USER_NOT_FOUND); // Or a specific error like INVALID_ROLE
+          UserErrorCode.UNAUTHORIZED_ROLE);
     }
 
     if (request.getFullName() != null && !request.getFullName().isBlank()) {
@@ -83,7 +84,7 @@ public class UserProfileServiceImpl implements UserProfileService {
             .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
 
     if (!(user instanceof Admin admin)) {
-      throw new BaseAppException(UserErrorCode.USER_NOT_FOUND);
+      throw new BaseAppException(UserErrorCode.UNAUTHORIZED_ROLE);
     }
 
     if (request.getFullName() != null && !request.getFullName().isBlank()) {
@@ -101,23 +102,29 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public BaseUserProfileResponse updateAvatar(UUID userId, MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "File must not be empty");
+    }
+
     User user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
 
-    // Delete old avatar if exists
-    if (user.getAvatarPublicId() != null) {
-      mediaService.deleteImage(user.getAvatarPublicId());
-    }
+    String oldAvatarPublicId = user.getAvatarPublicId();
 
-    // Upload new avatar
+    // Upload new avatar first
     Map<String, Object> uploadResult =
         mediaService.uploadImage(file, CloudinaryFolder.USER_AVATARS);
     user.setAvatarUrl((String) uploadResult.get("secure_url"));
     user.setAvatarPublicId((String) uploadResult.get("public_id"));
 
     userRepository.save(user);
+
+    // Delete old avatar only after successful upload and save
+    if (oldAvatarPublicId != null) {
+      mediaService.deleteImage(oldAvatarPublicId);
+    }
 
     return userMapper.toResponse(user);
   }
