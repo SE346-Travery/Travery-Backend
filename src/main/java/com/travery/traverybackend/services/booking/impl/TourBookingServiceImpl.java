@@ -338,9 +338,9 @@ public class TourBookingServiceImpl implements TourBookingService {
   }
 
   /**
-   * Find the matching refund rule based on days before departure. Rules are ordered by daysBefore
-   * DESC — pick the first rule where daysBeforeDeparture >= rule.daysBefore. If no rule matches,
-   * refund is 0%.
+   * Find the matching refund rule based on time before departure. Rules are ordered by timeBefore
+   * DESC — pick the first rule where timeBeforeDeparture >= rule.timeBefore. If no rule matches,
+   * refund is 0%. For Tour bookings, timeBefore is always in DAYS.
    */
   private BigDecimal calculateRefundPercentage(RefundPolicy policy, long daysBeforeDeparture) {
     if (policy == null || policy.getRules() == null || policy.getRules().isEmpty()) {
@@ -348,8 +348,8 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
 
     return policy.getRules().stream()
-        .filter(rule -> daysBeforeDeparture >= rule.getDaysBefore())
-        .max(Comparator.comparingInt(RefundPolicyRule::getDaysBefore))
+        .filter(rule -> daysBeforeDeparture >= rule.getTimeBefore())
+        .max(Comparator.comparingInt(RefundPolicyRule::getTimeBefore))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }

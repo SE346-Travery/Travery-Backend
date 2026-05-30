@@ -11,17 +11,17 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "coach_seats")
+@Table(name = "seat_layout_items")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class CoachSeat extends AbstractBaseEntity {
+public class SeatLayoutItem extends AbstractBaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "coach_id", nullable = false)
-  private Coach coach;
+  @JoinColumn(name = "seat_layout_id", nullable = false)
+  private SeatLayout seatLayout;
 
   @Column(name = "seat_name", nullable = false, length = 10)
   private String seatName;
@@ -33,4 +33,10 @@ public class CoachSeat extends AbstractBaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 20)
   private SeatPosition position;
+
+  @Column(name = "row_number", nullable = false)
+  private int rowNumber;
+
+  @Column(name = "column_number", nullable = false)
+  private int columnNumber;
 }

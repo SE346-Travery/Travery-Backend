@@ -100,6 +100,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(UUID.randomUUID())
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(booking.getTotalPrice())
             .status(PaymentStatus.PENDING)
             .build();
@@ -145,6 +146,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(UUID.randomUUID())
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(booking.getTotalPrice())
             .status(PaymentStatus.PENDING)
             .build();
@@ -198,6 +200,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(UUID.randomUUID())
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(booking.getTotalPrice())
             .status(PaymentStatus.PENDING)
             .build();
@@ -217,6 +220,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(UUID.randomUUID())
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(booking.getTotalPrice())
             .status(PaymentStatus.PENDING)
             .build();
@@ -270,6 +274,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(transactionId)
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(new BigDecimal("1000000"))
             .status(PaymentStatus.PENDING)
             .build();
@@ -344,6 +349,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(transactionId)
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(new BigDecimal("1000000"))
             .status(PaymentStatus.PENDING)
             .build();
