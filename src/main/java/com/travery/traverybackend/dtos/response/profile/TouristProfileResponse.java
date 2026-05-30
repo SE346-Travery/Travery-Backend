@@ -1,13 +1,12 @@
 package com.travery.traverybackend.dtos.response.profile;
 
 import com.travery.traverybackend.enums.user.Gender;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDate;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -15,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TouristProfileResponse extends BaseUserProfileResponse {
-    private String passportNumber;
-    private LocalDate dateOfBirth;
-    private Gender gender;
+  private String passportNumber;
+  private LocalDate dateOfBirth;
+  private Gender gender;
 }

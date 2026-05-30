@@ -6,28 +6,29 @@ import com.travery.traverybackend.dtos.request.profile.UpdateReceptionistProfile
 import com.travery.traverybackend.dtos.response.profile.BaseUserProfileResponse;
 import com.travery.traverybackend.enums.user.UserRoles;
 import com.travery.traverybackend.enums.user.UserStatus;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.UUID;
-
 public interface AdminUserService {
-    Page<BaseUserProfileResponse> getAllUsers(UserRoles role, UserStatus status, Pageable pageable);
+  Page<BaseUserProfileResponse> getAllUsers(UserRoles role, UserStatus status, Pageable pageable);
 
-    BaseUserProfileResponse getUserDetail(UUID targetUserId);
+  BaseUserProfileResponse getUserDetail(UUID targetUserId);
 
-    BaseUserProfileResponse banUser(UUID targetUserId);
+  BaseUserProfileResponse banUser(UUID targetUserId);
 
-    BaseUserProfileResponse unbanUser(UUID targetUserId);
+  BaseUserProfileResponse unbanUser(UUID targetUserId);
 
-    void deleteUser(UUID targetUserId);
+  void deleteUser(UUID targetUserId);
 
-    BaseUserProfileResponse updateAvatar(UUID targetUserId, MultipartFile file);
+  BaseUserProfileResponse updateAvatar(UUID targetUserId, MultipartFile file);
 
-    BaseUserProfileResponse updateGuideProfile(UUID targetUserId, UpdateGuideProfileRequest request);
+  BaseUserProfileResponse updateGuideProfile(UUID targetUserId, UpdateGuideProfileRequest request);
 
-    BaseUserProfileResponse updateCoordinatorProfile(UUID targetUserId, UpdateCoordinatorProfileRequest request);
+  BaseUserProfileResponse updateCoordinatorProfile(
+      UUID targetUserId, UpdateCoordinatorProfileRequest request);
 
-    BaseUserProfileResponse updateReceptionistProfile(UUID targetUserId, UpdateReceptionistProfileRequest request);
+  BaseUserProfileResponse updateReceptionistProfile(
+      UUID targetUserId, UpdateReceptionistProfileRequest request);
 }

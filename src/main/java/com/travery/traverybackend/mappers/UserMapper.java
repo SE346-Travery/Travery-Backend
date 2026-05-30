@@ -9,33 +9,33 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
-    default BaseUserProfileResponse toResponse(User user) {
-        if (user == null) {
-            return null;
-        }
-
-        if (user instanceof Tourist tourist) {
-            return toTouristResponse(tourist);
-        } else if (user instanceof Guide guide) {
-            return toGuideResponse(guide);
-        } else if (user instanceof Coordinator coordinator) {
-            return toCoordinatorResponse(coordinator);
-        } else if (user instanceof Receptionist receptionist) {
-            return toReceptionistResponse(receptionist);
-        } else {
-            return toBaseResponse(user); // For Admin
-        }
+  default BaseUserProfileResponse toResponse(User user) {
+    if (user == null) {
+      return null;
     }
 
-    BaseUserProfileResponse toBaseResponse(User user);
+    if (user instanceof Tourist tourist) {
+      return toTouristResponse(tourist);
+    } else if (user instanceof Guide guide) {
+      return toGuideResponse(guide);
+    } else if (user instanceof Coordinator coordinator) {
+      return toCoordinatorResponse(coordinator);
+    } else if (user instanceof Receptionist receptionist) {
+      return toReceptionistResponse(receptionist);
+    } else {
+      return toBaseResponse(user); // For Admin
+    }
+  }
 
-    TouristProfileResponse toTouristResponse(Tourist tourist);
+  BaseUserProfileResponse toBaseResponse(User user);
 
-    GuideProfileResponse toGuideResponse(Guide guide);
+  TouristProfileResponse toTouristResponse(Tourist tourist);
 
-    CoordinatorProfileResponse toCoordinatorResponse(Coordinator coordinator);
+  GuideProfileResponse toGuideResponse(Guide guide);
 
-    @Mapping(target = "hotelId", source = "hotel.id")
-    @Mapping(target = "hotelName", source = "hotel.name")
-    ReceptionistProfileResponse toReceptionistResponse(Receptionist receptionist);
+  CoordinatorProfileResponse toCoordinatorResponse(Coordinator coordinator);
+
+  @Mapping(target = "hotelId", source = "hotel.id")
+  @Mapping(target = "hotelName", source = "hotel.name")
+  ReceptionistProfileResponse toReceptionistResponse(Receptionist receptionist);
 }

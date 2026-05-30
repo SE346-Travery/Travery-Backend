@@ -13,6 +13,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CoordinatorProfileResponse extends BaseUserProfileResponse {
-    private String employeeCode;
-    private Department department;
+  private String employeeCode;
+  private Department department;
 }

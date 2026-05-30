@@ -1,5 +1,10 @@
 package com.travery.traverybackend.services.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.travery.traverybackend.dtos.response.profile.BaseUserProfileResponse;
 import com.travery.traverybackend.entities.user.Admin;
 import com.travery.traverybackend.entities.user.Guide;
@@ -13,6 +18,9 @@ import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.impl.AdminUserServiceImpl;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,123 +32,106 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class AdminUserServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-    @Mock
-    private HotelRepository hotelRepository;
+  @Mock private HotelRepository hotelRepository;
 
-    @Mock
-    private UserMapper userMapper;
+  @Mock private UserMapper userMapper;
 
-    @Mock
-    private MediaService mediaService;
+  @Mock private MediaService mediaService;
 
-    @InjectMocks
-    private AdminUserServiceImpl adminUserService;
+  @InjectMocks private AdminUserServiceImpl adminUserService;
 
-    private Guide guide;
-    private Admin admin;
-    private Tourist tourist;
-    private UUID userId;
+  private Guide guide;
+  private Admin admin;
+  private Tourist tourist;
+  private UUID userId;
 
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
+  @BeforeEach
+  void setUp() {
+    userId = UUID.randomUUID();
 
-        guide = Guide.builder()
-                .id(userId)
-                .fullName("Test Guide")
-                .role(UserRoles.GUIDE)
-                .status(UserStatus.ACTIVE)
-                .build();
+    guide =
+        Guide.builder()
+            .id(userId)
+            .fullName("Test Guide")
+            .role(UserRoles.GUIDE)
+            .status(UserStatus.ACTIVE)
+            .build();
 
-        admin = Admin.builder()
-                .id(UUID.randomUUID())
-                .role(UserRoles.ADMIN)
-                .build();
+    admin = Admin.builder().id(UUID.randomUUID()).role(UserRoles.ADMIN).build();
 
-        tourist = Tourist.builder()
-                .id(UUID.randomUUID())
-                .role(UserRoles.TOURIST)
-                .build();
-    }
+    tourist = Tourist.builder().id(UUID.randomUUID()).role(UserRoles.TOURIST).build();
+  }
 
-    @Test
-    void getAllUsers_Success() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<com.travery.traverybackend.entities.user.User> users = new PageImpl<>(List.of(guide));
-        
-        when(userRepository.findUsersWithFilters(UserRoles.GUIDE, UserStatus.ACTIVE, pageable)).thenReturn(users);
-        when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
+  @Test
+  void getAllUsers_Success() {
+    Pageable pageable = PageRequest.of(0, 10);
+    Page<com.travery.traverybackend.entities.user.User> users = new PageImpl<>(List.of(guide));
 
-        Page<BaseUserProfileResponse> response = adminUserService.getAllUsers(UserRoles.GUIDE, UserStatus.ACTIVE, pageable);
+    when(userRepository.findUsersWithFilters(UserRoles.GUIDE, UserStatus.ACTIVE, pageable))
+        .thenReturn(users);
+    when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
 
-        assertThat(response.getContent()).hasSize(1);
-    }
+    Page<BaseUserProfileResponse> response =
+        adminUserService.getAllUsers(UserRoles.GUIDE, UserStatus.ACTIVE, pageable);
 
-    @Test
-    void banUser_Success() {
-        when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
-        when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
+    assertThat(response.getContent()).hasSize(1);
+  }
 
-        adminUserService.banUser(userId);
+  @Test
+  void banUser_Success() {
+    when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
+    when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
 
-        assertThat(guide.getStatus()).isEqualTo(UserStatus.BANNED);
-        verify(userRepository).save(guide);
-    }
+    adminUserService.banUser(userId);
 
-    @Test
-    void unbanUser_Success() {
-        guide.setStatus(UserStatus.BANNED);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
-        when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
+    assertThat(guide.getStatus()).isEqualTo(UserStatus.BANNED);
+    verify(userRepository).save(guide);
+  }
 
-        adminUserService.unbanUser(userId);
+  @Test
+  void unbanUser_Success() {
+    guide.setStatus(UserStatus.BANNED);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
+    when(userMapper.toResponse(any())).thenReturn(new BaseUserProfileResponse());
 
-        assertThat(guide.getStatus()).isEqualTo(UserStatus.ACTIVE);
-        verify(userRepository).save(guide);
-    }
+    adminUserService.unbanUser(userId);
 
-    @Test
-    void banUser_TargetIsAdmin_ThrowsException() {
-        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+    assertThat(guide.getStatus()).isEqualTo(UserStatus.ACTIVE);
+    verify(userRepository).save(guide);
+  }
 
-        BaseAppException exception = assertThrows(BaseAppException.class, 
-            () -> adminUserService.banUser(admin.getId()));
+  @Test
+  void banUser_TargetIsAdmin_ThrowsException() {
+    when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
 
-        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.UNAUTHORIZED_ROLE);
-    }
+    BaseAppException exception =
+        assertThrows(BaseAppException.class, () -> adminUserService.banUser(admin.getId()));
 
-    @Test
-    void deleteUser_Success() {
-        when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
+    assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.UNAUTHORIZED_ROLE);
+  }
 
-        adminUserService.deleteUser(userId);
+  @Test
+  void deleteUser_Success() {
+    when(userRepository.findById(userId)).thenReturn(Optional.of(guide));
 
-        assertThat(guide.getStatus()).isEqualTo(UserStatus.DELETED);
-        verify(userRepository).save(guide);
-    }
+    adminUserService.deleteUser(userId);
 
-    @Test
-    void deleteUser_TargetIsTourist_ThrowsException() {
-        when(userRepository.findById(tourist.getId())).thenReturn(Optional.of(tourist));
+    assertThat(guide.getStatus()).isEqualTo(UserStatus.DELETED);
+    verify(userRepository).save(guide);
+  }
 
-        BaseAppException exception = assertThrows(BaseAppException.class, 
-            () -> adminUserService.deleteUser(tourist.getId()));
+  @Test
+  void deleteUser_TargetIsTourist_ThrowsException() {
+    when(userRepository.findById(tourist.getId())).thenReturn(Optional.of(tourist));
 
-        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.UNAUTHORIZED_ROLE);
-    }
+    BaseAppException exception =
+        assertThrows(BaseAppException.class, () -> adminUserService.deleteUser(tourist.getId()));
+
+    assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.UNAUTHORIZED_ROLE);
+  }
 }

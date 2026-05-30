@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateCoordinatorProfileRequest {
-    private String fullName;
+  private String fullName;
 
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number is invalid")
-    private String phoneNumber;
+  @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Phone number is invalid")
+  private String phoneNumber;
 
-    private Department department;
+  private Department department;
 }

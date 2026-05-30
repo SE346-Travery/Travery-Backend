@@ -52,15 +52,16 @@ public class AppExceptionHandler {
         request.getRequestURI(),
         e.getMessage(),
         e);
-    ErrorResponse response = responseFactory.createErrorResponse(
-        errorCode.getHttpStatus(),
-        errorCode.getErrorCode(),
-        e.getMessage(),
-        request.getRequestURI());
+    ErrorResponse response =
+        responseFactory.createErrorResponse(
+            errorCode.getHttpStatus(),
+            errorCode.getErrorCode(),
+            e.getMessage(),
+            request.getRequestURI());
     return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
   }
 
-  @ExceptionHandler({ BindException.class, MethodArgumentNotValidException.class })
+  @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
   public ResponseEntity<DetailedErrorResponse> handleValidationException(
       Exception e, HttpServletRequest request) {
     log.warn("Validation Error at path: {}", request.getRequestURI());
@@ -77,12 +78,13 @@ public class AppExceptionHandler {
       }
     }
 
-    DetailedErrorResponse response = responseFactory.createDetailedErrorResponse(
-        WebErrorCode.VALIDATION_FAILED.getHttpStatus(),
-        WebErrorCode.VALIDATION_FAILED.getErrorCode(),
-        WebErrorCode.VALIDATION_FAILED.getMessage(),
-        request.getRequestURI(),
-        errors);
+    DetailedErrorResponse response =
+        responseFactory.createDetailedErrorResponse(
+            WebErrorCode.VALIDATION_FAILED.getHttpStatus(),
+            WebErrorCode.VALIDATION_FAILED.getErrorCode(),
+            WebErrorCode.VALIDATION_FAILED.getMessage(),
+            request.getRequestURI(),
+            errors);
     return ResponseEntity.status(WebErrorCode.BAD_REQUEST.getHttpStatus()).body(response);
   }
 
@@ -94,8 +96,8 @@ public class AppExceptionHandler {
   }
 
   @ExceptionHandler({
-      AuthenticationCredentialsNotFoundException.class,
-      InsufficientAuthenticationException.class
+    AuthenticationCredentialsNotFoundException.class,
+    InsufficientAuthenticationException.class
   })
   public ResponseEntity<ErrorResponse> handleMissingTokenException(
       Exception e, HttpServletRequest request) {
@@ -119,10 +121,10 @@ public class AppExceptionHandler {
   }
 
   @ExceptionHandler({
-      MalformedJwtException.class,
-      SignatureException.class,
-      UnsupportedJwtException.class,
-      IllegalArgumentException.class
+    MalformedJwtException.class,
+    SignatureException.class,
+    UnsupportedJwtException.class,
+    IllegalArgumentException.class
   })
   public ResponseEntity<ErrorResponse> handleJwtException(Exception e, HttpServletRequest request) {
     log.warn("Jwt Exception: {} - Path: {}", e.getMessage(), request.getRequestURI());
@@ -130,11 +132,11 @@ public class AppExceptionHandler {
   }
 
   @ExceptionHandler({
-      HttpRequestMethodNotSupportedException.class,
-      HttpMessageNotReadableException.class,
-      HttpMediaTypeNotSupportedException.class,
-      MissingRequestHeaderException.class,
-      MethodArgumentTypeMismatchException.class
+    HttpRequestMethodNotSupportedException.class,
+    HttpMessageNotReadableException.class,
+    HttpMediaTypeNotSupportedException.class,
+    MissingRequestHeaderException.class,
+    MethodArgumentTypeMismatchException.class
   })
   public ResponseEntity<ErrorResponse> handleBadRequestException(
       Exception e, HttpServletRequest request) {
@@ -160,15 +162,17 @@ public class AppExceptionHandler {
   }
 
   private ResponseEntity<ErrorResponse> buildFromAppErrorCode(AppErrorCode errorCode, String path) {
-    ErrorResponse response = responseFactory.createErrorResponse(
-        errorCode.getHttpStatus(), errorCode.getErrorCode(), errorCode.getMessage(), path);
+    ErrorResponse response =
+        responseFactory.createErrorResponse(
+            errorCode.getHttpStatus(), errorCode.getErrorCode(), errorCode.getMessage(), path);
     return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
   }
 
   private ResponseEntity<ErrorResponse> buildFromAppErrorCode(
       AppErrorCode errorCode, String path, String customMessage) {
-    ErrorResponse response = responseFactory.createErrorResponse(
-        errorCode.getHttpStatus(), errorCode.getErrorCode(), customMessage, path);
+    ErrorResponse response =
+        responseFactory.createErrorResponse(
+            errorCode.getHttpStatus(), errorCode.getErrorCode(), customMessage, path);
     return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
   }
 }

@@ -12,7 +12,8 @@ public enum UserErrorCode implements AppErrorCode {
   USER_EXISTED("USER_102", "Email already registered", HttpStatus.CONFLICT),
   USER_ALREADY_ACTIVE("USER_103", "User is already active", HttpStatus.BAD_REQUEST),
   USER_BANNED("USER_104", "User account is banned", HttpStatus.FORBIDDEN),
-  UNAUTHORIZED_ROLE("USER_105", "Cannot perform action on user with this role", HttpStatus.FORBIDDEN);
+  UNAUTHORIZED_ROLE(
+      "USER_105", "Cannot perform action on user with this role", HttpStatus.FORBIDDEN);
 
   private final String errorCode;
   private final String message;
