@@ -32,6 +32,9 @@ public class Room extends AbstractBaseEntity {
   @Column(name = "room_number", nullable = false, length = 50)
   private String roomNumber;
 
+  @Column(nullable = false)
+  private int floor;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 20)
   @Builder.Default
