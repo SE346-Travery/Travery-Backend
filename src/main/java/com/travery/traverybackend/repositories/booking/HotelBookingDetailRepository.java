@@ -15,6 +15,18 @@ public interface HotelBookingDetailRepository extends JpaRepository<HotelBooking
   List<HotelBookingDetail> findAllByHotelBooking_Id(UUID hotelBookingId);
 
   @Query(
+      "SELECT COUNT(d) FROM HotelBookingDetail d "
+          + "WHERE d.roomType.hotel.id = :hotelId AND d.startDate = :date "
+          + "AND d.hotelBooking.status = 'PAID'")
+  long countTodayCheckIns(@Param("hotelId") UUID hotelId, @Param("date") LocalDate date);
+
+  @Query(
+      "SELECT COUNT(d) FROM HotelBookingDetail d "
+          + "WHERE d.roomType.hotel.id = :hotelId AND d.endDate = :date "
+          + "AND d.hotelBooking.status = 'CHECKED_IN'")
+  long countTodayCheckOuts(@Param("hotelId") UUID hotelId, @Param("date") LocalDate date);
+
+  @Query(
       "SELECT SUM(d.quantity) FROM HotelBookingDetail d "
           + "WHERE d.roomType.id = :roomTypeId "
           + "AND d.hotelBooking.status IN (:statuses) "
