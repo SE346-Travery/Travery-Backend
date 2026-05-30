@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
   private final String
       password; // Từ passwordHashed của user -> AuthenticationManager sẽ gọi để so sánh với
   // passwordEncoder.
-  private final boolean isEnabled; // Từ status == ACTIVE của user
+  // private final boolean isEnabled; // Handled directly in method
   private final Collection<? extends GrantedAuthority> authorities; // Từ role của user
   private final UserStatus status; // Thêm hai trường này để sử dụng trong AuthService
   private final AuthProvider authProvider;
@@ -40,7 +40,7 @@ public class CustomUserDetails implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return this.isEnabled;
+    return true; // Always return true to let AuthService handle status logic
   }
 
   // Factory method
@@ -51,7 +51,7 @@ public class CustomUserDetails implements UserDetails {
         .userId(user.getId())
         .email(user.getEmail())
         .password(user.getPasswordHashed())
-        .isEnabled(user.getStatus() == UserStatus.ACTIVE)
+        // isEnabled is handled by the overridden method returning true
         .authorities(authorities)
         .status(user.getStatus())
         .authProvider(user.getAuthProvider())

@@ -8,6 +8,7 @@ import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
+import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.auth.AuthProvider;
 import com.travery.traverybackend.enums.user.UserRoles;
@@ -74,7 +75,7 @@ public class AuthService {
     }
 
     User user =
-        User.builder()
+        Tourist.builder()
             .email(request.getEmail())
             .fullName(request.getFullName())
             .role(
@@ -138,6 +139,10 @@ public class AuthService {
 
     if (status == UserStatus.BANNED) {
       throw new BaseAppException(UserErrorCode.USER_BANNED);
+    }
+
+    if (status == UserStatus.DELETED) {
+      throw new BaseAppException(AuthErrorCode.USER_DISABLED);
     }
 
     // ===== GENERATE TOKEN =====

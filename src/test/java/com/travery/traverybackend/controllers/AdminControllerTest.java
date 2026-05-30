@@ -70,7 +70,6 @@ public class AdminControllerTest {
         return CustomUserDetails.builder()
             .userId(TEST_ADMIN_ID)
             .email(email)
-            .isEnabled(true)
             .authorities(List.of(new SimpleGrantedAuthority(role)))
             .build();
       };
