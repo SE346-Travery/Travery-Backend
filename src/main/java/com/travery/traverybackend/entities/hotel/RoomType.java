@@ -54,6 +54,12 @@ public class RoomType extends AbstractBaseEntity {
   @Column(name = "bed_type", nullable = false, length = 50)
   private BedType bedType;
 
+  @Column(nullable = false)
+  private int area;
+
+  @Column(nullable = false)
+  private int quantity;
+
   @ManyToMany
   @JoinTable(
       name = "room_type_amenities",
