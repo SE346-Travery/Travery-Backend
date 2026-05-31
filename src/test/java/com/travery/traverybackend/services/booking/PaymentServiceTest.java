@@ -13,6 +13,7 @@ import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.finance.PaymentStatus;
+import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.impl.PaymentServiceImpl;
@@ -37,6 +38,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class PaymentServiceTest {
 
   @Mock private TourBookingRepository tourBookingRepository;
+
+  @Mock private HotelBookingRepository hotelBookingRepository;
 
   @Mock private PaymentTransactionRepository paymentTransactionRepository;
 
@@ -125,7 +128,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);
@@ -178,7 +182,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);
@@ -242,7 +247,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);
@@ -270,6 +276,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(transactionId)
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(new BigDecimal("1000000"))
             .status(PaymentStatus.PENDING)
             .build();
@@ -344,6 +351,7 @@ public class PaymentServiceTest {
         PaymentTransaction.builder()
             .id(transactionId)
             .bookingId(bookingId)
+            .bookingType(BookingType.TOUR_BOOKING)
             .amount(new BigDecimal("1000000"))
             .status(PaymentStatus.PENDING)
             .build();

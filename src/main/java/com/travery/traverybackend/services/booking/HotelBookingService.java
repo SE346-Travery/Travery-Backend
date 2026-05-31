@@ -1,6 +1,8 @@
 package com.travery.traverybackend.services.booking;
 
+import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateAddOnOrderRequest;
+import com.travery.traverybackend.dtos.request.booking.CreateHotelBookingRequest;
 import com.travery.traverybackend.dtos.response.booking.AddOnOrderResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailResponse;

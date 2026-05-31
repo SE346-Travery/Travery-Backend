@@ -17,6 +17,7 @@ import com.travery.traverybackend.entities.booking.AddOnOrder;
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.HotelBooking;
 import com.travery.traverybackend.entities.booking.HotelBookingDetail;
+import com.travery.traverybackend.entities.finance.PaymentTransaction;
 import com.travery.traverybackend.entities.finance.RefundPolicy;
 import com.travery.traverybackend.entities.finance.RefundPolicyRule;
 import com.travery.traverybackend.entities.finance.RefundRequest;
@@ -37,6 +38,7 @@ import com.travery.traverybackend.repositories.booking.AddOnOrderRepository;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.HotelBookingDetailRepository;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.repositories.finance.RefundRequestRepository;
 import com.travery.traverybackend.repositories.hotel.HotelServiceRepository;
 import com.travery.traverybackend.repositories.hotel.RoomRepository;
@@ -73,6 +75,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
   private final UserRepository userRepository;
   private final TourInstanceRepository tourInstanceRepository;
   private final RefundRequestRepository refundRequestRepository;
+  private final PaymentTransactionRepository paymentTransactionRepository;
   private final AddOnOrderRepository addOnOrderRepository;
   private final HotelServiceRepository hotelServiceRepository;
   private final PaymentService paymentService;
@@ -318,12 +321,21 @@ public class HotelBookingServiceImpl implements HotelBookingService {
     BigDecimal refundPct = calculateRefundPercentage(hotel.getRefundPolicy(), daysBeforeCheckIn);
     BigDecimal refundAmount = booking.getTotalPrice().multiply(refundPct);
 
+    PaymentTransaction transaction =
+        paymentTransactionRepository
+            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                booking.getId(), BookingType.HOTEL_BOOKING)
+            .orElseThrow(
+                () ->
+                    new BaseAppException(
+                        WebErrorCode.INTERNAL_SERVER_ERROR, "Payment transaction not found"));
+
     RefundRequest refundRequest =
         RefundRequest.builder()
-            .bookingId(booking.getId())
-            .bookingType(BookingType.HOTEL_BOOKING)
+            .paymentTransaction(transaction)
+            .user(booking.getUser())
             .requestedAmount(refundAmount)
-            .reason(request.getReason())
+            .customerReason(request.getReason())
             .status(RefundStatus.PENDING)
             .build();
 
@@ -355,10 +367,6 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         hotelServiceRepository
             .findById(request.getServiceId())
             .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Service not found"));
-
-    if (!service.isActive()) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Service is currently not available");
-    }
 
     // Verify service belongs to the same hotel
     List<HotelBookingDetail> details =

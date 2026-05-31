@@ -146,7 +146,9 @@ public class TourBookingServiceImpl implements TourBookingService {
             .ipAddress(request.getIpAddress())
             .build();
 
-    var paymentResponse = paymentService.initiatePayment(booking.getId(), paymentRequest, userId);
+    var paymentResponse =
+        paymentService.initiatePayment(
+            booking.getId(), paymentRequest, userId, BookingType.TOUR_BOOKING);
 
     log.info("Booking {} created with payment deadline at {}", booking.getId(), paymentDeadline);
 

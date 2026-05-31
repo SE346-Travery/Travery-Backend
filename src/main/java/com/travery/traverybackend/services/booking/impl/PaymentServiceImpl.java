@@ -191,31 +191,39 @@ public class PaymentServiceImpl implements PaymentService {
     VnPayResponseCode responseCode = VnPayResponseCode.fromCode(vnpResponseCode);
 
     if (responseCode.isSuccess()) {
+      // 1. Validate booking existence first
+      TourBooking tourBooking = null;
+      HotelBooking hotelBooking = null;
+
+      if (transaction.getBookingType() == BookingType.TOUR_BOOKING) {
+        tourBooking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
+        if (tourBooking == null) {
+          return ipnResponse("01", "Order not found");
+        }
+      } else {
+        hotelBooking = hotelBookingRepository.findById(transaction.getBookingId()).orElse(null);
+        if (hotelBooking == null) {
+          return ipnResponse("01", "Order not found");
+        }
+      }
+
+      // 2. Mark transaction as success
       transaction.setStatus(PaymentStatus.SUCCESS);
       paymentTransactionRepository.save(transaction);
 
-      // Update booking status based on type
-      if (transaction.getBookingType() == BookingType.TOUR_BOOKING) {
-        TourBooking booking =
-            tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
-        if (booking != null) {
-          booking.setStatus(BookingStatus.PAID);
-          tourBookingRepository.save(booking);
-          // Add to chat
-          try {
-            chatSessionService.addUserToChat(
-                booking.getTourInstance().getId(), booking.getUser().getId());
-          } catch (Exception e) {
-            log.error("Failed to add user to tour chat", e);
-          }
+      // 3. Update booking status
+      if (tourBooking != null) {
+        tourBooking.setStatus(BookingStatus.PAID);
+        tourBookingRepository.save(tourBooking);
+        try {
+          chatSessionService.addUserToChat(
+              tourBooking.getTourInstance().getId(), tourBooking.getUser().getId());
+        } catch (Exception e) {
+          log.error("Failed to add user to tour chat", e);
         }
-      } else {
-        HotelBooking booking =
-            hotelBookingRepository.findById(transaction.getBookingId()).orElse(null);
-        if (booking != null) {
-          booking.setStatus(BookingStatus.PAID);
-          hotelBookingRepository.save(booking);
-        }
+      } else if (hotelBooking != null) {
+        hotelBooking.setStatus(BookingStatus.PAID);
+        hotelBookingRepository.save(hotelBooking);
       }
 
       log.info(
