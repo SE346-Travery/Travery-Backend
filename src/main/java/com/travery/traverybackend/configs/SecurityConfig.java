@@ -35,6 +35,7 @@ public class SecurityConfig {
     "/scalar",
     "/scalar/**",
     "/scalar.html",
+    "/actuator/health",
     "/actuator/prometheus",
     "/favicon.ico",
     "/api/v1/coach-trips/search"
