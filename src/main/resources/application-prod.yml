@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # Safe for production: only validates schema, never alters
+      ddl-auto: validate # Safe for production: only validates schema, never alters
     show-sql: false
     properties:
       hibernate:

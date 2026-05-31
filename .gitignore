@@ -34,6 +34,7 @@ build/
 
 # env
 .env
+.env.prod
 
 ### AI agent
 .agents/
