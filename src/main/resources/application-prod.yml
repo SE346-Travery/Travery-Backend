@@ -109,7 +109,7 @@ app:
   hibernate:
     search:
       mass-indexer:
-        enabled: true
+        enabled: false
 
   payment:
     vnpay:
