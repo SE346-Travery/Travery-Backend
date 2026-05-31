@@ -13,6 +13,7 @@ import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.hotel.RoomStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.mappers.ReceptionistMapper;
 import com.travery.traverybackend.mappers.TourBookingMapper;
 import com.travery.traverybackend.repositories.booking.*;
 import com.travery.traverybackend.repositories.hotel.*;
@@ -46,6 +47,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   private final BookingMemberRepository bookingMemberRepository;
   private final AddOnOrderRepository addOnOrderRepository;
   private final TourBookingMapper tourBookingMapper;
+  private final ReceptionistMapper receptionistMapper;
 
   @Override
   public ReceptionistDashboardResponse getDashboard(UUID receptionistId) {
@@ -185,7 +187,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         members.stream().map(tourBookingMapper::toBookingMemberResponse).toList();
 
     List<AddOnOrderResponse> orders =
-        addOnOrders.stream().map(this::mapToAddOnOrderResponse).toList();
+        addOnOrders.stream().map(receptionistMapper::toAddOnOrderResponse).toList();
 
     return ReceptionistBookingDetailResponse.builder()
         .id(booking.getId())
@@ -210,7 +212,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     // Verify hotel ownership
     return rooms.stream()
         .filter(r -> r.getHotel().getId().equals(receptionist.getHotel().getId()))
-        .map(this::mapToRoomResponse)
+        .map(receptionistMapper::toReceptionistRoomResponse)
         .toList();
   }
 
@@ -296,7 +298,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     List<AddOnOrderResponse> unpaidAddOns =
         orders.stream()
             .filter(o -> o.getStatus() == AddOnOrderStatus.PENDING)
-            .map(this::mapToAddOnOrderResponse)
+            .map(receptionistMapper::toAddOnOrderResponse)
             .toList();
 
     CheckOutResponse response =
@@ -315,7 +317,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
           roomAssignmentRepository.findAllByHotelBookingDetail_Id(detail.getId());
       for (RoomAssignment assignment : assignments) {
         Room room = assignment.getRoom();
-        room.setStatus(RoomStatus.AVAILABLE); // Or DIRTY if we had that status
+        room.setStatus(RoomStatus.AVAILABLE);
         roomRepository.save(room);
       }
     }
@@ -331,7 +333,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   public List<ReceptionistRoomResponse> getAllRooms(UUID receptionistId) {
     Receptionist receptionist = getReceptionist(receptionistId);
     return roomRepository.findAllByHotel_Id(receptionist.getHotel().getId()).stream()
-        .map(this::mapToRoomResponse)
+        .map(receptionistMapper::toReceptionistRoomResponse)
         .toList();
   }
 
@@ -357,7 +359,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     Receptionist receptionist = getReceptionist(receptionistId);
     // Find all orders for the hotel that are PENDING
     return addOnOrderRepository.findActiveByHotelId(receptionist.getHotel().getId()).stream()
-        .map(this::mapToAddOnOrderResponse)
+        .map(receptionistMapper::toAddOnOrderResponse)
         .toList();
   }
 
@@ -398,28 +400,5 @@ public class ReceptionistServiceImpl implements ReceptionistService {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "Booking does not belong to this hotel");
     }
     return booking;
-  }
-
-  private ReceptionistRoomResponse mapToRoomResponse(Room room) {
-    return ReceptionistRoomResponse.builder()
-        .id(room.getId())
-        .roomNumber(room.getRoomNumber())
-        .roomTypeName(room.getRoomType().getName())
-        .status(room.getStatus().name())
-        .floor(room.getFloor())
-        .build();
-  }
-
-  private AddOnOrderResponse mapToAddOnOrderResponse(AddOnOrder order) {
-    return AddOnOrderResponse.builder()
-        .id(order.getId())
-        .serviceName(order.getHotelService().getName())
-        .category(order.getHotelService().getCategory().name())
-        .quantity(order.getQuantity())
-        .unitPrice(order.getHotelService().getPrice())
-        .totalPrice(order.getTotalPrice())
-        .scheduledTime(order.getScheduledTime())
-        .status(order.getStatus().name())
-        .build();
   }
 }
