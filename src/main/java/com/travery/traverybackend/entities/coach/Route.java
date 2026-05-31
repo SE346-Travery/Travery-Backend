@@ -1,6 +1,7 @@
 package com.travery.traverybackend.entities.coach;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
+import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.entities.finance.RefundPolicy;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -20,12 +21,12 @@ import lombok.experimental.SuperBuilder;
 public class Route extends AbstractBaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "origin_station_id", nullable = false)
-  private Station originStation;
+  @JoinColumn(name = "origin_destination_id", nullable = false)
+  private Destination originDestination;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "destination_station_id", nullable = false)
-  private Station destinationStation;
+  @JoinColumn(name = "destination_destination_id", nullable = false)
+  private Destination destinationDestination;
 
   @Column(name = "distance_km", precision = 6, scale = 2)
   private BigDecimal distanceKm;

@@ -3,6 +3,7 @@ package com.travery.traverybackend.services.booking.impl;
 import com.travery.traverybackend.configs.VnPayConfig;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.booking.HotelBooking;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.finance.PaymentTransaction;
@@ -16,6 +17,7 @@ import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.BookingErrorCode;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
+import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.common.ChatSessionService;
@@ -36,6 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
 
   private final TourBookingRepository tourBookingRepository;
   private final HotelBookingRepository hotelBookingRepository;
+  private final CoachBookingRepository coachBookingRepository;
   private final PaymentTransactionRepository paymentTransactionRepository;
   private final ChatSessionService chatSessionService;
   private final VnPayConfig vnPayConfig;
@@ -143,6 +146,75 @@ public class PaymentServiceImpl implements PaymentService {
 
   @Override
   @Transactional
+  public PaymentInitiationResponse initiateCoachPayment(
+      UUID bookingId, InitiatePaymentRequest request, UUID userId) {
+
+    CoachBooking booking =
+        coachBookingRepository
+            .findByIdAndUser_Id(bookingId, userId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+
+    if (booking.getStatus() != BookingStatus.PENDING) {
+      throw new BaseAppException(BookingErrorCode.BOOKING_NOT_PENDING);
+    }
+
+    if (booking.getPaymentDeadline() != null
+        && booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
+      throw new BaseAppException(BookingErrorCode.PAYMENT_DEADLINE_EXPIRED);
+    }
+
+    var existingTransaction =
+        paymentTransactionRepository.findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+            booking.getId(), BookingType.COACH_BOOKING);
+
+    if (existingTransaction.isPresent()) {
+      PaymentTransaction existing = existingTransaction.get();
+      if (existing.getStatus() == PaymentStatus.PENDING) {
+        boolean isSessionExpired =
+            existing
+                .getCreatedAt()
+                .plusMinutes(vnPayConfig.getTimeout())
+                .isBefore(LocalDateTime.now());
+
+        if (isSessionExpired) {
+          existing.setStatus(PaymentStatus.FAILED);
+          paymentTransactionRepository.save(existing);
+        } else {
+          String paymentUrl = buildVnPayUrl(existing, request.getIpAddress());
+          return PaymentInitiationResponse.builder()
+              .transactionId(existing.getId())
+              .amount(existing.getAmount())
+              .paymentUrl(paymentUrl)
+              .expiresAt(booking.getPaymentDeadline())
+              .build();
+        }
+      }
+    }
+
+    PaymentTransaction transaction =
+        PaymentTransaction.builder()
+            .user(booking.getUser())
+            .bookingId(booking.getId())
+            .bookingType(BookingType.COACH_BOOKING)
+            .amount(booking.getTotalPrice())
+            .paymentMethod(PaymentMethod.VNPAY)
+            .transactionType(TransactionType.PAYMENT)
+            .status(PaymentStatus.PENDING)
+            .build();
+    transaction = paymentTransactionRepository.save(transaction);
+
+    String paymentUrl = buildVnPayUrl(transaction, request.getIpAddress());
+
+    return PaymentInitiationResponse.builder()
+        .transactionId(transaction.getId())
+        .amount(transaction.getAmount())
+        .paymentUrl(paymentUrl)
+        .expiresAt(booking.getPaymentDeadline())
+        .build();
+  }
+
+  @Override
+  @Transactional
   public Map<String, String> handleVnPayIpn(Map<String, String> params) {
     String secureHash = params.get("vnp_SecureHash");
     String txnRef = params.get("vnp_TxnRef");
@@ -170,6 +242,31 @@ public class PaymentServiceImpl implements PaymentService {
       return ipnResponse("01", "Order not found");
     }
 
+    // 4. Validate corresponding Booking existence before state updates (ensures
+    // data consistency)
+    if (transaction.getBookingType() == BookingType.TOUR_BOOKING) {
+      TourBooking booking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
+      if (booking == null) {
+        log.warn("IPN: TourBooking not found for transaction: {}", transactionId);
+        return ipnResponse("01", "Order not found");
+      }
+    } else if (transaction.getBookingType() == BookingType.HOTEL_BOOKING) {
+      HotelBooking booking =
+          hotelBookingRepository.findById(transaction.getBookingId()).orElse(null);
+      if (booking == null) {
+        log.warn("IPN: HotelBooking not found for transaction: {}", transactionId);
+        return ipnResponse("01", "Order not found");
+      }
+    } else if (transaction.getBookingType() == BookingType.COACH_BOOKING) {
+      CoachBooking booking =
+          coachBookingRepository.findById(transaction.getBookingId()).orElse(null);
+      if (booking == null) {
+        log.warn("IPN: CoachBooking not found for transaction: {}", transactionId);
+        return ipnResponse("01", "Order not found");
+      }
+    }
+
+    // 5. Verify amount matches and has valid numeric format
     long vnpAmount;
     try {
       vnpAmount = Long.parseLong(vnpAmountStr) / 100;
@@ -191,18 +288,24 @@ public class PaymentServiceImpl implements PaymentService {
     VnPayResponseCode responseCode = VnPayResponseCode.fromCode(vnpResponseCode);
 
     if (responseCode.isSuccess()) {
-      // 1. Validate booking existence first
+      // 1. Validate booking existence first (redundant but safe)
       TourBooking tourBooking = null;
       HotelBooking hotelBooking = null;
+      CoachBooking coachBooking = null;
 
       if (transaction.getBookingType() == BookingType.TOUR_BOOKING) {
         tourBooking = tourBookingRepository.findById(transaction.getBookingId()).orElse(null);
         if (tourBooking == null) {
           return ipnResponse("01", "Order not found");
         }
-      } else {
+      } else if (transaction.getBookingType() == BookingType.HOTEL_BOOKING) {
         hotelBooking = hotelBookingRepository.findById(transaction.getBookingId()).orElse(null);
         if (hotelBooking == null) {
+          return ipnResponse("01", "Order not found");
+        }
+      } else if (transaction.getBookingType() == BookingType.COACH_BOOKING) {
+        coachBooking = coachBookingRepository.findById(transaction.getBookingId()).orElse(null);
+        if (coachBooking == null) {
           return ipnResponse("01", "Order not found");
         }
       }
@@ -211,7 +314,7 @@ public class PaymentServiceImpl implements PaymentService {
       transaction.setStatus(PaymentStatus.SUCCESS);
       paymentTransactionRepository.save(transaction);
 
-      // 3. Update booking status
+      // 3. Update booking status to PAID
       if (tourBooking != null) {
         tourBooking.setStatus(BookingStatus.PAID);
         tourBookingRepository.save(tourBooking);
@@ -219,11 +322,14 @@ public class PaymentServiceImpl implements PaymentService {
           chatSessionService.addUserToChat(
               tourBooking.getTourInstance().getId(), tourBooking.getUser().getId());
         } catch (Exception e) {
-          log.error("Failed to add user to tour chat", e);
+          log.error("Failed to add user {} to tour chat", tourBooking.getUser().getId(), e);
         }
       } else if (hotelBooking != null) {
         hotelBooking.setStatus(BookingStatus.PAID);
         hotelBookingRepository.save(hotelBooking);
+      } else if (coachBooking != null) {
+        coachBooking.setStatus(BookingStatus.PAID);
+        coachBookingRepository.save(coachBooking);
       }
 
       log.info(

@@ -13,15 +13,17 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # Safe for production: only validates schema, never alters
+      ddl-auto: validate # Safe for production: only validates schema, never alters
     show-sql: false
     properties:
       hibernate:
         format_sql: false
-        hibernate:
         search:
+          backend:
+            directory:
+              root: /app/lucene-indexes
           schema_management:
-            strategy: update
+            strategy: create-or-update
     open-in-view: false
 
   data:
@@ -109,6 +111,19 @@ app:
       mass-indexer:
         enabled: false
 
+  payment:
+    vnpay:
+      tmn-code: ${VNPAY_TERMINAL_ID}
+      secret-key: ${VNPAY_HASH_SECRET}
+      init-payment-url: ${VNPAY_INIT_PAYMENT_URL}
+      ipn-url: ${VNPAY_IPN_URL}
+      return-url: ${VNPAY_RETURN_URL}
+      timeout: ${VNPAY_TIMEOUT:15}
+      deeplink-scheme: ${VNPAY_DEEPLINK_SCHEME:travery://payment-result}
+
+  backend:
+    ip: ${BACKEND_IP:127.0.0.1}
+
 management:
   endpoints:
     web:
@@ -124,3 +139,9 @@ logging:
     com.travery.traverybackend: INFO
     org.flywaydb: INFO
     org.hibernate.SQL: WARN
+
+cometchat:
+  app-id: ${COMETCHAT_APP_ID}
+  api-key: ${COMETCHAT_API_KEY}
+  region: ${COMETCHAT_REGION}
+  auth-key: ${COMETCHAT_AUTH_KEY}

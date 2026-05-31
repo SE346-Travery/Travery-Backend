@@ -24,7 +24,6 @@ import com.travery.traverybackend.entities.finance.RefundRequest;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.hotel.HotelService;
 import com.travery.traverybackend.entities.hotel.RoomType;
-import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.AddOnOrderStatus;
 import com.travery.traverybackend.enums.booking.BookingStatus;
@@ -65,22 +64,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class HotelBookingServiceImpl implements HotelBookingService {
 
   private final HotelBookingRepository hotelBookingRepository;
   private final HotelBookingDetailRepository hotelBookingDetailRepository;
   private final RoomTypeRepository roomTypeRepository;
-  private final RoomRepository roomRepository;
   private final BookingMemberRepository bookingMemberRepository;
   private final UserRepository userRepository;
-  private final TourInstanceRepository tourInstanceRepository;
-  private final RefundRequestRepository refundRequestRepository;
-  private final PaymentTransactionRepository paymentTransactionRepository;
-  private final AddOnOrderRepository addOnOrderRepository;
-  private final HotelServiceRepository hotelServiceRepository;
-  private final PaymentService paymentService;
   private final HotelBookingMapper hotelBookingMapper;
   private final TourBookingMapper tourBookingMapper;
+  private final PaymentService paymentService;
+  private final PaymentTransactionRepository paymentTransactionRepository;
+  private final RefundRequestRepository refundRequestRepository;
+  private final AddOnOrderRepository addOnOrderRepository;
+  private final HotelServiceRepository hotelServiceRepository;
+  private final RoomRepository roomRepository;
+  private final TourInstanceRepository tourInstanceRepository;
 
   @Override
   @Transactional
@@ -90,117 +90,87 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             .findById(userId)
             .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
 
-    TourInstance tourInstance = null;
-    if (request.getTourInstanceId() != null) {
-      tourInstance =
-          tourInstanceRepository
-              .findById(request.getTourInstanceId())
-              .orElseThrow(
-                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "TourInstance not found"));
-    }
-
-    BigDecimal totalPrice = BigDecimal.ZERO;
-    List<HotelBookingDetail> details = new ArrayList<>();
-
-    for (HotelBookingRequestDetail detailReq : request.getRooms()) {
-      RoomType roomType =
-          roomTypeRepository
-              .findById(detailReq.getRoomTypeId())
-              .orElseThrow(
-                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "RoomType not found"));
-
-      // 1. Availability check
-      int totalRooms = roomRepository.countByRoomType_Id(roomType.getId());
-      Integer bookedRooms =
-          hotelBookingDetailRepository.sumBookedQuantity(
-              roomType.getId(),
-              detailReq.getStartDate(),
-              detailReq.getEndDate(),
-              List.of(BookingStatus.PENDING, BookingStatus.PAID));
-      if (bookedRooms == null) bookedRooms = 0;
-
-      if (totalRooms - bookedRooms < detailReq.getQuantity()) {
-        throw new BaseAppException(
-            WebErrorCode.BAD_REQUEST, "Not enough rooms available for " + roomType.getName());
-      }
-
-      // 2. Price calculation
-      long nights = ChronoUnit.DAYS.between(detailReq.getStartDate(), detailReq.getEndDate());
-      if (nights <= 0) {
-        throw new BaseAppException(
-            WebErrorCode.BAD_REQUEST, "Check-out date must be after check-in");
-      }
-      BigDecimal itemPrice =
-          roomType.getBasePrice().multiply(BigDecimal.valueOf(nights * detailReq.getQuantity()));
-      totalPrice = totalPrice.add(itemPrice);
-
-      details.add(
-          HotelBookingDetail.builder()
-              .roomType(roomType)
-              .quantity(detailReq.getQuantity())
-              .priceAtBooking(roomType.getBasePrice())
-              .startDate(detailReq.getStartDate())
-              .endDate(detailReq.getEndDate())
-              .build());
-    }
-
-    // 3. Create HotelBooking
     HotelBooking booking =
         HotelBooking.builder()
             .user(user)
-            .tourInstance(tourInstance)
-            .totalPrice(totalPrice)
-            .paymentDeadline(LocalDateTime.now().plusMinutes(15))
             .status(BookingStatus.PENDING)
+            .paymentDeadline(LocalDateTime.now().plusMinutes(15))
             .build();
 
-    booking = hotelBookingRepository.save(booking);
+    BigDecimal total = BigDecimal.ZERO;
+    List<HotelBookingDetail> details = new ArrayList<>();
 
-    // 4. Save details and members
-    for (HotelBookingDetail detail : details) {
-      detail.setHotelBooking(booking);
+    for (HotelBookingRequestDetail detailRequest : request.getRooms()) {
+      RoomType roomType =
+          roomTypeRepository
+              .findById(detailRequest.getRoomTypeId())
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Room type not found"));
+
+      long nights =
+          ChronoUnit.DAYS.between(detailRequest.getStartDate(), detailRequest.getEndDate());
+      BigDecimal price =
+          roomType
+              .getBasePrice()
+              .multiply(BigDecimal.valueOf(nights))
+              .multiply(BigDecimal.valueOf(detailRequest.getQuantity()));
+
+      total = total.add(price);
+
+      details.add(
+          HotelBookingDetail.builder()
+              .hotelBooking(booking)
+              .roomType(roomType)
+              .startDate(detailRequest.getStartDate())
+              .endDate(detailRequest.getEndDate())
+              .quantity(detailRequest.getQuantity())
+              .priceAtBooking(price)
+              .build());
     }
+
+    booking.setTotalPrice(total);
+    booking = hotelBookingRepository.save(booking);
     hotelBookingDetailRepository.saveAll(details);
 
+    // Save members
     List<BookingMember> members = new ArrayList<>();
-    for (BookingMemberRequest memberReq : request.getMembers()) {
-      BookingMember member = tourBookingMapper.toBookingMember(memberReq);
-      member.setBookingId(booking.getId());
-      member.setBookingType(BookingType.HOTEL_BOOKING);
-      members.add(member);
+    for (BookingMemberRequest memberRequest : request.getMembers()) {
+      members.add(
+          BookingMember.builder()
+              .bookingId(booking.getId())
+              .bookingType(BookingType.HOTEL_BOOKING)
+              .fullName(memberRequest.getFullName())
+              .identityNumber(memberRequest.getIdentityNumber())
+              .dateOfBirth(memberRequest.getDateOfBirth())
+              .memberType(memberRequest.getMemberType())
+              .build());
     }
     bookingMemberRepository.saveAll(members);
 
-    // 5. Initiate Payment
-    InitiatePaymentRequest paymentReq = new InitiatePaymentRequest();
-    paymentReq.setIpAddress(request.getIpAddress());
-    PaymentInitiationResponse paymentResponse =
+    // Initiate payment
+    InitiatePaymentRequest paymentReq =
+        InitiatePaymentRequest.builder().ipAddress(request.getIpAddress()).build();
+
+    PaymentInitiationResponse payment =
         paymentService.initiatePayment(
             booking.getId(), paymentReq, userId, BookingType.HOTEL_BOOKING);
 
-    return hotelBookingMapper.toHotelBookingResponse(booking, members, paymentResponse);
+    return hotelBookingMapper.toHotelBookingResponse(booking, members, payment);
   }
 
   @Override
   public Page<HotelBookingSummaryResponse> getMyBookings(
       UUID userId, BookingStatus status, Pageable pageable) {
-    Page<HotelBooking> bookings;
-    if (status != null) {
-      bookings = hotelBookingRepository.findAllByUser_IdAndStatus(userId, status, pageable);
-    } else {
-      bookings = hotelBookingRepository.findAllByUser_Id(userId, pageable);
-    }
-
+    Page<HotelBooking> bookings = hotelBookingRepository.findAllByUser_Id(userId, pageable);
     return bookings.map(
         b -> {
-          int guestCount =
+          List<HotelBookingDetail> details =
+              hotelBookingDetailRepository.findAllByHotelBooking_Id(b.getId());
+          int guests =
               bookingMemberRepository.countByBookingIdAndBookingType(
                   b.getId(), BookingType.HOTEL_BOOKING);
           HotelBookingSummaryResponse res =
-              hotelBookingMapper.toHotelBookingSummaryResponse(b, guestCount);
-          // Set Hotel Name - need to fetch from first detail
-          List<HotelBookingDetail> details =
-              hotelBookingDetailRepository.findAllByHotelBooking_Id(b.getId());
+              hotelBookingMapper.toHotelBookingSummaryResponse(b, guests);
           if (!details.isEmpty()) {
             res.setHotelName(details.get(0).getRoomType().getHotel().getName());
           }
@@ -225,16 +195,31 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         bookingMemberRepository.findAllByBookingIdAndBookingType(
             bookingId, BookingType.HOTEL_BOOKING);
 
-    HotelBookingDetailResponse response =
+    HotelBookingDetailResponse res =
         hotelBookingMapper.toHotelBookingDetailResponse(booking, details, members);
 
     if (!details.isEmpty()) {
       Hotel hotel = details.get(0).getRoomType().getHotel();
-      response.setHotelName(hotel.getName());
-      response.setHotelAddress(hotel.getAddress());
+      res.setHotelName(hotel.getName());
+      res.setHotelAddress(hotel.getAddress());
     }
 
-    return response;
+    // Add payment info if pending
+    if (booking.getStatus() == BookingStatus.PENDING) {
+      try {
+        PaymentInitiationResponse payment =
+            paymentService.initiatePayment(
+                bookingId,
+                InitiatePaymentRequest.builder().ipAddress("127.0.0.1").build(),
+                userId,
+                BookingType.HOTEL_BOOKING);
+        res.setPayment(payment);
+      } catch (Exception e) {
+        // Ignore payment initiation errors in detail view
+      }
+    }
+
+    return res;
   }
 
   @Override
@@ -252,38 +237,28 @@ public class HotelBookingServiceImpl implements HotelBookingService {
       throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Booking is already cancelled");
     }
 
-    if (booking.getStatus() == BookingStatus.PENDING) {
-      return CancelBookingResponse.builder()
-          .refundAmount(BigDecimal.ZERO)
-          .refundPercentage(BigDecimal.ZERO)
-          .refundMessage("Booking cancelled. No payment was made.")
-          .build();
+    BigDecimal refundAmount = BigDecimal.ZERO;
+    BigDecimal refundPercent = BigDecimal.ZERO;
+
+    if (booking.getStatus() == BookingStatus.PAID) {
+      List<HotelBookingDetail> details =
+          hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
+      LocalDate checkIn =
+          details.stream().map(HotelBookingDetail::getStartDate).min(LocalDate::compareTo).get();
+
+      long daysBefore = ChronoUnit.DAYS.between(LocalDate.now(), checkIn);
+      Hotel hotel = details.get(0).getRoomType().getHotel();
+      RefundPolicy policy = hotel.getRefundPolicy();
+
+      refundPercent = calculateRefundPercentage(policy, daysBefore);
+      refundAmount = booking.getTotalPrice().multiply(refundPercent);
     }
-
-    // PAID booking
-    List<HotelBookingDetail> details =
-        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
-    if (details.isEmpty()) {
-      throw new BaseAppException(WebErrorCode.INTERNAL_SERVER_ERROR, "Booking details missing");
-    }
-
-    Hotel hotel = details.get(0).getRoomType().getHotel();
-    LocalDate checkInDate =
-        details.stream().map(HotelBookingDetail::getStartDate).min(LocalDate::compareTo).get();
-
-    long daysBeforeCheckIn = ChronoUnit.DAYS.between(LocalDate.now(), checkInDate);
-
-    BigDecimal refundPct = calculateRefundPercentage(hotel.getRefundPolicy(), daysBeforeCheckIn);
-    BigDecimal refundAmount = booking.getTotalPrice().multiply(refundPct);
 
     return CancelBookingResponse.builder()
+        .bookingId(bookingId)
+        .bookingStatus(booking.getStatus())
         .refundAmount(refundAmount)
-        .refundPercentage(refundPct)
-        .refundMessage(
-            String.format(
-                "Estimated refund: %s%% (%s VND).",
-                refundPct.multiply(BigDecimal.valueOf(100)).stripTrailingZeros().toPlainString(),
-                refundAmount.stripTrailingZeros().toPlainString()))
+        .refundPercentage(refundPercent.multiply(BigDecimal.valueOf(100)))
         .build();
   }
 
@@ -300,49 +275,82 @@ public class HotelBookingServiceImpl implements HotelBookingService {
     }
 
     if (booking.getStatus() == BookingStatus.CANCELLED) {
-      return;
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Booking is already cancelled");
     }
 
-    if (booking.getStatus() == BookingStatus.PENDING) {
+    if (booking.getStatus() == BookingStatus.CHECKED_IN
+        || booking.getStatus() == BookingStatus.CHECKED_OUT) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Cannot cancel a stayed booking");
+    }
+
+    if (booking.getStatus() == BookingStatus.PAID) {
+      // Calculate refund based on hotel policy
+      List<HotelBookingDetail> details =
+          hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
+      LocalDate checkIn =
+          details.stream().map(HotelBookingDetail::getStartDate).min(LocalDate::compareTo).get();
+
+      long daysBefore = ChronoUnit.DAYS.between(LocalDate.now(), checkIn);
+      Hotel hotel = details.get(0).getRoomType().getHotel();
+      RefundPolicy policy = hotel.getRefundPolicy();
+
+      BigDecimal refundPercent = calculateRefundPercentage(policy, daysBefore);
+      BigDecimal refundAmount = booking.getTotalPrice().multiply(refundPercent);
+
+      // Create refund request
+      PaymentTransaction txn =
+          paymentTransactionRepository
+              .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                  bookingId, BookingType.HOTEL_BOOKING)
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Transaction not found"));
+
+      RefundRequest refundRequest =
+          RefundRequest.builder()
+              .user(booking.getUser())
+              .paymentTransaction(txn)
+              .requestedAmount(refundAmount)
+              .customerReason(request.getReason())
+              .status(RefundStatus.PENDING)
+              .build();
+      refundRequestRepository.save(refundRequest);
+
       booking.setStatus(BookingStatus.CANCELLED);
-      hotelBookingRepository.save(booking);
-      return;
+    } else {
+      booking.setStatus(BookingStatus.CANCELLED);
     }
 
-    // PAID booking
-    List<HotelBookingDetail> details =
-        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
-    Hotel hotel = details.get(0).getRoomType().getHotel();
-    LocalDate checkInDate =
-        details.stream().map(HotelBookingDetail::getStartDate).min(LocalDate::compareTo).get();
-
-    long daysBeforeCheckIn = ChronoUnit.DAYS.between(LocalDate.now(), checkInDate);
-
-    BigDecimal refundPct = calculateRefundPercentage(hotel.getRefundPolicy(), daysBeforeCheckIn);
-    BigDecimal refundAmount = booking.getTotalPrice().multiply(refundPct);
-
-    PaymentTransaction transaction =
-        paymentTransactionRepository
-            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
-                booking.getId(), BookingType.HOTEL_BOOKING)
-            .orElseThrow(
-                () ->
-                    new BaseAppException(
-                        WebErrorCode.INTERNAL_SERVER_ERROR, "Payment transaction not found"));
-
-    RefundRequest refundRequest =
-        RefundRequest.builder()
-            .paymentTransaction(transaction)
-            .user(booking.getUser())
-            .requestedAmount(refundAmount)
-            .customerReason(request.getReason())
-            .status(RefundStatus.PENDING)
-            .build();
-
-    refundRequestRepository.save(refundRequest);
-
-    booking.setStatus(BookingStatus.CANCELLED);
     hotelBookingRepository.save(booking);
+  }
+
+  @Override
+  public StayBillResponse getStayBill(UUID bookingId, UUID userId) {
+    HotelBooking booking =
+        hotelBookingRepository
+            .findById(bookingId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Booking not found"));
+
+    if (!booking.getUser().getId().equals(userId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN, "Access denied");
+    }
+
+    List<AddOnOrder> orders = addOnOrderRepository.findAllByHotelBooking_Id(bookingId);
+    List<AddOnOrderResponse> orderResponses =
+        orders.stream().map(this::mapToAddOnOrderResponse).toList();
+
+    BigDecimal addOnTotal =
+        orders.stream()
+            .filter(o -> o.getStatus() == AddOnOrderStatus.DELIVERED)
+            .map(AddOnOrder::getTotalPrice)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+    return StayBillResponse.builder()
+        .hotelBookingId(bookingId)
+        .roomCharges(booking.getTotalPrice())
+        .totalAddOnCharges(addOnTotal)
+        .totalBill(booking.getTotalPrice().add(addOnTotal))
+        .addOnOrders(orderResponses)
+        .build();
   }
 
   @Override
@@ -360,7 +368,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
     if (booking.getStatus() != BookingStatus.CHECKED_IN) {
       throw new BaseAppException(
-          WebErrorCode.BAD_REQUEST, "Service ordering only available when checked-in");
+          WebErrorCode.BAD_REQUEST, "Add-ons can only be ordered while checked-in");
     }
 
     HotelService service =
@@ -368,64 +376,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             .findById(request.getServiceId())
             .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Service not found"));
 
-    // Verify service belongs to the same hotel
-    List<HotelBookingDetail> details =
-        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
-    if (details.isEmpty()
-        || !details.get(0).getRoomType().getHotel().getId().equals(service.getHotel().getId())) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Service not offered by this hotel");
-    }
-
-    BigDecimal totalPrice = service.getPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
-
     AddOnOrder order =
         AddOnOrder.builder()
             .hotelBooking(booking)
             .hotelService(service)
             .quantity(request.getQuantity())
-            .totalPrice(totalPrice)
+            .totalPrice(service.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())))
             .scheduledTime(request.getScheduledTime())
             .status(AddOnOrderStatus.PENDING)
             .build();
 
     order = addOnOrderRepository.save(order);
-
     return mapToAddOnOrderResponse(order);
-  }
-
-  @Override
-  public StayBillResponse getStayBill(UUID bookingId, UUID userId) {
-    HotelBooking booking =
-        hotelBookingRepository
-            .findById(bookingId)
-            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Booking not found"));
-
-    if (!booking.getUser().getId().equals(userId)) {
-      throw new BaseAppException(WebErrorCode.FORBIDDEN, "Access denied");
-    }
-
-    if (booking.getStatus() != BookingStatus.CHECKED_IN
-        && booking.getStatus() != BookingStatus.CHECKED_OUT) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Bill only available after check-in");
-    }
-
-    List<AddOnOrder> orders = addOnOrderRepository.findAllByHotelBooking_Id(bookingId);
-    List<AddOnOrderResponse> orderResponses =
-        orders.stream().map(this::mapToAddOnOrderResponse).toList();
-
-    BigDecimal totalAddOnCharges =
-        orders.stream()
-            .filter(o -> o.getStatus() != AddOnOrderStatus.CANCELLED)
-            .map(AddOnOrder::getTotalPrice)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-    return StayBillResponse.builder()
-        .hotelBookingId(bookingId)
-        .roomCharges(booking.getTotalPrice())
-        .addOnOrders(orderResponses)
-        .totalAddOnCharges(totalAddOnCharges)
-        .totalBill(booking.getTotalPrice().add(totalAddOnCharges))
-        .build();
   }
 
   @Override
@@ -440,12 +402,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "Access denied");
     }
 
-    if (order.getStatus() == AddOnOrderStatus.CANCELLED) {
-      return;
-    }
-
-    if (order.getStatus() == AddOnOrderStatus.DELIVERED) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Cannot cancel a delivered service");
+    if (order.getStatus() != AddOnOrderStatus.PENDING) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Only pending orders can be cancelled");
     }
 
     if (LocalDateTime.now().plusHours(2).isAfter(order.getScheduledTime())) {
@@ -475,8 +433,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
       return BigDecimal.ZERO;
     }
     return policy.getRules().stream()
-        .filter(rule -> daysBefore >= rule.getDaysBefore())
-        .max(Comparator.comparingInt(RefundPolicyRule::getDaysBefore))
+        .filter(rule -> daysBefore >= rule.getTimeBefore())
+        .max(Comparator.comparingInt(RefundPolicyRule::getTimeBefore))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }
