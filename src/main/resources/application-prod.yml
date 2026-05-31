@@ -19,6 +19,9 @@ spring:
       hibernate:
         format_sql: false
         search:
+          backend:
+            directory:
+              root: /app/lucene-indexes
           schema_management:
             strategy: create-or-update
     open-in-view: false
