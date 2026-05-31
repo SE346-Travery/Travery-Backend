@@ -8,6 +8,7 @@ import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
+import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.auth.AuthProvider;
 import com.travery.traverybackend.enums.user.UserRoles;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,7 +76,7 @@ public class AuthService {
     }
 
     User user =
-        User.builder()
+        Tourist.builder()
             .email(request.getEmail())
             .fullName(request.getFullName())
             .role(
@@ -124,21 +126,30 @@ public class AuthService {
     // Tạo `UsernamePasswordAuthenticationToken`-> gửi vào AuthenticationManager ->
     // Gọi
     // DaoAuthenticationProvider -> loadUserByUsername + so sánh password
-    Authentication authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    Authentication authentication;
+    try {
+      authentication =
+          authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    } catch (DisabledException ex) {
+      User user =
+          userRepository
+              .findByEmail(request.getEmail())
+              .orElseThrow(() -> new BaseAppException(AuthErrorCode.BAD_CREDENTIALS));
+      if (user.getStatus() == UserStatus.PENDING) {
+        throw new BaseAppException(AuthErrorCode.USER_NOT_VERIFIED);
+      }
+      if (user.getStatus() == UserStatus.BANNED) {
+        throw new BaseAppException(UserErrorCode.USER_BANNED);
+      }
+      if (user.getStatus() == UserStatus.DELETED) {
+        throw new BaseAppException(AuthErrorCode.USER_DISABLED);
+      }
+      throw ex;
+    }
 
     // ===== BUSINESS CHECK =====
     CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-    UserStatus status = customUserDetails.getStatus();
-
-    if (status == UserStatus.PENDING) {
-      throw new BaseAppException(AuthErrorCode.USER_NOT_VERIFIED);
-    }
-
-    if (status == UserStatus.BANNED) {
-      throw new BaseAppException(UserErrorCode.USER_BANNED);
-    }
 
     // ===== GENERATE TOKEN =====
     String accessToken = jwtServiceImpl.generateAccessToken(customUserDetails);
