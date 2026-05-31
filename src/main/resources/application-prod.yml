@@ -18,10 +18,9 @@ spring:
     properties:
       hibernate:
         format_sql: false
-        hibernate:
         search:
           schema_management:
-            strategy: update
+            strategy: create-or-update
     open-in-view: false
 
   data:
