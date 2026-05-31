@@ -5,7 +5,7 @@ import com.travery.traverybackend.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,23 +20,40 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
   private static final String[] WHITE_LIST = {
-    "/auth/signup",
-    "/auth/verify-otp",
-    "/auth/resend-otp",
-    "/auth/login",
-    "/auth/refresh",
-    "/auth/forgot-password",
-    "/auth/reset-password",
+    "/api/v1/auth/login",
+    "/api/v1/auth/signup",
+    "/api/v1/auth/verify-otp",
+    "/api/v1/auth/resend-otp",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password",
+    "/api/v1/payments/vnpay-ipn",
+    "/api/v1/payments/vnpay-return",
     "/v3/api-docs/**",
     "/docs",
+    "/docs/**",
+    "/scalar",
     "/scalar/**",
     "/scalar.html",
-    "/actuator/prometheus"
+    "/actuator/health",
+    "/actuator/prometheus",
+    "/favicon.ico",
+    "/api/v1/coach-trips/search"
+  };
+
+  private static final String[] PUBLIC_GET_ENDPOINTS = {
+    "/api/v1/tours",
+    "/api/v1/tours/**",
+    "/api/v1/destinations",
+    "/api/v1/destinations/**",
+    "/api/v1/coach-trips",
+    "/api/v1/coach-trips/**",
+    "/api/v1/stations",
+    "/api/v1/stations/**"
   };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  private final DaoAuthenticationProvider daoAuthenticationProvider;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -45,10 +62,15 @@ public class SecurityConfig {
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(WHITE_LIST).permitAll().anyRequest().authenticated())
+            auth ->
+                auth.requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS)
+                    .permitAll()
+                    .requestMatchers(WHITE_LIST)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .exceptionHandling(
             exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
-        .authenticationProvider(daoAuthenticationProvider)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return httpSecurity.build();
   }

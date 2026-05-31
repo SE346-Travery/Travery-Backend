@@ -1,7 +1,7 @@
 package com.travery.traverybackend.security.user;
 
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.repositories.UserRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

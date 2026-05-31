@@ -34,9 +34,16 @@ build/
 
 # env
 .env
+.env.prod
 
 ### AI agent
 .agents/
+
+# Logs and transient files
+compile.log
+hs_err_pid*.log
+run_output.txt
+travery-lucene-indexes/
 
 ####
 docs/

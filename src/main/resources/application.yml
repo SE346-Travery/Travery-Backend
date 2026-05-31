@@ -9,3 +9,6 @@ spring:
       static-locations: classpath:/static/
   config:
     import: optional:file:.env[.properties]
+
+server:
+  address: 0.0.0.0

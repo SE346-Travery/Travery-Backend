@@ -10,9 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travery.traverybackend.configs.SecurityConfig;
+import com.travery.traverybackend.controllers.auth.AuthController;
 import com.travery.traverybackend.dtos.request.auth.CreateStaffRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
-import com.travery.traverybackend.enums.UserRoles;
+import com.travery.traverybackend.enums.user.UserRoles;
 import com.travery.traverybackend.exception.AppExceptionHandler;
 import com.travery.traverybackend.security.jwt.CustomAuthenticationEntryPoint;
 import com.travery.traverybackend.security.jwt.JwtService;
@@ -69,7 +70,6 @@ public class AdminControllerTest {
         return CustomUserDetails.builder()
             .userId(TEST_ADMIN_ID)
             .email(email)
-            .isEnabled(true)
             .authorities(List.of(new SimpleGrantedAuthority(role)))
             .build();
       };
@@ -85,14 +85,14 @@ public class AdminControllerTest {
             .password("password123")
             .fullName("Staff Name")
             .role(UserRoles.COORDINATOR)
-            .experienceYear(5)
+            .department(com.travery.traverybackend.enums.user.Department.TOUR)
             .build();
 
     doNothing().when(authService).createStaff(any(CreateStaffRequest.class));
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -109,12 +109,12 @@ public class AdminControllerTest {
             .password("password123")
             .fullName("Staff Name")
             .role(UserRoles.COORDINATOR)
-            .experienceYear(5)
+            .department(com.travery.traverybackend.enums.user.Department.TOUR)
             .build();
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -138,12 +138,12 @@ public class AdminControllerTest {
             .password("password123")
             .fullName("Staff Name")
             .role(UserRoles.COORDINATOR)
-            .experienceYear(5)
+            .department(com.travery.traverybackend.enums.user.Department.TOUR)
             .build();
 
     mockMvc
         .perform(
-            post("/auth/create-staff")
+            post("/api/v1/auth/create-staff")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

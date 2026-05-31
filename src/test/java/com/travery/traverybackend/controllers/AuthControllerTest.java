@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travery.traverybackend.controllers.auth.AuthController;
 import com.travery.traverybackend.dtos.request.auth.AccountDeletionRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.security.jwt.CustomAuthenticationEntryPoint;
@@ -56,7 +57,6 @@ public class AuthControllerTest {
           CustomUserDetails.builder()
               .userId(TEST_USER_ID)
               .email(email)
-              .isEnabled(true)
               .authorities(List.of(new SimpleGrantedAuthority("ROLE_TOURIST")))
               .build();
     }
@@ -74,7 +74,7 @@ public class AuthControllerTest {
 
     mockMvc
         .perform(
-            post("/auth/account-deletion")
+            post("/api/v1/auth/account-deletion")
                 .header("Authorization", "Bearer mock-token")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

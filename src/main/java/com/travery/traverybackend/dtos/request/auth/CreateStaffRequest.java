@@ -1,11 +1,12 @@
 package com.travery.traverybackend.dtos.request.auth;
 
-import com.travery.traverybackend.enums.UserRoles;
+import com.travery.traverybackend.enums.user.Department;
+import com.travery.traverybackend.enums.user.UserRoles;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import lombok.*;
 
 @Getter
@@ -29,6 +30,9 @@ public class CreateStaffRequest {
   @NotNull(message = "Role is required")
   private UserRoles role;
 
-  @Min(value = 0, message = "Experience year must be at least 0")
-  private int experienceYear;
+  private Department department;
+
+  private String guideLicense;
+
+  private UUID hotelId;
 }

@@ -4,19 +4,22 @@ import com.travery.traverybackend.dtos.request.auth.*;
 import com.travery.traverybackend.dtos.response.auth.LoginResponse;
 import com.travery.traverybackend.dtos.response.auth.RefreshResponse;
 import com.travery.traverybackend.entities.auth.RefreshToken;
+import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.Coordinator;
-import com.travery.traverybackend.entities.user.Guild;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.entities.user.Receptionist;
+import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.AuthProvider;
-import com.travery.traverybackend.enums.UserRoles;
-import com.travery.traverybackend.enums.UserStatus;
+import com.travery.traverybackend.enums.auth.AuthProvider;
+import com.travery.traverybackend.enums.user.UserRoles;
+import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.AuthErrorCode;
 import com.travery.traverybackend.exception.error.UserErrorCode;
 import com.travery.traverybackend.exception.error.WebErrorCode;
-import com.travery.traverybackend.repositories.RefreshTokenRepository;
-import com.travery.traverybackend.repositories.UserRepository;
+import com.travery.traverybackend.repositories.auth.RefreshTokenRepository;
+import com.travery.traverybackend.repositories.hotel.HotelRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import io.jsonwebtoken.Claims;
@@ -27,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,6 +50,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
+  private final HotelRepository hotelRepository;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -71,7 +76,7 @@ public class AuthService {
     }
 
     User user =
-        User.builder()
+        Tourist.builder()
             .email(request.getEmail())
             .fullName(request.getFullName())
             .role(
@@ -121,21 +126,30 @@ public class AuthService {
     // Tạo `UsernamePasswordAuthenticationToken`-> gửi vào AuthenticationManager ->
     // Gọi
     // DaoAuthenticationProvider -> loadUserByUsername + so sánh password
-    Authentication authentication =
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    Authentication authentication;
+    try {
+      authentication =
+          authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    } catch (DisabledException ex) {
+      User user =
+          userRepository
+              .findByEmail(request.getEmail())
+              .orElseThrow(() -> new BaseAppException(AuthErrorCode.BAD_CREDENTIALS));
+      if (user.getStatus() == UserStatus.PENDING) {
+        throw new BaseAppException(AuthErrorCode.USER_NOT_VERIFIED);
+      }
+      if (user.getStatus() == UserStatus.BANNED) {
+        throw new BaseAppException(UserErrorCode.USER_BANNED);
+      }
+      if (user.getStatus() == UserStatus.DELETED) {
+        throw new BaseAppException(AuthErrorCode.USER_DISABLED);
+      }
+      throw ex;
+    }
 
     // ===== BUSINESS CHECK =====
     CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-    UserStatus status = customUserDetails.getStatus();
-
-    if (status == UserStatus.PENDING) {
-      throw new BaseAppException(AuthErrorCode.USER_NOT_VERIFIED);
-    }
-
-    if (status == UserStatus.BANNED) {
-      throw new BaseAppException(UserErrorCode.USER_BANNED);
-    }
 
     // ===== GENERATE TOKEN =====
     String accessToken = jwtServiceImpl.generateAccessToken(customUserDetails);
@@ -143,7 +157,11 @@ public class AuthService {
 
     refreshTokenService.save(refreshToken, customUserDetails.getUserId());
 
-    return LoginResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    return LoginResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .cometchatUid(customUserDetails.getCometchatUid())
+        .build();
   }
 
   @Transactional
@@ -196,7 +214,12 @@ public class AuthService {
   @Transactional
   public void logout(String authHeader, LogoutRequest request) {
     // Access token
-    String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    if (authHeader == null
+        || !authHeader.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
+      throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+    }
+    String accessToken = authHeader.substring(BEARER_PREFIX.length()).trim();
+
     Claims accessClaims = jwtServiceImpl.parseAndValidate(accessToken);
     String jti = jwtServiceImpl.extractJti(accessClaims);
     Date expiration = jwtServiceImpl.extractExpiration(accessClaims);
@@ -294,7 +317,7 @@ public class AuthService {
     userRepository.save(user);
 
     // 5. Revoke all refresh tokens — forces re-login on other devices
-    //    The current access token remains valid until it expires (short TTL).
+    // The current access token remains valid until it expires (short TTL).
     refreshTokenService.revokeAll(userId);
   }
 
@@ -318,12 +341,18 @@ public class AuthService {
     refreshTokenService.revokeAll(userId);
 
     // 4. Blacklist current access token
-    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+    if (authHeader == null
+        || !authHeader.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
       throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
     }
-    String accessToken = authHeader.substring(BEARER_PREFIX.length());
+    String accessToken = authHeader.substring(BEARER_PREFIX.length()).trim();
 
     Claims claims = jwtServiceImpl.parseAndValidate(accessToken);
+
+    // Security check: Ensure token belongs to the user being deleted
+    if (!userId.equals(jwtServiceImpl.extractUserId(claims))) {
+      throw new BaseAppException(AuthErrorCode.TOKEN_INVALID);
+    }
 
     tokenBlacklistService.blacklistAccessToken(
         jwtServiceImpl.extractJti(claims), jwtServiceImpl.extractExpiration(claims));
@@ -331,17 +360,35 @@ public class AuthService {
 
   @Transactional
   public void createStaff(CreateStaffRequest request) {
-    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new BaseAppException(UserErrorCode.USER_EXISTED);
-    }
+    // Consistency check: Only throw if an ACTIVE user already exists with this
+    // email
+    userRepository
+        .findByEmail(request.getEmail())
+        .ifPresent(
+            existingUser -> {
+              if (existingUser.getStatus() == UserStatus.ACTIVE) {
+                throw new BaseAppException(UserErrorCode.USER_EXISTED);
+              }
+            });
 
     User user =
         switch (request.getRole()) {
-          case COORDINATOR ->
-              Coordinator.builder().experienceYear(request.getExperienceYear()).build();
-          case GUILD -> Guild.builder().experienceYear(request.getExperienceYear()).build();
-          case RECEPTIONIST ->
-              Receptionist.builder().experienceYear(request.getExperienceYear()).build();
+          case COORDINATOR -> Coordinator.builder().department(request.getDepartment()).build();
+          case GUIDE -> Guide.builder().guideLicense(request.getGuideLicense()).build();
+          case RECEPTIONIST -> {
+            if (request.getHotelId() == null) {
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST, "Hotel ID is required for Receptionist");
+            }
+            Hotel hotel =
+                hotelRepository
+                    .findById(request.getHotelId())
+                    .orElseThrow(
+                        () ->
+                            new BaseAppException(
+                                WebErrorCode.BAD_REQUEST, "Hotel not found for Receptionist"));
+            yield Receptionist.builder().hotel(hotel).build();
+          }
           default ->
               throw new BaseAppException(
                   WebErrorCode.BAD_REQUEST, "Invalid role for staff creation");
