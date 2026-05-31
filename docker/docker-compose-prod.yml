@@ -3,8 +3,6 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/travery:latest
     container_name: travery-app
     restart: unless-stopped
-    ports:
-      - "${PORT:-8080}:8080"
     environment:
       # Use production profile
       SPRING_PROFILES_ACTIVE: prod
