@@ -49,7 +49,9 @@ public class SecurityConfig {
     "/api/v1/coach-trips",
     "/api/v1/coach-trips/**",
     "/api/v1/stations",
-    "/api/v1/stations/**"
+    "/api/v1/stations/**",
+    "/api/v1/hotels",
+    "/api/v1/hotels/**"
   };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;

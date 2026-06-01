@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoomTypeRepository extends JpaRepository<RoomType, UUID> {
   List<RoomType> findAllByHotel_Id(UUID hotelId);
+
+  List<RoomType> findAllByHotel_IdIn(List<UUID> hotelIds);
 }

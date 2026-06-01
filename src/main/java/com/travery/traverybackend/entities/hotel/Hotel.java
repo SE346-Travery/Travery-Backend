@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +36,8 @@ public class Hotel extends AbstractBaseEntity {
 
   @GenericField(sortable = Sortable.YES)
   @Column(name = "average_rating")
-  private Integer averageRating;
+  @Builder.Default
+  private Integer averageRating = 0;
 
   @FullTextField(analyzer = "standard")
   @Column(columnDefinition = "TEXT")

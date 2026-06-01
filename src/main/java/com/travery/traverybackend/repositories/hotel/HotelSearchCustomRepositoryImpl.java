@@ -41,6 +41,10 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
   private SearchPredicate buildPredicate(SearchPredicateFactory f, HotelSearchRequest request) {
     var bool = f.bool();
 
+    if (!bool.hasClause()) {
+      return f.matchAll().toPredicate();
+    }
+
     // 1. Text Search (Keyword)
     if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
       bool.must(
@@ -60,7 +64,7 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
     // 3. Average Rating filter
     if (request.getMinRating() != null) {
-      bool.must(f.range().field("averageRating").atLeast(Double.valueOf(request.getMinRating())));
+      bool.must(f.range().field("averageRating").atLeast(request.getMinRating()));
     }
 
     // 4. Capacity filter (Nested RoomTypes)

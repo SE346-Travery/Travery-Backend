@@ -3,7 +3,9 @@ package com.travery.traverybackend.services.admin.impl;
 import com.travery.traverybackend.dtos.request.admin.*;
 import com.travery.traverybackend.dtos.response.hotel.*;
 import com.travery.traverybackend.dtos.response.staff.ReceptionistRoomResponse;
+import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.hotel.*;
+import com.travery.traverybackend.enums.common.ImageType;
 import com.travery.traverybackend.enums.hotel.BedType;
 import com.travery.traverybackend.enums.hotel.RoomStatus;
 import com.travery.traverybackend.enums.hotel.ServiceCategory;
@@ -11,11 +13,16 @@ import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.HotelMapper;
 import com.travery.traverybackend.mappers.ReceptionistMapper;
+import com.travery.traverybackend.repositories.common.ImageRepository;
 import com.travery.traverybackend.repositories.hotel.*;
 import com.travery.traverybackend.services.admin.AdminInventoryService;
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +39,7 @@ public class AdminInventoryServiceImpl implements AdminInventoryService {
   private final RoomRepository roomRepository;
   private final HotelServiceRepository hotelServiceRepository;
   private final AmenityRepository amenityRepository;
+  private final ImageRepository imageRepository;
   private final HotelMapper hotelMapper;
   private final com.travery.traverybackend.services.hotel.HotelService touristHotelService;
   private final ReceptionistMapper receptionistMapper;
@@ -60,7 +68,38 @@ public class AdminInventoryServiceImpl implements AdminInventoryService {
   @Override
   @Transactional(readOnly = true)
   public Page<HotelResponse> getAllHotels(Pageable pageable) {
-    return hotelRepository.findAll(pageable).map(hotelMapper::toHotelResponse);
+    Page<Hotel> hotels = hotelRepository.findAll(pageable);
+    List<UUID> hotelIds = hotels.getContent().stream().map(Hotel::getId).toList();
+
+    // Batch fetch thumbnails
+    Map<UUID, String> thumbnails =
+        imageRepository
+            .findByEntityIdInAndEntityTypeAndIsThumbnailTrue(hotelIds, ImageType.HOTEL)
+            .stream()
+            .collect(Collectors.toMap(Image::getEntityId, Image::getUrl, (a, b) -> a));
+
+    // Batch fetch min prices
+    Map<UUID, BigDecimal> minPrices =
+        roomTypeRepository.findAllByHotel_IdIn(hotelIds).stream()
+            .collect(
+                Collectors.groupingBy(
+                    rt -> rt.getHotel().getId(),
+                    Collectors.mapping(
+                        RoomType::getBasePrice,
+                        Collectors.reducing(
+                            BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal::min))));
+
+    return hotels.map(
+        hotel -> {
+          HotelResponse response = hotelMapper.toHotelResponse(hotel);
+          response.setThumbnailUrl(thumbnails.get(hotel.getId()));
+          BigDecimal minPrice = minPrices.get(hotel.getId());
+          if (minPrice == null || minPrice.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) == 0) {
+            minPrice = BigDecimal.ZERO;
+          }
+          response.setMinPrice(minPrice);
+          return response;
+        });
   }
 
   @Override
@@ -113,8 +152,31 @@ public class AdminInventoryServiceImpl implements AdminInventoryService {
   @Override
   @Transactional(readOnly = true)
   public List<RoomTypeResponse> getRoomTypes(UUID hotelId) {
-    return roomTypeRepository.findAllByHotel_Id(hotelId).stream()
-        .map(hotelMapper::toRoomTypeResponse)
+    List<RoomType> roomTypes = roomTypeRepository.findAllByHotel_Id(hotelId);
+
+    if (roomTypes.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    List<UUID> roomTypeIds = roomTypes.stream().map(RoomType::getId).toList();
+
+    Map<UUID, List<String>> images =
+        imageRepository
+            .findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(roomTypeIds, ImageType.ROOM_TYPE)
+            .stream()
+            .collect(
+                Collectors.groupingBy(
+                    Image::getEntityId, Collectors.mapping(Image::getUrl, Collectors.toList())));
+
+    return roomTypes.stream()
+        .map(
+            roomType -> {
+              RoomTypeResponse response = hotelMapper.toRoomTypeResponse(roomType);
+
+              response.setImages(images.getOrDefault(roomType.getId(), Collections.emptyList()));
+
+              return response;
+            })
         .toList();
   }
 

@@ -31,7 +31,7 @@ ALTER TABLE hotels
     DROP COLUMN star_rating,
     DROP COLUMN latitude,
     DROP COLUMN longitude,
-    ADD COLUMN average_rating integer;
+    ADD COLUMN average_rating integer DEFAULT 0;
 
 -- 4. Add missing foreign key constraints
 ALTER TABLE routes 

@@ -56,8 +56,7 @@ public class HotelServiceImpl implements HotelService {
 
     // Batch fetch min prices
     Map<UUID, BigDecimal> minPrices =
-        roomTypeRepository.findAll().stream()
-            .filter(rt -> hotelIds.contains(rt.getHotel().getId()))
+        roomTypeRepository.findAllByHotel_IdIn(hotelIds).stream()
             .collect(
                 Collectors.groupingBy(
                     rt -> rt.getHotel().getId(),
@@ -70,7 +69,11 @@ public class HotelServiceImpl implements HotelService {
         hotel -> {
           HotelResponse response = hotelMapper.toHotelResponse(hotel);
           response.setThumbnailUrl(thumbnails.get(hotel.getId()));
-          response.setMinPrice(minPrices.getOrDefault(hotel.getId(), BigDecimal.ZERO));
+          BigDecimal minPrice = minPrices.get(hotel.getId());
+          if (minPrice == null || minPrice.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) == 0) {
+            minPrice = BigDecimal.ZERO;
+          }
+          response.setMinPrice(minPrice);
           return response;
         });
   }
