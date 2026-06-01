@@ -116,7 +116,7 @@ public class ReviewServiceImpl implements ReviewService {
           .findById(targetId)
           .ifPresent(
               h -> {
-                h.setAverageRating(newAvg);
+                h.setAverageRating((int) Math.round(newAvg));
                 hotelRepository.save(h);
               });
     } else if (targetType == ReviewTargetType.TOUR) {

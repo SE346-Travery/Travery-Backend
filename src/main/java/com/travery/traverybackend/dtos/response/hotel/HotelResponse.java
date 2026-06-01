@@ -19,6 +19,6 @@ public class HotelResponse {
   private String address;
   private String cityProvince;
   private BigDecimal minPrice;
-  private Double averageRating;
+  private Integer averageRating;
   private String thumbnailUrl;
 }

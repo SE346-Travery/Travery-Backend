@@ -7,16 +7,17 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexingDependency;
 
 @Entity
 @Table(name = "hotels")
@@ -34,8 +35,7 @@ public class Hotel extends AbstractBaseEntity {
 
   @GenericField(sortable = Sortable.YES)
   @Column(name = "average_rating")
-  @Builder.Default
-  private Double averageRating = 0.0;
+  private Integer averageRating;
 
   @FullTextField(analyzer = "standard")
   @Column(columnDefinition = "TEXT")
@@ -65,6 +65,7 @@ public class Hotel extends AbstractBaseEntity {
       joinColumns = @JoinColumn(name = "hotel_id"),
       inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   @IndexedEmbedded
+  @IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)
   private Set<Amenity> amenities;
 
   @OneToMany(mappedBy = "hotel")

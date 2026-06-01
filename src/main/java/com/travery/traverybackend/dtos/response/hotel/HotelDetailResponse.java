@@ -26,6 +26,6 @@ public class HotelDetailResponse {
   private List<AmenityResponse> amenities;
   private List<RoomTypeResponse> roomTypes;
   private List<String> images;
-  private Double averageRating;
+  private Integer averageRating;
   private List<ReviewResponse> reviews;
 }
