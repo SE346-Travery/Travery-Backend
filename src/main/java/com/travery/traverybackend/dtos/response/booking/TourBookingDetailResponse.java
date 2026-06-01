@@ -41,4 +41,5 @@ public class TourBookingDetailResponse {
   private PaymentMethod paymentMethod;
   private PaymentStatus paymentStatus;
   private UUID transactionId;
+  private String gatewayTransactionId;
 }

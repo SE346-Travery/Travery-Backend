@@ -34,4 +34,8 @@ public class Coach extends AbstractBaseEntity {
   @Column(length = 20)
   @Builder.Default
   private CoachStatus status = CoachStatus.ACTIVE;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "seat_layout_id")
+  private SeatLayout seatLayout;
 }

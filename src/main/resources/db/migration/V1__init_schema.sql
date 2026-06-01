@@ -55,12 +55,14 @@ create table chat_sessions (
     id uuid not null,
     tour_id uuid,
     user_id uuid not null,
+    tour_instance_id uuid,
     status varchar(20) check ((status in ('OPEN','CLOSED'))),
     cometchat_guid varchar(100) not null unique,
     primary key (id)
 );
 
 create table coach_bookings (
+    base_price numeric(12,2) not null,
     total_price numeric(12,2) not null,
     created_at timestamp(6) not null,
     payment_deadline timestamp(6),
@@ -68,31 +70,43 @@ create table coach_bookings (
     coach_trip_id uuid not null,
     id uuid not null,
     user_id uuid not null,
-    status varchar(50) check ((status in ('PENDING','PAID','CHECKED_IN','CHECKED_OUT','CANCELLED'))),
+    contact_name varchar(100),
+    contact_phone varchar(20),
+    status varchar(50) check ((status in ('PENDING','PAID','CHECKED_IN','CHECKED_OUT','CANCELLED','NO_SHOW'))),
     primary key (id)
 );
 
-create table coach_seats (
+create table seat_layouts (
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
+    id uuid not null,
+    name varchar(100) not null,
+    coach_type varchar(50) not null check ((coach_type in ('SEAT','BED','LIMOUSINE'))),
+    total_seats integer not null,
+    primary key (id)
+);
+
+create table seat_layout_items (
+    created_at timestamp(6) not null,
+    updated_at timestamp(6) not null,
+    id uuid not null,
+    seat_layout_id uuid not null,
     seat_name varchar(10) not null,
-    coach_id uuid not null,
-    id uuid not null,
-    position varchar(20) not null check ((position in ('FRONT','MIDDLE','BACK'))),
     tier varchar(20) not null check ((tier in ('UPPER','LOWER'))),
+    position varchar(20) not null check ((position in ('FRONT','MIDDLE','BACK'))),
+    row_number integer not null,
+    column_number integer not null,
     primary key (id)
 );
 
-create table coach_tickets (
-    price_at_booking numeric(12,2) not null,
+create table coach_booking_seats (
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
-    coach_booking_id uuid not null,
-    coach_seat_id uuid not null,
     id uuid not null,
-    passenger_phone varchar(20),
-    passenger_name varchar(100),
-    primary key (id)
+    coach_booking_id uuid not null,
+    seat_layout_item_id uuid not null,
+    primary key (id),
+    unique (coach_booking_id, seat_layout_item_id)
 );
 
 create table coach_trips (
@@ -105,7 +119,7 @@ create table coach_trips (
     driver_id uuid not null,
     id uuid not null,
     route_id uuid not null,
-    status varchar(50) check ((status in ('SCHEDULED','IN_PROGRESS','COMPLETED','CANCELLED'))),
+    status varchar(50) check ((status in ('OPEN','FULL','IN_PROGRESS','COMPLETED','CANCELLED'))),
     primary key (id)
 );
 
@@ -114,6 +128,7 @@ create table coaches (
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     id uuid not null,
+    seat_layout_id uuid,
     license_plate varchar(20) not null unique,
     status varchar(20) check ((status in ('ACTIVE','MAINTENANCE'))),
     coach_type varchar(50) not null check ((coach_type in ('SEAT','BED','LIMOUSINE'))),
@@ -268,7 +283,8 @@ create table refund_policies (
 );
 
 create table refund_policy_rules (
-    days_before integer not null,
+    time_before integer not null,
+    time_unit varchar(10) not null default 'DAYS' check (time_unit in ('HOURS', 'DAYS')),
     refund_percentage numeric(5,2) not null,
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
@@ -353,9 +369,9 @@ create table routes (
     estimated_hours numeric(4,1),
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
-    destination_station_id uuid not null,
+    destination_destination_id uuid not null,
     id uuid not null,
-    origin_station_id uuid not null,
+    origin_destination_id uuid not null,
     refund_policy_id uuid,
     primary key (id)
 );
@@ -366,7 +382,7 @@ create table stations (
     created_at timestamp(6) not null,
     updated_at timestamp(6) not null,
     id uuid not null,
-    city_province varchar(100) not null,
+    destination_id uuid not null,
     address varchar(500) not null,
     name varchar(255) not null,
     primary key (id)
@@ -433,9 +449,6 @@ create table destinations (
     id uuid not null,
     code varchar(50) not null unique,
     name varchar(255) not null,
-    region varchar(20) not null check ((region in ('NORTH','CENTRAL','SOUTH'))),
-    image_url varchar(500),
-    description TEXT,
     primary key (id)
 );
 
@@ -533,19 +546,19 @@ alter table coach_bookings
     add constraint fk_coach_bookings_user
     foreign key (user_id) references users;
 
--- coach_seats
-alter table coach_seats
-    add constraint fk_coach_seats_coach
-    foreign key (coach_id) references coaches;
-
--- coach_tickets
-alter table coach_tickets
-    add constraint fk_coach_tickets_coach_booking
+-- coach_booking_seats
+alter table coach_booking_seats
+    add constraint fk_coach_booking_seats_booking
     foreign key (coach_booking_id) references coach_bookings;
 
-alter table coach_tickets
-    add constraint fk_coach_tickets_coach_seat
-    foreign key (coach_seat_id) references coach_seats;
+alter table coach_booking_seats
+    add constraint fk_coach_booking_seats_seat_item
+    foreign key (seat_layout_item_id) references seat_layout_items;
+
+-- coaches
+alter table coaches
+    add constraint fk_coaches_seat_layout
+    foreign key (seat_layout_id) references seat_layouts;
 
 -- coach_trips
 alter table coach_trips
@@ -666,6 +679,11 @@ alter table room_type_amenities
     add constraint fk_room_type_amenities_room_type
     foreign key (room_type_id) references room_types;
 
+-- seat_layout_items
+alter table seat_layout_items
+    add constraint fk_seat_layout_items_layout
+    foreign key (seat_layout_id) references seat_layouts;
+
 -- room_types
 alter table room_types
     add constraint fk_room_types_hotel
@@ -682,12 +700,17 @@ alter table rooms
 
 -- routes
 alter table routes
-    add constraint fk_routes_destination_station
-    foreign key (destination_station_id) references stations;
+    add constraint fk_routes_destination_destination
+    foreign key (destination_destination_id) references destinations;
 
 alter table routes
-    add constraint fk_routes_origin_station
-    foreign key (origin_station_id) references stations;
+    add constraint fk_routes_origin_destination
+    foreign key (origin_destination_id) references destinations;
+
+-- stations
+alter table stations
+    add constraint fk_stations_destination
+    foreign key (destination_id) references destinations;
 
 -- tour_bookings
 alter table tour_bookings

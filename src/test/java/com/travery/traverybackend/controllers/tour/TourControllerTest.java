@@ -61,7 +61,6 @@ public class TourControllerTest {
         CustomUserDetails.builder()
             .userId(coordinatorId)
             .email("test@travery.com")
-            .isEnabled(true)
             .authorities(List.of())
             .build();
 

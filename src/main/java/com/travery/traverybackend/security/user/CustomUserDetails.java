@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
   private final String
       password; // Từ passwordHashed của user -> AuthenticationManager sẽ gọi để so sánh với
   // passwordEncoder.
-  private final boolean isEnabled; // Từ status == ACTIVE của user
+  private final boolean isEnabled;
   private final Collection<? extends GrantedAuthority> authorities; // Từ role của user
   private final UserStatus status; // Thêm hai trường này để sử dụng trong AuthService
   private final AuthProvider authProvider;

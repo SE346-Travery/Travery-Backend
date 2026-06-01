@@ -1,7 +1,8 @@
 package com.travery.traverybackend.enums.coach;
 
 public enum CoachTripStatus {
-  SCHEDULED,
+  OPEN,
+  FULL,
   IN_PROGRESS,
   COMPLETED,
   CANCELLED

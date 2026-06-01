@@ -45,14 +45,16 @@ public class TourSearchCustomRepositoryImpl implements TourSearchCustomRepositor
 
     // 1. Tìm kiếm text (Full-text search) với Fuzzy Search và Boosting
     if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
-      bool.must(
-          f.match()
-              .field("name")
-              .boost(2.0f) // Ưu tiên kết quả trùng tên tour hơn
-              .field("description")
-              .field("destination.name")
-              .matching(request.getKeyword())
-              .fuzzy(1)); // Cho phép sai lệch 1 ký tự (typo)
+      for (String term : request.getKeyword().trim().split("\\s+")) {
+        bool.must(
+            f.match()
+                .field("name")
+                .boost(2.0f) // Ưu tiên kết quả trùng tên tour hơn
+                .field("description")
+                .field("destination.name")
+                .matching(term)
+                .fuzzy(1)); // Cho phép sai lệch 1 ký tự (typo)
+      }
     }
     // 2. Lọc khoảng giá
     if (request.getMinPrice() != null && request.getMaxPrice() != null) {

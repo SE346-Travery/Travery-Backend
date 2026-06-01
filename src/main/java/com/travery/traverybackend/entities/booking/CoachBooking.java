@@ -7,6 +7,7 @@ import com.travery.traverybackend.enums.booking.BookingStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,14 +32,26 @@ public class CoachBooking extends AbstractBaseEntity {
   @JoinColumn(name = "coach_trip_id", nullable = false)
   private CoachTrip coachTrip;
 
+  @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
+  private BigDecimal basePrice;
+
   @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal totalPrice;
 
   @Column(name = "payment_deadline")
   private LocalDateTime paymentDeadline;
 
+  @Column(name = "contact_name", length = 100)
+  private String contactName;
+
+  @Column(name = "contact_phone", length = 20)
+  private String contactPhone;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 50)
   @Builder.Default
   private BookingStatus status = BookingStatus.PENDING;
+
+  @OneToMany(mappedBy = "coachBooking", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<CoachBookingSeat> bookedSeats;
 }

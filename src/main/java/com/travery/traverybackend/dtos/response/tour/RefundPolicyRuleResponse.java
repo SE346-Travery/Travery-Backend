@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.tour;
 
+import com.travery.traverybackend.enums.finance.RefundTimeUnit;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Builder
 public class RefundPolicyRuleResponse {
   private UUID id;
-  private int daysBefore;
+  private int timeBefore;
+  private RefundTimeUnit timeUnit;
   private BigDecimal refundPercentage;
 }

@@ -46,6 +46,7 @@ public interface TourBookingMapper {
   @Mapping(target = "paymentMethod", source = "payment.paymentMethod")
   @Mapping(target = "paymentStatus", source = "payment.status")
   @Mapping(target = "transactionId", source = "payment.id")
+  @Mapping(target = "gatewayTransactionId", source = "payment.transactionReference")
   TourBookingDetailResponse toTourBookingDetailResponse(
       TourBooking booking, List<BookingMember> members, PaymentTransaction payment);
 

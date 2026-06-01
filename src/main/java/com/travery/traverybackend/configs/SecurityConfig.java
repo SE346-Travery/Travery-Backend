@@ -35,12 +35,21 @@ public class SecurityConfig {
     "/scalar",
     "/scalar/**",
     "/scalar.html",
+    "/actuator/health",
     "/actuator/prometheus",
-    "/favicon.ico"
+    "/favicon.ico",
+    "/api/v1/coach-trips/search"
   };
 
   private static final String[] PUBLIC_GET_ENDPOINTS = {
-    "/api/v1/tours", "/api/v1/tours/**", "/api/v1/destinations", "/api/v1/destinations/**"
+    "/api/v1/tours",
+    "/api/v1/tours/**",
+    "/api/v1/destinations",
+    "/api/v1/destinations/**",
+    "/api/v1/coach-trips",
+    "/api/v1/coach-trips/**",
+    "/api/v1/stations",
+    "/api/v1/stations/**"
   };
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;

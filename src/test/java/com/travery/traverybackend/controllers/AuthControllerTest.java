@@ -57,7 +57,6 @@ public class AuthControllerTest {
           CustomUserDetails.builder()
               .userId(TEST_USER_ID)
               .email(email)
-              .isEnabled(true)
               .authorities(List.of(new SimpleGrantedAuthority("ROLE_TOURIST")))
               .build();
     }

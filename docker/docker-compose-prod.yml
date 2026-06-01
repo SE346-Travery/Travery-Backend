@@ -3,8 +3,6 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/travery:latest
     container_name: travery-app
     restart: unless-stopped
-    ports:
-      - "${PORT:-8080}:8080"
     environment:
       # Use production profile
       SPRING_PROFILES_ACTIVE: prod
@@ -45,7 +43,28 @@ services:
       MAX_ATTEMPTS: ${MAX_ATTEMPTS:-3}
       RESEND_COOLDOWN_SECONDS: ${RESEND_COOLDOWN_SECONDS:-60}
       RESET_MAX_PER_HOUR: ${RESET_MAX_PER_HOUR:-3}
+      
+      # VNPay
+      VNPAY_TERMINAL_ID: ${VNPAY_TERMINAL_ID}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
+      VNPAY_INIT_PAYMENT_URL: ${VNPAY_INIT_PAYMENT_URL}
+      VNPAY_IPN_URL: ${VNPAY_IPN_URL}
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
+      VNPAY_DEEPLINK_SCHEME: ${VNPAY_DEEPLINK_SCHEME}
+      VNPAY_TIMEOUT: ${VNPAY_TIMEOUT}
+      
+      # CometChat
+      COMETCHAT_APP_ID: ${COMETCHAT_APP_ID}
+      COMETCHAT_API_KEY: ${COMETCHAT_API_KEY}
+      COMETCHAT_REGION: ${COMETCHAT_REGION}
+      COMETCHAT_AUTH_KEY: ${COMETCHAT_AUTH_KEY}
+      
+      # Backend IP
+      BACKEND_IP: ${BACKEND_IP}
     
+    volumes:
+      - travery_lucene_prod:/app/lucene-indexes
+      
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,8 +93,10 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443" # Mở thêm port 443 cho HTTPS
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro # Đưa thư mục SSL vào container
     depends_on:
       - app
     networks:
@@ -170,3 +191,4 @@ volumes:
   postgres_data_prod:
   redis_data_prod:
   alloy_wal:
+  travery_lucene_prod:
