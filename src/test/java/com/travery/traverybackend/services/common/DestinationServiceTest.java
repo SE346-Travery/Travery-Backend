@@ -1,4 +1,4 @@
-package com.travery.traverybackend.services.tour;
+package com.travery.traverybackend.services.common;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -8,7 +8,7 @@ import com.travery.traverybackend.dtos.response.tour.DestinationResponse;
 import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.mappers.DestinationMapper;
 import com.travery.traverybackend.repositories.common.DestinationRepository;
-import com.travery.traverybackend.services.tour.impl.DestinationServiceImpl;
+import com.travery.traverybackend.services.common.impl.DestinationServiceImpl;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

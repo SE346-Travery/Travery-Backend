@@ -1,4 +1,4 @@
-package com.travery.traverybackend.controllers.tour;
+package com.travery.traverybackend.controllers.common;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.tour.DestinationResponse;
-import com.travery.traverybackend.services.tour.DestinationService;
+import com.travery.traverybackend.services.common.DestinationService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
