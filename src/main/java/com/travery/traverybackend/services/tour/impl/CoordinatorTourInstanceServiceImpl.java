@@ -16,6 +16,7 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
 import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
@@ -44,6 +45,7 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final DriverRepository driverRepository;
   private final HotelBookingRepository hotelBookingRepository;
   private final TourIncidentRepository tourIncidentRepository;
+  private final TourBookingRepository tourBookingRepository;
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
@@ -276,6 +278,33 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     return tourIncidentRepository.findByTourInstanceId(instanceId).stream()
         .map(tourIncidentMapper::toResponse)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  @Transactional
+  public void deleteInstance(UUID id, UUID coordinatorId) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (!tourInstance.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not authorized to delete this tour instance");
+    }
+
+    if (tourInstance.getStatus() != TourInstanceStatus.PLANNING) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Only instances in PLANNING status can be deleted");
+    }
+
+    if (tourBookingRepository.existsByTourInstanceId(id)) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot delete instance with existing bookings");
+    }
+
+    tourInstanceRepository.delete(tourInstance);
   }
 
   private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {

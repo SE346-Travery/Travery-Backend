@@ -21,4 +21,6 @@ public interface CoordinatorTourInstanceService {
   TourInstanceDetailResponse updateStatus(UUID id, TourProgressUpdateRequest request);
 
   List<TourIncidentResponse> getIncidents(UUID instanceId);
+
+  void deleteInstance(UUID id, UUID coordinatorId);
 }
