@@ -167,8 +167,6 @@ public class TourServiceTest {
 
   @Test
   void createTemplate_noRefundPolicy_assignsStandard() {
-    request.setRefundPolicyId(null);
-
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(destinationRepository.findById(request.getDestinationId()))
         .thenReturn(Optional.of(destination));

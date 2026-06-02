@@ -231,6 +231,14 @@ public class TourServiceImpl implements TourService {
       tour.setRefundPolicy(refundPolicy);
       tour.setRequestedByUser(requestedByUser);
 
+      if (request.getMinParticipants() != null) {
+        tour.setMinParticipants(request.getMinParticipants());
+      }
+      if (request.getMaxParticipants() != null) {
+        tour.setMaxParticipants(request.getMaxParticipants());
+      }
+      tour.setDurationDays(request.getItineraries().size());
+
       List<TourItinerary> itineraries =
           request.getItineraries().stream()
               .map(
@@ -325,5 +333,192 @@ public class TourServiceImpl implements TourService {
         || request.getDestinationId() != null
         || request.getMinRating() != null
         || request.getStartDate() != null;
+  }
+
+  @Override
+  @Transactional
+  public TourResponse updateTemplate(
+      UUID id,
+      TourTemplateRequest request,
+      List<MultipartFile> tourImages,
+      List<MultipartFile> itineraryImages,
+      UUID coordinatorId) {
+    Tour tour =
+        tourRepository
+            .findById(id)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    if (!tour.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not authorized to update this tour template");
+    }
+
+    // Update basic fields
+    tour.setName(request.getName());
+    tour.setDescription(request.getDescription());
+    tour.setPickupLocation(request.getPickupLocation());
+    tour.setPricePerAdult(request.getPricePerAdult());
+    tour.setPricePerChild(request.getPricePerChild());
+    if (request.getIsCustom() != null) {
+      tour.setCustom(request.getIsCustom());
+    }
+    if (request.getMinParticipants() != null) {
+      tour.setMinParticipants(request.getMinParticipants());
+    }
+    if (request.getMaxParticipants() != null) {
+      tour.setMaxParticipants(request.getMaxParticipants());
+    }
+
+    // Update Destination
+    if (!tour.getDestination().getId().equals(request.getDestinationId())) {
+      Destination destination =
+          destinationRepository
+              .findById(request.getDestinationId())
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
+      tour.setDestination(destination);
+    }
+
+    // Update Hotel
+    if (request.getHotelId() != null) {
+      if (tour.getHotel() == null || !tour.getHotel().getId().equals(request.getHotelId())) {
+        Hotel hotel =
+            hotelRepository
+                .findById(request.getHotelId())
+                .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
+        tour.setHotel(hotel);
+      }
+    } else {
+      tour.setHotel(null);
+    }
+
+    // Update Itineraries (simple approach: clear and re-add)
+    List<UUID> oldItineraryIds =
+        tour.getItineraries().stream().map(TourItinerary::getId).collect(Collectors.toList());
+    if (!oldItineraryIds.isEmpty()) {
+      List<Image> oldImages =
+          imageRepository.findByEntityIdInAndEntityType(oldItineraryIds, ImageType.TOUR_ITINERARY);
+      for (Image image : oldImages) {
+        mediaService.deleteImage(image.getPublicId());
+        imageRepository.delete(image);
+      }
+    }
+
+    tour.getItineraries().clear();
+    List<TourItinerary> newItineraries =
+        request.getItineraries().stream()
+            .map(
+                itineraryRequest ->
+                    TourItinerary.builder()
+                        .tour(tour)
+                        .dayNumber(itineraryRequest.getDayNumber())
+                        .title(itineraryRequest.getTitle())
+                        .description(itineraryRequest.getDescription())
+                        .build())
+            .collect(Collectors.toList());
+    tour.getItineraries().addAll(newItineraries);
+    tour.setDurationDays(newItineraries.size());
+
+    Tour savedTour = tourRepository.save(tour);
+
+    // Note: Handling image updates (adding/replacing) can be complex.
+    // For now, if new images are provided, we add them.
+    // A more robust implementation would allow deleting specific images.
+
+    List<String> uploadedPublicIds = new ArrayList<>();
+    try {
+      if (tourImages != null && !tourImages.isEmpty()) {
+        int order =
+            imageRepository.countByEntityIdAndEntityType(savedTour.getId(), ImageType.TOUR);
+        for (MultipartFile file : tourImages) {
+          if (file.isEmpty()) continue;
+          Map<String, Object> uploadResult = mediaService.uploadImage(file, CloudinaryFolder.TOURS);
+          String publicId = (String) uploadResult.get("public_id");
+          uploadedPublicIds.add(publicId);
+
+          Image image =
+              Image.builder()
+                  .entityId(savedTour.getId())
+                  .entityType(ImageType.TOUR)
+                  .url((String) uploadResult.get("secure_url"))
+                  .publicId(publicId)
+                  .isThumbnail(order == 0)
+                  .displayOrder(order++)
+                  .build();
+          imageRepository.save(image);
+        }
+      }
+
+      if (request.getItineraries() != null && itineraryImages != null) {
+        for (int i = 0;
+            i < Math.min(request.getItineraries().size(), itineraryImages.size());
+            i++) {
+          MultipartFile file = itineraryImages.get(i);
+          if (file != null && !file.isEmpty()) {
+            Map<String, Object> uploadResult =
+                mediaService.uploadImage(file, CloudinaryFolder.ITINERARIES);
+            String publicId = (String) uploadResult.get("public_id");
+            uploadedPublicIds.add(publicId);
+
+            TourItinerary savedItinerary = savedTour.getItineraries().get(i);
+            Image image =
+                Image.builder()
+                    .entityId(savedItinerary.getId())
+                    .entityType(ImageType.TOUR_ITINERARY)
+                    .url((String) uploadResult.get("secure_url"))
+                    .publicId(publicId)
+                    .isThumbnail(true)
+                    .displayOrder(0)
+                    .build();
+            imageRepository.save(image);
+          }
+        }
+      }
+    } catch (Exception e) {
+      for (String publicId : uploadedPublicIds) {
+        mediaService.deleteImage(publicId);
+      }
+      throw e;
+    }
+
+    return tourMapper.toTourResponse(savedTour);
+  }
+
+  @Override
+  @Transactional
+  public void deleteTemplate(UUID id, UUID coordinatorId) {
+    Tour tour =
+        tourRepository
+            .findById(id)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    if (!tour.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not authorized to delete this tour template");
+    }
+
+    // Check if there are any instances of this tour
+    if (tourInstanceRepository.existsByTourId(id)) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot delete tour template with existing instances");
+    }
+
+    // Delete associated images from Cloudinary
+    List<Image> images = imageRepository.findByEntityIdAndEntityType(id, ImageType.TOUR);
+    for (Image image : images) {
+      mediaService.deleteImage(image.getPublicId());
+    }
+
+    List<UUID> itineraryIds =
+        tour.getItineraries().stream().map(TourItinerary::getId).collect(Collectors.toList());
+    if (!itineraryIds.isEmpty()) {
+      List<Image> itineraryImages =
+          imageRepository.findByEntityIdInAndEntityType(itineraryIds, ImageType.TOUR_ITINERARY);
+      for (Image image : itineraryImages) {
+        mediaService.deleteImage(image.getPublicId());
+      }
+    }
+
+    tourRepository.delete(tour);
   }
 }
