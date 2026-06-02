@@ -28,7 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -91,5 +93,36 @@ public class TourController extends AbstractBaseController {
     TourResponse response =
         tourService.createTemplate(request, tourImages, itineraryImages, userDetails.getUserId());
     return created(response, "Tour template created successfully");
+  }
+
+  @PatchMapping(value = "/templates/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<TourResponse>> updateTemplate(
+      @PathVariable UUID id,
+      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
+          String requestJson,
+      @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
+      @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages,
+      @AuthenticationPrincipal CustomUserDetails userDetails)
+      throws Exception {
+
+    TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
+    Set<ConstraintViolation<TourTemplateRequest>> violations = validator.validate(request);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+
+    TourResponse response =
+        tourService.updateTemplate(
+            id, request, tourImages, itineraryImages, userDetails.getUserId());
+    return success(response, "Tour template updated successfully");
+  }
+
+  @DeleteMapping("/templates/{id}")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<Void>> deleteTemplate(
+      @PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    tourService.deleteTemplate(id, userDetails.getUserId());
+    return success(null, "Tour template deleted successfully");
   }
 }
