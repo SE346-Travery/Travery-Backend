@@ -42,4 +42,6 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, UUID> 
 
   @Query("SELECT b FROM TourBooking b WHERE b.status = 'PENDING' AND b.paymentDeadline < :now")
   List<TourBooking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
+
+  boolean existsByTourInstanceId(UUID instanceId);
 }

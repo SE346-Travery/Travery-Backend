@@ -51,4 +51,6 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
       "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId AND ti.status = :status")
   List<TourInstance> findByGuideIdAndStatus(
       @Param("guideId") UUID guideId, @Param("status") TourInstanceStatus status);
+
+  boolean existsByTourId(UUID tourId);
 }
