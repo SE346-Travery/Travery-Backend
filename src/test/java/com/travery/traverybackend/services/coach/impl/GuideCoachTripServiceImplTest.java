@@ -9,6 +9,7 @@ import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.coach.*;
 import com.travery.traverybackend.entities.common.Destination;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
@@ -35,6 +36,7 @@ class GuideCoachTripServiceImplTest {
 
   @InjectMocks private GuideCoachTripServiceImpl guideService;
 
+  private UUID guideId;
   private UUID tripId;
   private UUID bookingId;
   private CoachTrip trip;
@@ -42,6 +44,7 @@ class GuideCoachTripServiceImplTest {
 
   @BeforeEach
   void setUp() {
+    guideId = UUID.randomUUID();
     tripId = UUID.randomUUID();
     bookingId = UUID.randomUUID();
 
@@ -59,6 +62,7 @@ class GuideCoachTripServiceImplTest {
             .seatLayout(seatLayout)
             .build();
     Driver driver = Driver.builder().id(UUID.randomUUID()).fullName("John Doe").build();
+    Guide guide = Guide.builder().id(guideId).build();
 
     trip =
         CoachTrip.builder()
@@ -66,6 +70,7 @@ class GuideCoachTripServiceImplTest {
             .route(route)
             .coach(coach)
             .driver(driver)
+            .guide(guide)
             .status(CoachTripStatus.OPEN)
             .build();
 
@@ -82,42 +87,10 @@ class GuideCoachTripServiceImplTest {
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
-    CoachTripDetailResponse response = guideService.updateTripStatus(tripId, request);
+    CoachTripDetailResponse response = guideService.updateTripStatus(guideId, tripId, request);
 
     assertNotNull(response);
     assertEquals(CoachTripStatus.IN_PROGRESS, trip.getStatus());
     verify(coachTripRepository).save(trip);
-  }
-
-  @Test
-  void markPassengerNoShow_Success() {
-    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachBookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
-
-    guideService.markPassengerNoShow(tripId, bookingId);
-
-    assertEquals(BookingStatus.NO_SHOW, booking.getStatus());
-    verify(coachBookingRepository).save(booking);
-  }
-
-  @Test
-  void markPassengerNoShow_BookingNotPaid_ThrowsException() {
-    booking.setStatus(BookingStatus.PENDING);
-
-    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachBookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
-
-    assertThrows(BaseAppException.class, () -> guideService.markPassengerNoShow(tripId, bookingId));
-  }
-
-  @Test
-  void markPassengerNoShow_BookingNotBelongToTrip_ThrowsException() {
-    CoachTrip anotherTrip = CoachTrip.builder().id(UUID.randomUUID()).build();
-    booking.setCoachTrip(anotherTrip);
-
-    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachBookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
-
-    assertThrows(BaseAppException.class, () -> guideService.markPassengerNoShow(tripId, bookingId));
   }
 }

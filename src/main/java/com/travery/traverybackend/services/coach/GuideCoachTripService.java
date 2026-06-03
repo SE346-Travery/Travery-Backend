@@ -1,11 +1,20 @@
 package com.travery.traverybackend.services.coach;
 
+import com.travery.traverybackend.dtos.request.coach.GuideCoachAttendanceRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateCoachTripStatusRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
+import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
+import java.util.List;
 import java.util.UUID;
 
 public interface GuideCoachTripService {
-  CoachTripDetailResponse updateTripStatus(UUID tripId, UpdateCoachTripStatusRequest request);
+  List<CoachTripResponse> getAssignedTrips(UUID guideId, String filter);
 
-  void markPassengerNoShow(UUID tripId, UUID bookingId);
-}
+  CoachTripDetailResponse getTripDetail(UUID guideId, UUID tripId);
+
+  CoachTripDetailResponse recordAttendance(
+      UUID guideId, UUID tripId, GuideCoachAttendanceRequest request);
+
+  CoachTripDetailResponse updateTripStatus(UUID guideId, UUID tripId, UpdateCoachTripStatusRequest request);
+  }
+

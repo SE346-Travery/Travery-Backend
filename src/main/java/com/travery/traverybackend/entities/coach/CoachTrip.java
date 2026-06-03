@@ -2,6 +2,7 @@ package com.travery.traverybackend.entities.coach;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -36,6 +37,10 @@ public class CoachTrip extends AbstractBaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "coordinator_id", nullable = false)
   private Coordinator coordinator;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "guide_id")
+  private Guide guide;
 
   @Column(name = "departure_time", nullable = false)
   private LocalDateTime departureTime;

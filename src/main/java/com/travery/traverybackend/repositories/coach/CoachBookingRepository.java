@@ -52,4 +52,6 @@ public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID
   List<CoachBooking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
 
   int countByCoachTrip_Id(UUID tripId);
+
+  List<CoachBooking> findByCoachTrip_Id(UUID tripId);
 }

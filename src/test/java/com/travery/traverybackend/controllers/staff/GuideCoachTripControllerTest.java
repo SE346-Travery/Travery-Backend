@@ -83,7 +83,7 @@ class GuideCoachTripControllerTest {
         new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
 
-    when(guideService.updateTripStatus(eq(tripId), any(UpdateCoachTripStatusRequest.class)))
+    when(guideService.updateTripStatus(any(UUID.class), eq(tripId), any(UpdateCoachTripStatusRequest.class)))
         .thenReturn(responseDto);
 
     SingleResponse<CoachTripDetailResponse> singleResponse = new SingleResponse<>();
@@ -101,19 +101,5 @@ class GuideCoachTripControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Update coach trip status successfully"));
-  }
-
-  @Test
-  void markPassengerNoShow_ReturnsOk() throws Exception {
-    SuccessResponse successResponse = new SuccessResponse();
-    successResponse.setMessage("Mark passenger as no-show successfully");
-    successResponse.setHttpStatus(200);
-
-    when(responseFactory.success(any(String.class))).thenReturn(ResponseEntity.ok(successResponse));
-
-    mockMvc
-        .perform(put("/api/v1/guide/coach-trips/" + tripId + "/bookings/" + bookingId + "/no-show"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.message").value("Mark passenger as no-show successfully"));
   }
 }

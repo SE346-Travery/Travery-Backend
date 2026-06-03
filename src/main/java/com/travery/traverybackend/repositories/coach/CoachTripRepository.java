@@ -73,4 +73,26 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
       })
   Page<CoachTrip> findByCoordinator_IdAndStatus(
       UUID coordinatorId, CoachTripStatus status, Pageable pageable);
+
+  @EntityGraph(
+      attributePaths = {
+        "coach",
+        "coach.seatLayout",
+        "route",
+        "route.originDestination",
+        "route.destinationDestination",
+        "driver"
+      })
+  List<CoachTrip> findByGuide_Id(UUID guideId);
+
+  @EntityGraph(
+      attributePaths = {
+        "coach",
+        "coach.seatLayout",
+        "route",
+        "route.originDestination",
+        "route.destinationDestination",
+        "driver"
+      })
+  List<CoachTrip> findByGuide_IdAndStatusIn(UUID guideId, List<CoachTripStatus> statuses);
 }
