@@ -1,6 +1,5 @@
-package com.travery.traverybackend.dtos.response.coach;
+package com.travery.traverybackend.dtos.response.booking;
 
-import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,23 +13,15 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class CoachBookingResponse {
+public class HotelBookingResponse {
   private UUID id;
-  private UUID tripId;
-  private LocalDateTime departureTime;
-  private String originDestination;
-  private String destinationDestination;
-  private BigDecimal basePrice;
+  private UUID userId;
   private BigDecimal totalPrice;
   private LocalDateTime paymentDeadline;
-  private String contactName;
-  private String contactPhone;
   private BookingStatus status;
-  private List<String> bookedSeatNames;
-
-  // Payment URL if generated during booking creation
+  private List<BookingMemberResponse> members;
   private PaymentInitiationResponse payment;
 }

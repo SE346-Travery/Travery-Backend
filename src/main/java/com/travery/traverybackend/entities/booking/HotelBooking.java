@@ -6,6 +6,7 @@ import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,27 @@ public class HotelBooking extends AbstractBaseEntity {
 
   @Column(name = "payment_deadline")
   private LocalDateTime paymentDeadline;
+
+  @Column(name = "contact_name", nullable = false)
+  private String contactName;
+
+  @Column(name = "contact_phone", nullable = false, length = 20)
+  private String contactPhone;
+
+  @Column(name = "special_requests", columnDefinition = "TEXT")
+  private String specialRequests;
+
+  @Column(name = "start_date", nullable = false)
+  private LocalDate startDate;
+
+  @Column(name = "end_date", nullable = false)
+  private LocalDate endDate;
+
+  @Column(name = "actual_check_in_time")
+  private LocalDateTime actualCheckInTime;
+
+  @Column(name = "actual_check_out_time")
+  private LocalDateTime actualCheckOutTime;
 
   @Enumerated(EnumType.STRING)
   @Column(length = 50)

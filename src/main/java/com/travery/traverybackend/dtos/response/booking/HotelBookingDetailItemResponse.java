@@ -1,6 +1,6 @@
 package com.travery.traverybackend.dtos.response.booking;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,13 +10,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ReviewResponse {
+public class HotelBookingDetailItemResponse {
   private UUID id;
-  private int rating;
-  private String content;
-  private String reviewerName;
-  private LocalDateTime createdAt;
+  private UUID roomTypeId;
+  private String roomTypeName;
+  private int quantity;
+  private BigDecimal priceAtBooking;
 }

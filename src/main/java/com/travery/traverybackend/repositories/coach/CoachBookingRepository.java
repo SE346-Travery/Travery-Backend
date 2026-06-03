@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID> {
+  @EntityGraph(attributePaths = {"user", "coachTrip", "coachTrip.route"})
   Optional<CoachBooking> findByIdAndUser_Id(UUID id, UUID userId);
 
   @EntityGraph(

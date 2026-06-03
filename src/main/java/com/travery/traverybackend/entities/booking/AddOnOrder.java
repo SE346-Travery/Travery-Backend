@@ -5,6 +5,7 @@ import com.travery.traverybackend.entities.hotel.HotelService;
 import com.travery.traverybackend.enums.booking.AddOnOrderStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,6 +35,9 @@ public class AddOnOrder extends AbstractBaseEntity {
 
   @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal totalPrice;
+
+  @Column(name = "scheduled_time", nullable = false)
+  private LocalDateTime scheduledTime;
 
   @Enumerated(EnumType.STRING)
   @Column(length = 50)

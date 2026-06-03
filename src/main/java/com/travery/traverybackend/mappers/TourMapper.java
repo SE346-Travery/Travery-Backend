@@ -37,7 +37,7 @@ public abstract class TourMapper {
   public abstract TourInstanceResponse toTourInstanceResponse(TourInstance instance);
 
   @Mapping(
-      target = "images",
+      target = "image",
       ignore = true) // Hình ảnh sẽ được map sau hoặc bỏ qua nếu không cần thiết
   public abstract TourItineraryResponse toTourItineraryResponse(TourItinerary itinerary);
 
@@ -60,9 +60,10 @@ public abstract class TourMapper {
 
   public ImageResponse toImageResponse(Image image) {
     if (image == null) return null;
-    ImageResponse response = new ImageResponse();
-    response.setUrl(image.getUrl());
-    response.setIsThumnail(image.isThumbnail());
-    return response;
+    return ImageResponse.builder()
+        .id(image.getId())
+        .url(image.getUrl())
+        .isThumbnail(image.isThumbnail())
+        .build();
   }
 }

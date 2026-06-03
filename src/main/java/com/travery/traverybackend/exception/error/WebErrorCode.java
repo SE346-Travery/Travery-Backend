@@ -23,7 +23,11 @@ public enum WebErrorCode implements AppErrorCode {
   UNSUPPORTED_MEDIA_TYPE(
       "WEB_415",
       "Unsupported Media Type: The requested media type is not supported",
-      HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+      HttpStatus.UNSUPPORTED_MEDIA_TYPE),
+  INTERNAL_SERVER_ERROR(
+      "WEB_500",
+      "Internal Server Error: An unexpected error occurred",
+      HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String errorCode;
   private final String message;

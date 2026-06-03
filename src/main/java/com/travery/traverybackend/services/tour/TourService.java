@@ -2,6 +2,7 @@ package com.travery.traverybackend.services.tour;
 
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
+import com.travery.traverybackend.dtos.response.tour.ImageResponse;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
@@ -27,4 +28,15 @@ public interface TourService {
       List<MultipartFile> tourImages,
       List<MultipartFile> itineraryImages,
       UUID coordinatorId);
+
+  // Images
+  List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files);
+
+  void deleteTourImage(UUID tourId, UUID imageId);
+
+  void setTourThumbnail(UUID tourId, UUID imageId);
+
+  ImageResponse uploadItineraryImage(UUID itineraryId, MultipartFile file);
+
+  void deleteItineraryImage(UUID itineraryId, UUID imageId);
 }

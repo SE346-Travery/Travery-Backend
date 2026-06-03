@@ -21,6 +21,7 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, UUID> 
       "SELECT tb FROM TourBooking tb JOIN FETCH tb.user JOIN FETCH tb.tourInstance ti JOIN FETCH ti.tour WHERE ti.id = :instanceId")
   List<TourBooking> findByTourInstanceId(@Param("instanceId") UUID instanceId);
 
+  @EntityGraph(attributePaths = {"user", "tourInstance", "tourInstance.tour"})
   Optional<TourBooking> findByIdAndUser_Id(UUID id, UUID userId);
 
   @EntityGraph(attributePaths = {"tourInstance", "tourInstance.tour"})
