@@ -520,4 +520,83 @@ public class TourServiceImpl implements TourService {
 
     tourRepository.delete(tour);
   }
+
+  @Override
+  @Transactional
+  public List<ImageResponse> addTourImages(UUID tourId, List<MultipartFile> images, UUID coordinatorId) {
+    Tour tour = tourRepository.findById(tourId)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    if (!tour.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN, "You are not authorized to manage images for this tour");
+    }
+
+    int currentImageCount = imageRepository.countByEntityIdAndEntityType(tourId, ImageType.TOUR);
+    List<ImageResponse> responses = new ArrayList<>();
+
+    for (MultipartFile file : images) {
+      if (file.isEmpty()) continue;
+      Map<String, Object> uploadResult = mediaService.uploadImage(file, CloudinaryFolder.TOURS);
+      Image image = Image.builder()
+          .entityId(tourId)
+          .entityType(ImageType.TOUR)
+          .url((String) uploadResult.get("secure_url"))
+          .publicId((String) uploadResult.get("public_id"))
+          .isThumbnail(false)
+          .displayOrder(currentImageCount++)
+          .build();
+      image = imageRepository.save(image);
+      responses.add(tourMapper.toImageResponse(image));
+    }
+    return responses;
+  }
+
+  @Override
+  @Transactional
+  public void setTourThumbnail(UUID tourId, UUID imageId, UUID coordinatorId) {
+    Tour tour = tourRepository.findById(tourId)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    if (!tour.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN, "You are not authorized to manage images for this tour");
+    }
+
+    List<Image> tourImages = imageRepository.findByEntityIdAndEntityType(tourId, ImageType.TOUR);
+    boolean imageFound = false;
+    for (Image image : tourImages) {
+      if (image.getId().equals(imageId)) {
+        image.setThumbnail(true);
+        imageFound = true;
+      } else {
+        image.setThumbnail(false);
+      }
+    }
+
+    if (!imageFound) {
+      throw new BaseAppException(WebErrorCode.NOT_FOUND, "Image not found for this tour");
+    }
+
+    imageRepository.saveAll(tourImages);
+  }
+
+  @Override
+  @Transactional
+  public void deleteTourImage(UUID tourId, UUID imageId, UUID coordinatorId) {
+    Tour tour = tourRepository.findById(tourId)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    if (!tour.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN, "You are not authorized to manage images for this tour");
+    }
+
+    Image image = imageRepository.findById(imageId)
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Image not found"));
+
+    if (!image.getEntityId().equals(tourId) || image.getEntityType() != ImageType.TOUR) {
+      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Image does not belong to this tour");
+    }
+
+    mediaService.deleteImage(image.getPublicId());
+    imageRepository.delete(image);
+  }
 }

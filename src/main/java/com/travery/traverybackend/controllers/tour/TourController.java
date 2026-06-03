@@ -5,6 +5,8 @@ import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.base.SuccessResponse;
+import com.travery.traverybackend.dtos.response.tour.ImageResponse;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
@@ -124,5 +126,36 @@ public class TourController extends AbstractBaseController {
       @PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
     tourService.deleteTemplate(id, userDetails.getUserId());
     return success(null, "Tour template deleted successfully");
+  }
+
+  @PostMapping(value = "/templates/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<List<ImageResponse>>> addTourImages(
+      @PathVariable UUID id,
+      @RequestPart("images") List<MultipartFile> images,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    List<ImageResponse> response =
+        tourService.addTourImages(id, images, userDetails.getUserId());
+    return success(response, "Tour images added successfully");
+  }
+
+  @PatchMapping("/templates/{id}/images/{imageId}/thumbnail")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SuccessResponse> setTourThumbnail(
+      @PathVariable UUID id,
+      @PathVariable UUID imageId,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    tourService.setTourThumbnail(id, imageId, userDetails.getUserId());
+    return success("Tour thumbnail set successfully");
+  }
+
+  @DeleteMapping("/templates/{id}/images/{imageId}")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SuccessResponse> deleteTourImage(
+      @PathVariable UUID id,
+      @PathVariable UUID imageId,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    tourService.deleteTourImage(id, imageId, userDetails.getUserId());
+    return success("Tour image deleted successfully");
   }
 }
