@@ -3,6 +3,8 @@ package com.travery.traverybackend.services.tour;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -274,7 +276,7 @@ public class GuideTourInstanceServiceTest {
   }
 
   @Test
-  void searchPassengers_withValidAssignment_returnsPassengers() {
+  void searchPassengers_withNullQuery_returnsAllPassengers() {
     UUID guideId = UUID.randomUUID();
     UUID instanceId = UUID.randomUUID();
     Guide guide = Guide.builder().id(guideId).build();
@@ -282,15 +284,21 @@ public class GuideTourInstanceServiceTest {
 
     when(tourInstanceRepository.findByIdWithDetails(instanceId))
         .thenReturn(Optional.of(tourInstance));
+
+    TourBooking booking = TourBooking.builder().id(UUID.randomUUID()).build();
+    when(tourBookingRepository.findByTourInstanceId(instanceId)).thenReturn(List.of(booking));
+
     BookingMember member = BookingMember.builder().fullName("John Doe").build();
-    when(bookingMemberRepository.searchInTourInstance(instanceId, "John"))
+    when(bookingMemberRepository.findByBookingIdInAndBookingType(
+            anyList(), eq(BookingType.TOUR_BOOKING)))
         .thenReturn(List.of(member));
+
     BookingMemberResponse memberResponse =
         BookingMemberResponse.builder().fullName("John Doe").build();
     when(tourInstanceMapper.toBookingMemberResponse(member)).thenReturn(memberResponse);
 
     List<BookingMemberResponse> result =
-        guideTourInstanceService.searchPassengers(guideId, instanceId, "John");
+        guideTourInstanceService.searchPassengers(guideId, instanceId, null);
 
     assertEquals(1, result.size());
     assertEquals("John Doe", result.get(0).getFullName());

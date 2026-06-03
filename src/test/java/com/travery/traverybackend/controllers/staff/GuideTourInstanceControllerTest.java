@@ -167,6 +167,29 @@ public class GuideTourInstanceControllerTest {
   }
 
   @Test
+  void searchPassengers_noQuery_returnsOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    BookingMemberResponse passenger = new BookingMemberResponse();
+    List<BookingMemberResponse> passengers = List.of(passenger);
+
+    when(guideTourInstanceService.searchPassengers(any(), eq(id), eq(null)))
+        .thenReturn(passengers);
+
+    SingleResponse<List<BookingMemberResponse>> singleResponse = new SingleResponse<>();
+    singleResponse.setData(passengers);
+    singleResponse.setMessage("Searched passengers successfully");
+    singleResponse.setHttpStatus(200);
+
+    when(responseFactory.success(eq(passengers), any()))
+        .thenReturn(ResponseEntity.ok(singleResponse));
+
+    mockMvc
+        .perform(get("/api/v1/staff/guide/instances/" + id + "/passengers"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("Searched passengers successfully"));
+  }
+
+  @Test
   void updateProgress_returnsOk() throws Exception {
     UUID id = UUID.randomUUID();
     GuideTourInstanceDetailResponse response = new GuideTourInstanceDetailResponse();
