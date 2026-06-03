@@ -108,7 +108,7 @@ public class AdminCoachServiceImpl implements AdminCoachService {
   @Override
   @Transactional(readOnly = true)
   public List<CoachResponse> getCoaches() {
-    return coachMapper.toCoachResponseList(coachRepository.findAll());
+    return coachMapper.toCoachResponseList(coachRepository.findByStatusNot(CoachStatus.INACTIVE));
   }
 
   @Override

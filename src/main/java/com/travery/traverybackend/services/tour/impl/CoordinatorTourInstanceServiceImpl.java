@@ -3,7 +3,6 @@ package com.travery.traverybackend.services.tour.impl;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.tour.Tour;
@@ -13,13 +12,11 @@ import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
-import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
-import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -44,10 +41,8 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final CoachRepository coachRepository;
   private final DriverRepository driverRepository;
   private final HotelBookingRepository hotelBookingRepository;
-  private final TourIncidentRepository tourIncidentRepository;
   private final TourBookingRepository tourBookingRepository;
   private final TourInstanceMapper tourInstanceMapper;
-  private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
 
   @Override
@@ -267,17 +262,6 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
     return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(savedInstance);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<TourIncidentResponse> getIncidents(UUID instanceId) {
-    if (!tourInstanceRepository.existsById(instanceId)) {
-      throw new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found");
-    }
-    return tourIncidentRepository.findByTourInstanceId(instanceId).stream()
-        .map(tourIncidentMapper::toResponse)
-        .collect(Collectors.toList());
   }
 
   @Override

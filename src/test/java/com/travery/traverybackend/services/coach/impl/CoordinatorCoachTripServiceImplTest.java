@@ -10,6 +10,7 @@ import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
 import com.travery.traverybackend.entities.coach.*;
 import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.exception.BaseAppException;
@@ -177,6 +178,37 @@ class CoordinatorCoachTripServiceImplTest {
 
     assertNotNull(response);
     verify(coachTripRepository).save(trip);
+  }
+
+  @Test
+  void createTrip_InactiveCoach_ThrowsException() {
+    CreateCoachTripRequest request =
+        CreateCoachTripRequest.builder()
+            .routeId(routeId)
+            .coachId(coachId)
+            .driverId(driverId)
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .build();
+
+    coach.setStatus(CoachStatus.INACTIVE);
+
+    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
+    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
+    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
+  }
+
+  @Test
+  void reassignCoach_InactiveCoach_ThrowsException() {
+    UUID newCoachId = UUID.randomUUID();
+    Coach newCoach = Coach.builder().id(newCoachId).status(CoachStatus.INACTIVE).build();
+
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
+    when(coachRepository.findById(newCoachId)).thenReturn(Optional.of(newCoach));
+
+    assertThrows(BaseAppException.class, () -> coordinatorService.reassignCoach(tripId, newCoachId));
   }
 
   @Test

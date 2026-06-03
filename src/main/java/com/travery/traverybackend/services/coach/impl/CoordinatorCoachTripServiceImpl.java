@@ -9,6 +9,7 @@ import com.travery.traverybackend.entities.coach.Driver;
 import com.travery.traverybackend.entities.coach.Route;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.CoachErrorCode;
@@ -62,6 +63,10 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
         coachRepository
             .findById(request.getCoachId())
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_NOT_FOUND));
+
+    if (coach.getStatus() == CoachStatus.INACTIVE) {
+      throw new BaseAppException(CoachErrorCode.COACH_NOT_FOUND);
+    }
 
     Driver driver =
         driverRepository
@@ -140,6 +145,10 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
         coachRepository
             .findById(newCoachId)
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_NOT_FOUND));
+
+    if (newCoach.getStatus() == CoachStatus.INACTIVE) {
+      throw new BaseAppException(CoachErrorCode.COACH_NOT_FOUND);
+    }
 
     trip.setCoach(newCoach);
     trip = coachTripRepository.save(trip);

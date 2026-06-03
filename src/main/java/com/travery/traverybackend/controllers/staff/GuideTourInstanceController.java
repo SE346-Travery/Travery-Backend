@@ -2,12 +2,10 @@ package com.travery.traverybackend.controllers.staff;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
-import com.travery.traverybackend.dtos.request.tour.TourIncidentReportRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
@@ -84,25 +82,5 @@ public class GuideTourInstanceController extends AbstractBaseController {
     GuideTourInstanceDetailResponse response =
         guideTourInstanceService.updateProgress(userDetails.getUserId(), id, request);
     return success(response, "Updated tour progress successfully");
-  }
-
-  @PostMapping("/{id}/incidents")
-  @PreAuthorize("hasRole('GUIDE')")
-  public ResponseEntity<SingleResponse<TourIncidentResponse>> reportIncident(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @PathVariable UUID id,
-      @Valid @RequestBody TourIncidentReportRequest request) {
-    TourIncidentResponse response =
-        guideTourInstanceService.reportIncident(userDetails.getUserId(), id, request);
-    return success(response, "Reported tour incident successfully");
-  }
-
-  @GetMapping("/{id}/incidents")
-  @PreAuthorize("hasRole('GUIDE')")
-  public ResponseEntity<SingleResponse<List<TourIncidentResponse>>> getIncidents(
-      @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable UUID id) {
-    List<TourIncidentResponse> response =
-        guideTourInstanceService.getIncidents(userDetails.getUserId(), id);
-    return success(response, "Fetched tour incidents successfully");
   }
 }

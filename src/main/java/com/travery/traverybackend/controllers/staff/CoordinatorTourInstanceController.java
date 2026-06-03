@@ -5,7 +5,6 @@ import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
@@ -75,14 +74,6 @@ public class CoordinatorTourInstanceController extends AbstractBaseController {
       @PathVariable UUID id, @Valid @RequestBody TourProgressUpdateRequest request) {
     TourInstanceDetailResponse response = coordinatorTourInstanceService.updateStatus(id, request);
     return success(response, "Updated tour instance status successfully");
-  }
-
-  @GetMapping("/{id}/incidents")
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<List<TourIncidentResponse>>> getIncidents(
-      @PathVariable UUID id) {
-    List<TourIncidentResponse> response = coordinatorTourInstanceService.getIncidents(id);
-    return success(response, "Fetched tour incidents successfully");
   }
 
   @DeleteMapping("/{id}")

@@ -13,7 +13,6 @@ import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
@@ -213,32 +212,5 @@ public class GuideTourInstanceControllerTest {
                 .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Updated tour progress successfully"));
-  }
-
-  @Test
-  void reportIncident_returnsOk() throws Exception {
-    UUID id = UUID.randomUUID();
-    TourIncidentResponse response = new TourIncidentResponse();
-
-    when(guideTourInstanceService.reportIncident(any(), eq(id), any())).thenReturn(response);
-
-    SingleResponse<TourIncidentResponse> singleResponse = new SingleResponse<>();
-    singleResponse.setData(response);
-    singleResponse.setMessage("Reported tour incident successfully");
-    singleResponse.setHttpStatus(200);
-
-    when(responseFactory.success(eq(response), any()))
-        .thenReturn(ResponseEntity.ok(singleResponse));
-
-    String requestBody =
-        "{\"title\":\"Accident\",\"description\":\"Minor accident\",\"severity\":\"MEDIUM\"}";
-
-    mockMvc
-        .perform(
-            post("/api/v1/staff/guide/instances/" + id + "/incidents")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.message").value("Reported tour incident successfully"));
   }
 }

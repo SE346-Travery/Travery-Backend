@@ -235,7 +235,7 @@ class AdminCoachServiceTest {
 
   @Test
   void getCoaches_returnsAll() {
-    when(coachRepository.findAll()).thenReturn(List.of(coach));
+    when(coachRepository.findByStatusNot(CoachStatus.INACTIVE)).thenReturn(List.of(coach));
     when(coachMapper.toCoachResponseList(List.of(coach))).thenReturn(List.of(coachResponse));
 
     List<CoachResponse> result = adminCoachService.getCoaches();
