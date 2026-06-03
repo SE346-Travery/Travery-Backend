@@ -21,4 +21,5 @@ public class TourInstanceResponse {
   private TourInstanceStatus status;
   private Integer currentParticipants;
   private Integer maxParticipants;
+  private String thumbnailUrl;
 }

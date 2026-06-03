@@ -39,6 +39,13 @@ public interface TourInstanceMapper {
   @Mapping(source = "tour.name", target = "tourName")
   @Mapping(source = "tour.destination.name", target = "destinationName")
   @Mapping(source = "tour.pickupLocation", target = "pickupLocation")
+  @Mapping(source = "tour.minParticipants", target = "minParticipants")
+  @Mapping(source = "tour.maxParticipants", target = "maxParticipants")
+  @Mapping(source = "tour.pricePerAdult", target = "pricePerAdult")
+  @Mapping(source = "tour.pricePerChild", target = "pricePerChild")
+  @Mapping(source = "tour.durationDays", target = "durationDays")
+  @Mapping(source = "tour.hotel.name", target = "hotelName")
+  @Mapping(source = "tour.hotel.address", target = "hotelAddress")
   @Mapping(source = "guide.id", target = "guideId")
   @Mapping(source = "guide.fullName", target = "guideName")
   @Mapping(source = "guide.phoneNumber", target = "guidePhone")
@@ -48,6 +55,9 @@ public interface TourInstanceMapper {
   @Mapping(source = "driver.id", target = "driverId")
   @Mapping(source = "driver.fullName", target = "driverName")
   @Mapping(source = "driver.phoneNumber", target = "driverPhone")
+  @Mapping(source = "tour.itineraries", target = "itineraries")
+  @Mapping(target = "bookings", ignore = true)
+  @Mapping(target = "thumbnailUrl", ignore = true)
   TourInstanceDetailResponse toCoordinatorTourInstanceDetailResponse(TourInstance tourInstance);
 
   @Mapping(source = "tourInstance.coach.licensePlate", target = "coachLicensePlate")
