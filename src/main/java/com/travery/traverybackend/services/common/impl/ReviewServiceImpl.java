@@ -141,7 +141,8 @@ public class ReviewServiceImpl implements ReviewService {
           .findById(targetId)
           .ifPresent(
               h -> {
-                h.setAverageRating((int) Math.round(newAvg));
+                h.setAverageRating(newAvg);
+                h.setReviewCount(h.getReviewCount() + 1);
                 hotelRepository.save(h);
               });
     } else if (targetType == ReviewTargetType.TOUR) {
@@ -150,6 +151,7 @@ public class ReviewServiceImpl implements ReviewService {
           .ifPresent(
               t -> {
                 t.setAverageRating(newAvg);
+                t.setReviewCount(t.getReviewCount() + 1);
                 tourRepository.save(t);
               });
     } else if (targetType == ReviewTargetType.ROUTE) {
@@ -158,6 +160,7 @@ public class ReviewServiceImpl implements ReviewService {
           .ifPresent(
               r -> {
                 r.setAverageRating(newAvg);
+                r.setReviewCount(r.getReviewCount() + 1);
                 routeRepository.save(r);
               });
     }

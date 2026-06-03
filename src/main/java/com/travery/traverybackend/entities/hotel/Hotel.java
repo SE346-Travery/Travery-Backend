@@ -37,7 +37,12 @@ public class Hotel extends AbstractBaseEntity {
   @GenericField(sortable = Sortable.YES)
   @Column(name = "average_rating")
   @Builder.Default
-  private Integer averageRating = 0;
+  private Double averageRating = 0.0;
+
+  @GenericField(sortable = Sortable.YES)
+  @Column(name = "review_count")
+  @Builder.Default
+  private Integer reviewCount = 0;
 
   @FullTextField(analyzer = "standard")
   @Column(columnDefinition = "TEXT")

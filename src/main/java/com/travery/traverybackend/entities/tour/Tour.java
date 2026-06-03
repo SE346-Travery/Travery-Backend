@@ -58,9 +58,14 @@ public class Tour extends AbstractBaseEntity {
   private String pickupLocation;
 
   @GenericField(sortable = Sortable.YES)
-  @Column(name = "average_rating")
+  @Column(name = "average_rating", precision = 53)
   @Builder.Default
   private Double averageRating = 0.0;
+
+  @GenericField(sortable = Sortable.YES)
+  @Column(name = "review_count")
+  @Builder.Default
+  private Integer reviewCount = 0;
 
   @GenericField(sortable = Sortable.YES)
   @Column(name = "price_per_adult", nullable = false, precision = 12, scale = 2)
