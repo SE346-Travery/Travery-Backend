@@ -428,8 +428,7 @@ public class TourServiceImpl implements TourService {
     List<String> uploadedPublicIds = new ArrayList<>();
     try {
       if (tourImages != null && !tourImages.isEmpty()) {
-        int order =
-            imageRepository.countByEntityIdAndEntityType(savedTour.getId(), ImageType.TOUR);
+        int order = imageRepository.countByEntityIdAndEntityType(savedTour.getId(), ImageType.TOUR);
         for (MultipartFile file : tourImages) {
           if (file.isEmpty()) continue;
           Map<String, Object> uploadResult = mediaService.uploadImage(file, CloudinaryFolder.TOURS);

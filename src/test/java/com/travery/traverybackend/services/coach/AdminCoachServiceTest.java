@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateSeatLayoutRequest;
 import com.travery.traverybackend.dtos.request.coach.SeatLayoutItemRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutItemResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
@@ -260,5 +262,66 @@ class AdminCoachServiceTest {
     when(coachRepository.findById(coachId)).thenReturn(Optional.empty());
 
     assertThrows(EntityNotFoundException.class, () -> adminCoachService.getCoachDetail(coachId));
+  }
+
+  // ===== updateCoach =====
+
+  @Test
+  void updateCoach_validRequest_returnsResponse() {
+    UpdateCoachRequest request =
+        UpdateCoachRequest.builder()
+            .licensePlate("51B-20000")
+            .coachType(CoachType.BED)
+            .capacity(34)
+            .seatLayoutId(layoutId)
+            .build();
+
+    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
+    when(seatLayoutRepository.findById(layoutId)).thenReturn(Optional.of(seatLayout));
+    when(coachRepository.save(any(Coach.class))).thenReturn(coach);
+    when(coachMapper.toCoachResponse(coach)).thenReturn(coachResponse);
+
+    CoachResponse result = adminCoachService.updateCoach(coachId, request);
+
+    assertNotNull(result);
+    verify(coachRepository).save(any(Coach.class));
+  }
+
+  @Test
+  void updateCoach_invalidId_throwsException() {
+    UpdateCoachRequest request = UpdateCoachRequest.builder().build();
+    when(coachRepository.findById(coachId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        EntityNotFoundException.class, () -> adminCoachService.updateCoach(coachId, request));
+  }
+
+  // ===== updateCoachStatus =====
+
+  @Test
+  void updateCoachStatus_validRequest_returnsResponse() {
+    UpdateCoachStatusRequest request =
+        UpdateCoachStatusRequest.builder().status(CoachStatus.MAINTENANCE).build();
+
+    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
+    when(coachRepository.save(any(Coach.class))).thenReturn(coach);
+    when(coachMapper.toCoachResponse(coach)).thenReturn(coachResponse);
+
+    CoachResponse result = adminCoachService.updateCoachStatus(coachId, request);
+
+    assertNotNull(result);
+    verify(coachRepository).save(any(Coach.class));
+  }
+
+  // ===== deleteCoach =====
+
+  @Test
+  void deleteCoach_validId_success() {
+    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
+
+    adminCoachService.deleteCoach(coachId);
+
+    assertEquals(CoachStatus.INACTIVE, coach.getStatus());
+    verify(coachRepository).save(coach);
   }
 }

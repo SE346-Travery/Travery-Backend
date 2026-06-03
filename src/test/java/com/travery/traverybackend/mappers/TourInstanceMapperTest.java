@@ -8,16 +8,18 @@ import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.mapstruct.factory.Mappers;
 
-@SpringBootTest
-@ActiveProfiles("dev")
 public class TourInstanceMapperTest {
 
-  @Autowired private TourInstanceMapper tourInstanceMapper;
+  private TourInstanceMapper tourInstanceMapper;
+
+  @BeforeEach
+  void setUp() {
+    tourInstanceMapper = Mappers.getMapper(TourInstanceMapper.class);
+  }
 
   @Test
   void toTourInstanceResponse_mapsCorrectFields() {

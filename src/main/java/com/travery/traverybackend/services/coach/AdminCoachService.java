@@ -2,6 +2,8 @@ package com.travery.traverybackend.services.coach;
 
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateSeatLayoutRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
 import com.travery.traverybackend.enums.coach.CoachType;
@@ -21,4 +23,10 @@ public interface AdminCoachService {
   List<CoachResponse> getCoaches();
 
   CoachResponse getCoachDetail(UUID coachId);
+
+  CoachResponse updateCoach(UUID coachId, UpdateCoachRequest request);
+
+  CoachResponse updateCoachStatus(UUID coachId, UpdateCoachStatusRequest request);
+
+  void deleteCoach(UUID coachId);
 }

@@ -3,11 +3,14 @@ package com.travery.traverybackend.services.coach.impl;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateSeatLayoutRequest;
 import com.travery.traverybackend.dtos.request.coach.SeatLayoutItemRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
 import com.travery.traverybackend.entities.coach.Coach;
 import com.travery.traverybackend.entities.coach.SeatLayout;
 import com.travery.traverybackend.entities.coach.SeatLayoutItem;
+import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
@@ -117,6 +120,61 @@ public class AdminCoachServiceImpl implements AdminCoachService {
             .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + coachId));
 
     return coachMapper.toCoachResponse(coach);
+  }
+
+  @Override
+  @Transactional
+  public CoachResponse updateCoach(UUID coachId, UpdateCoachRequest request) {
+    Coach coach =
+        coachRepository
+            .findById(coachId)
+            .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + coachId));
+
+    SeatLayout layout =
+        seatLayoutRepository
+            .findById(request.getSeatLayoutId())
+            .orElseThrow(
+                () ->
+                    new EntityNotFoundException(
+                        "Seat layout not found with id: " + request.getSeatLayoutId()));
+
+    coach.setLicensePlate(request.getLicensePlate());
+    coach.setCoachType(request.getCoachType());
+    coach.setCapacity(request.getCapacity());
+    coach.setSeatLayout(layout);
+
+    Coach updated = coachRepository.save(coach);
+    log.info("Updated coach '{}' (id={})", updated.getLicensePlate(), updated.getId());
+
+    return coachMapper.toCoachResponse(updated);
+  }
+
+  @Override
+  @Transactional
+  public CoachResponse updateCoachStatus(UUID coachId, UpdateCoachStatusRequest request) {
+    Coach coach =
+        coachRepository
+            .findById(coachId)
+            .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + coachId));
+
+    coach.setStatus(request.getStatus());
+    Coach updated = coachRepository.save(coach);
+    log.info("Updated coach status to '{}' for coach id={}", updated.getStatus(), updated.getId());
+
+    return coachMapper.toCoachResponse(updated);
+  }
+
+  @Override
+  @Transactional
+  public void deleteCoach(UUID coachId) {
+    Coach coach =
+        coachRepository
+            .findById(coachId)
+            .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + coachId));
+
+    coach.setStatus(CoachStatus.INACTIVE);
+    coachRepository.save(coach);
+    log.info("Soft-deleted coach id={}", coachId);
   }
 
   private SeatLayoutItem buildSeatLayoutItem(SeatLayoutItemRequest req, SeatLayout layout) {
