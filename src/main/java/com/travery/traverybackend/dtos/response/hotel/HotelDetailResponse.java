@@ -1,9 +1,11 @@
 package com.travery.traverybackend.dtos.response.hotel;
 
-import com.travery.traverybackend.dtos.response.booking.ReviewResponse;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.travery.traverybackend.dtos.response.common.ReviewResponse;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,7 +27,6 @@ public class HotelDetailResponse {
   private LocalTime checkOutTime;
   private List<AmenityResponse> amenities;
   private List<RoomTypeResponse> roomTypes;
-  private List<String> images;
+  private List<HotelImageResponse> images;
   private Integer averageRating;
-  private List<ReviewResponse> reviews;
 }

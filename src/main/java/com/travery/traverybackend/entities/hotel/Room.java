@@ -39,4 +39,8 @@ public class Room extends AbstractBaseEntity {
   @Column(length = 20)
   @Builder.Default
   private RoomStatus status = RoomStatus.AVAILABLE;
+
+  @Column(name = "is_deleted")
+  @Builder.Default
+  private boolean isDeleted = false;
 }

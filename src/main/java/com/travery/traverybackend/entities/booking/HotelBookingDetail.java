@@ -33,10 +33,4 @@ public class HotelBookingDetail extends AbstractBaseEntity {
 
   @Column(name = "price_at_booking", nullable = false, precision = 12, scale = 2)
   private BigDecimal priceAtBooking;
-
-  @Column(name = "start_date", nullable = false)
-  private LocalDate startDate;
-
-  @Column(name = "end_date", nullable = false)
-  private LocalDate endDate;
 }

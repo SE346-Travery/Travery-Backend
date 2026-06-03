@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.hotel;
 
+import com.travery.traverybackend.enums.hotel.AmenityType;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,5 +17,5 @@ public class AmenityResponse {
   private UUID id;
   private String name;
   private String iconUrl;
-  private String type;
+  private AmenityType type;
 }

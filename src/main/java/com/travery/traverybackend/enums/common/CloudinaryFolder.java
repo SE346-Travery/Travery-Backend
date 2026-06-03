@@ -7,6 +7,7 @@ public enum CloudinaryFolder {
   DRIVER_AVATARS("avatars/drivers"),
   HOTELS("hotels"),
   ROOM_TYPES("room_types"),
+  AMENITIES("amenities"),
   GENERAL("general");
 
   private final String path;

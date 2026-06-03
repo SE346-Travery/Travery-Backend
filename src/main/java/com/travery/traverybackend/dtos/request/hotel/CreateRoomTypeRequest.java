@@ -1,5 +1,6 @@
-package com.travery.traverybackend.dtos.request.admin;
+package com.travery.traverybackend.dtos.request.hotel;
 
+import com.travery.traverybackend.enums.hotel.BedType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,21 +17,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateRoomTypeRequest {
-  @NotBlank private String name;
+  @NotBlank
+  private String name;
   private String description;
 
   @Min(1)
-  private int maxAdults;
+  private int capacityAdults;
 
   @Min(0)
-  private int maxChildren;
+  private int capacityChildren;
 
-  @NotNull private BigDecimal basePrice;
-  @NotBlank private String bedType;
+  @NotNull
+  private BigDecimal basePrice;
+  @NotNull
+  private BedType bedType;
 
   @Min(1)
   private int area;
-
-  @Min(1)
-  private int quantity;
 }

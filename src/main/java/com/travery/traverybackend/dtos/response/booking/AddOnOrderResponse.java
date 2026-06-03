@@ -1,5 +1,7 @@
 package com.travery.traverybackend.dtos.response.booking;
 
+import com.travery.traverybackend.enums.booking.AddOnOrderStatus;
+import com.travery.traverybackend.enums.hotel.ServiceCategory;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,10 +19,10 @@ import lombok.Setter;
 public class AddOnOrderResponse {
   private UUID id;
   private String serviceName;
-  private String category;
+  private ServiceCategory category;
   private int quantity;
   private BigDecimal unitPrice;
   private BigDecimal totalPrice;
   private LocalDateTime scheduledTime;
-  private String status;
+  private AddOnOrderStatus status;
 }

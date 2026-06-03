@@ -4,6 +4,7 @@ import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.enums.hotel.BedType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,17 +57,18 @@ public class RoomType extends AbstractBaseEntity {
   @Column(name = "bed_type", nullable = false, length = 50)
   private BedType bedType;
 
+  @OneToMany(mappedBy = "roomType")
+  private List<Room> rooms;
+
+  @Column(name = "is_deleted")
+  @Builder.Default
+  private boolean isDeleted = false;
+
   @Column(nullable = false)
   private int area;
 
-  @Column(nullable = false)
-  private int quantity;
-
   @ManyToMany
-  @JoinTable(
-      name = "room_type_amenities",
-      joinColumns = @JoinColumn(name = "room_type_id"),
-      inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @JoinTable(name = "room_type_amenities", joinColumns = @JoinColumn(name = "room_type_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   @IndexedEmbedded
   @IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)
   private Set<Amenity> amenities;

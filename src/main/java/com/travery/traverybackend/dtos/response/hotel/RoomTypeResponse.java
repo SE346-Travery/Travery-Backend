@@ -24,5 +24,5 @@ public class RoomTypeResponse {
   private int capacityChildren;
   private BedType bedType;
   private List<AmenityResponse> amenities;
-  private List<String> images;
+  private List<HotelImageResponse> images;
 }

@@ -14,10 +14,8 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StayBillResponse {
+public class AddOnBillResponse {
   private UUID hotelBookingId;
-  private BigDecimal roomCharges;
   private List<AddOnOrderResponse> addOnOrders;
   private BigDecimal totalAddOnCharges;
-  private BigDecimal totalBill;
 }

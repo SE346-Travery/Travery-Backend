@@ -1,6 +1,5 @@
-package com.travery.traverybackend.dtos.response.coach;
+package com.travery.traverybackend.dtos.response.booking;
 
-import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

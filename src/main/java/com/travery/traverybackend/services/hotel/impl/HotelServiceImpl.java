@@ -1,23 +1,22 @@
-package com.travery.traverybackend.services.hotel;
+package com.travery.traverybackend.services.hotel.impl;
 
 import com.travery.traverybackend.dtos.request.hotel.HotelSearchRequest;
-import com.travery.traverybackend.dtos.response.booking.ReviewResponse;
 import com.travery.traverybackend.dtos.response.hotel.HotelDetailResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelImageResponse;
 import com.travery.traverybackend.dtos.response.hotel.HotelResponse;
 import com.travery.traverybackend.dtos.response.hotel.RoomTypeResponse;
 import com.travery.traverybackend.entities.common.Image;
-import com.travery.traverybackend.entities.common.Review;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.hotel.RoomType;
 import com.travery.traverybackend.enums.common.ImageType;
-import com.travery.traverybackend.enums.common.ReviewTargetType;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.HotelMapper;
 import com.travery.traverybackend.repositories.common.ImageRepository;
-import com.travery.traverybackend.repositories.common.ReviewRepository;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.hotel.RoomTypeRepository;
+import com.travery.traverybackend.services.hotel.HotelService;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,111 +33,113 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class HotelServiceImpl implements HotelService {
 
-  private final HotelRepository hotelRepository;
-  private final RoomTypeRepository roomTypeRepository;
-  private final ImageRepository imageRepository;
-  private final ReviewRepository reviewRepository;
-  private final HotelMapper hotelMapper;
+        private final HotelRepository hotelRepository;
+        private final RoomTypeRepository roomTypeRepository;
+        private final ImageRepository imageRepository;
+        private final HotelMapper hotelMapper;
 
-  @Override
-  public Page<HotelResponse> searchHotels(HotelSearchRequest request, Pageable pageable) {
-    Page<Hotel> hotels = hotelRepository.searchHotels(request, pageable);
+        @Override
+        @Transactional(readOnly = true)
+        public Page<HotelResponse> searchHotels(HotelSearchRequest request, Pageable pageable) {
+                if (request.getStartDate() != null && request.getEndDate() != null) {
+                        int roomCount = request.getRoomCount() != null && request.getRoomCount() > 0
+                                        ? request.getRoomCount()
+                                        : 1;
+                        List<UUID> availableHotelIds = roomTypeRepository.findAvailableHotelIds(
+                                        request.getStartDate(), request.getEndDate(), roomCount);
+                        request.setAvailableHotelIds(availableHotelIds);
+                }
 
-    List<UUID> hotelIds = hotels.getContent().stream().map(Hotel::getId).toList();
+                Page<Hotel> hotels = hotelRepository.searchHotels(request, pageable);
 
-    // Batch fetch thumbnails
-    Map<UUID, String> thumbnails =
-        imageRepository
-            .findByEntityIdInAndEntityTypeAndIsThumbnailTrue(hotelIds, ImageType.HOTEL)
-            .stream()
-            .collect(Collectors.toMap(Image::getEntityId, Image::getUrl, (a, b) -> a));
+                List<UUID> hotelIds = hotels.getContent().stream().map(Hotel::getId).toList();
 
-    // Batch fetch min prices
-    Map<UUID, BigDecimal> minPrices =
-        roomTypeRepository.findAllByHotel_IdIn(hotelIds).stream()
-            .collect(
-                Collectors.groupingBy(
-                    rt -> rt.getHotel().getId(),
-                    Collectors.mapping(
-                        RoomType::getBasePrice,
-                        Collectors.reducing(
-                            BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal::min))));
+                // Batch fetch thumbnails
+                Map<UUID, String> thumbnails = imageRepository
+                                .findByEntityIdInAndEntityTypeAndIsThumbnailTrue(hotelIds, ImageType.HOTEL)
+                                .stream()
+                                .collect(Collectors.toMap(Image::getEntityId, Image::getUrl, (a, b) -> a));
 
-    return hotels.map(
-        hotel -> {
-          HotelResponse response = hotelMapper.toHotelResponse(hotel);
-          response.setThumbnailUrl(thumbnails.get(hotel.getId()));
-          BigDecimal minPrice = minPrices.get(hotel.getId());
-          if (minPrice == null || minPrice.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) == 0) {
-            minPrice = BigDecimal.ZERO;
-          }
-          response.setMinPrice(minPrice);
-          return response;
-        });
-  }
+                // Batch fetch min prices directly from DB
+                Map<UUID, BigDecimal> minPrices = roomTypeRepository.findMinPricesByHotelIds(hotelIds).stream()
+                                .collect(Collectors.toMap(
+                                                RoomTypeRepository.HotelMinPriceProjection::getHotelId,
+                                                RoomTypeRepository.HotelMinPriceProjection::getMinPrice));
 
-  @Override
-  public HotelDetailResponse getHotelDetail(UUID hotelId) {
-    Hotel hotel =
-        hotelRepository
-            .findById(hotelId)
-            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
+                return hotels.map(
+                                hotel -> {
+                                        HotelResponse response = hotelMapper.toHotelResponse(hotel);
+                                        response.setThumbnailUrl(thumbnails.get(hotel.getId()));
+                                        BigDecimal minPrice = minPrices.get(hotel.getId());
+                                        if (minPrice == null || minPrice
+                                                        .compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) == 0) {
+                                                minPrice = BigDecimal.ZERO;
+                                        }
+                                        response.setMinPrice(minPrice);
+                                        return response;
+                                });
+        }
 
-    HotelDetailResponse response = hotelMapper.toHotelDetailResponse(hotel);
+        @Override
+        public HotelDetailResponse getHotelDetail(UUID hotelId) {
+                Hotel hotel = hotelRepository
+                                .findById(hotelId)
+                                .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
 
-    // Fetch hotel images
-    List<String> hotelImages =
-        imageRepository
-            .findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(hotelId, ImageType.HOTEL)
-            .stream()
-            .map(Image::getUrl)
-            .toList();
-    response.setImages(hotelImages);
+                HotelDetailResponse response = hotelMapper.toHotelDetailResponse(hotel);
 
-    // Fetch and map RoomTypes with their images
-    List<RoomType> roomTypes = roomTypeRepository.findAllByHotel_Id(hotelId);
-    List<UUID> roomTypeIds = roomTypes.stream().map(RoomType::getId).toList();
+                // Fetch hotel images
+                List<HotelImageResponse> hotelImages = imageRepository
+                                .findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(hotelId, ImageType.HOTEL)
+                                .stream()
+                                .map(img -> HotelImageResponse.builder()
+                                                .id(img.getId())
+                                                .url(img.getUrl())
+                                                .isThumbnail(img.isThumbnail())
+                                                .build())
+                                .toList();
+                response.setImages(hotelImages);
 
-    Map<UUID, List<String>> roomTypeImages =
-        imageRepository
-            .findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(roomTypeIds, ImageType.ROOM_TYPE)
-            .stream()
-            .collect(
-                Collectors.groupingBy(
-                    Image::getEntityId, Collectors.mapping(Image::getUrl, Collectors.toList())));
+                // Fetch and map RoomTypes with their images
+                List<RoomType> roomTypes = roomTypeRepository.findAllByHotel_Id(hotelId).stream()
+                                .filter(rt -> !rt.isDeleted())
+                                .toList();
+                List<UUID> roomTypeIds = roomTypes.stream().map(RoomType::getId).toList();
 
-    List<RoomTypeResponse> roomTypeResponses =
-        roomTypes.stream()
-            .map(
-                rt -> {
-                  RoomTypeResponse rtResponse = hotelMapper.toRoomTypeResponse(rt);
-                  rtResponse.setImages(roomTypeImages.getOrDefault(rt.getId(), List.of()));
-                  return rtResponse;
-                })
-            .toList();
+                Map<UUID, List<HotelImageResponse>> roomTypeImages;
+                if (roomTypeIds.isEmpty()) {
+                        roomTypeImages = Map.of();
+                } else {
+                        roomTypeImages = imageRepository
+                                        .findByEntityIdInAndEntityTypeOrderByDisplayOrderAsc(roomTypeIds,
+                                                        ImageType.ROOM_TYPE)
+                                        .stream()
+                                        .collect(
+                                                        Collectors.groupingBy(
+                                                                        Image::getEntityId,
+                                                                        Collectors.mapping(
+                                                                                        img -> HotelImageResponse
+                                                                                                        .builder()
+                                                                                                        .id(img.getId())
+                                                                                                        .url(img.getUrl())
+                                                                                                        .isThumbnail(img.isThumbnail())
+                                                                                                        .build(),
+                                                                                        Collectors.toList())));
+                }
 
-    response.setRoomTypes(roomTypeResponses);
+                List<RoomTypeResponse> roomTypeResponses = roomTypes.stream()
+                                .map(
+                                                rt -> {
+                                                        RoomTypeResponse rtResponse = hotelMapper
+                                                                        .toRoomTypeResponse(rt);
+                                                        rtResponse.setImages(roomTypeImages.getOrDefault(rt.getId(),
+                                                                        List.of()));
+                                                        return rtResponse;
+                                                })
+                                .toList();
 
-    // Fetch reviews
-    List<Review> reviews =
-        reviewRepository
-            .findByTargetIdAndTargetType(hotelId, ReviewTargetType.HOTEL, PageRequest.of(0, 20))
-            .getContent();
+                response.setRoomTypes(roomTypeResponses);
 
-    List<ReviewResponse> reviewResponses =
-        reviews.stream()
-            .map(
-                r ->
-                    ReviewResponse.builder()
-                        .id(r.getId())
-                        .rating(r.getAverageRating())
-                        .content(r.getContent())
-                        .reviewerName(r.getUser().getFullName())
-                        .createdAt(r.getCreatedAt())
-                        .build())
-            .toList();
-    response.setReviews(reviewResponses);
-
-    return response;
-  }
+                return response;
+        }
 }

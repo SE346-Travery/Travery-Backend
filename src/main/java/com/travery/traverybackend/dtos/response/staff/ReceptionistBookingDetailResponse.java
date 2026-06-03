@@ -1,7 +1,7 @@
 package com.travery.traverybackend.dtos.response.staff;
 
 import com.travery.traverybackend.dtos.response.booking.AddOnOrderResponse;
-import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +25,8 @@ public class ReceptionistBookingDetailResponse {
   private LocalDate checkOutDate;
   private String status;
   private BigDecimal totalPrice;
-  private List<BookingMemberResponse> manifest;
+  private BigDecimal totalAddOnCharges;
+  private List<HotelGuestResponse> manifest;
   private List<RoomAllocationResponse> roomAllocations;
   private List<AddOnOrderResponse> addOnOrders;
 }

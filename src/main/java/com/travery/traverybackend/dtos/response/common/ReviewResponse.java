@@ -1,4 +1,4 @@
-package com.travery.traverybackend.dtos.response.booking;
+package com.travery.traverybackend.dtos.response.common;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

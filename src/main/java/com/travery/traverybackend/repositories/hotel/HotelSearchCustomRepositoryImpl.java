@@ -7,6 +7,8 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.Set;
+import java.util.UUID;
+
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.sort.SearchSort;
@@ -20,7 +22,8 @@ import org.springframework.data.domain.Sort;
 
 public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomRepository {
 
-  @PersistenceContext private EntityManager entityManager;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Page<Hotel> searchHotels(HotelSearchRequest request, Pageable pageable) {
@@ -29,12 +32,11 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
     int offset = (int) pageable.getOffset();
     int size = pageable.getPageSize();
-    var result =
-        searchSession
-            .search(scope)
-            .where(buildPredicate(scope.predicate(), request))
-            .sort(buildSort(scope.sort(), pageable.getSort()))
-            .fetch(offset, size);
+    var result = searchSession
+        .search(scope)
+        .where(buildPredicate(scope.predicate(), request))
+        .sort(buildSort(scope.sort(), pageable.getSort()))
+        .fetch(offset, size);
     return new PageImpl<>(result.hits(), pageable, result.total().hitCount());
   }
 
@@ -70,12 +72,27 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
     // 4. Capacity filter (Nested RoomTypes)
     if (request.getAdults() != null || request.getChildren() != null) {
       var roomBool = f.bool();
-      if (request.getAdults() != null) {
-        roomBool.must(f.range().field("roomTypes.capacityAdults").atLeast(request.getAdults()));
-      }
-      if (request.getChildren() != null) {
-        roomBool.must(f.range().field("roomTypes.capacityChildren").atLeast(request.getChildren()));
-      }
+
+      int totalAdults = request.getAdults() != null ? request.getAdults() : 0;
+      int totalChildren = request.getChildren() != null ? request.getChildren() : 0;
+      int roomCount = request.getRoomCount() != null && request.getRoomCount() > 0 ? request.getRoomCount() : 1;
+
+      int adultsPerRoom = (int) Math.ceil((double) totalAdults / roomCount);
+      int childrenPerRoom = (int) Math.ceil((double) totalChildren / roomCount);
+      int totalPeoplePerRoom = (int) Math.ceil((double) (totalAdults + totalChildren) / roomCount);
+
+      // TH1: Phòng rộng, trẻ em ngủ ké giường người lớn (capacityAdults >= Tổng số
+      // người)
+      var allInAdultBeds = f.range().field("roomTypes.capacityAdults").atLeast(totalPeoplePerRoom);
+
+      // TH2: Ngủ đúng giường của ai nấy lo (Adults >= Yêu cầu Lớn, Children >= Yêu
+      // cầu Nhỏ)
+      var splitBeds = f.bool()
+          .must(f.range().field("roomTypes.capacityAdults").atLeast(adultsPerRoom))
+          .must(f.range().field("roomTypes.capacityChildren").atLeast(childrenPerRoom));
+
+      // Gom lại bằng phép HOẶC (should)
+      roomBool.must(f.bool().should(allInAdultBeds).should(splitBeds));
       bool.must(roomBool.toPredicate());
     }
 
@@ -89,6 +106,24 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
       bool.must(f.range().field("roomTypes.basePrice").atLeast(request.getMinPrice()));
     } else if (request.getMaxPrice() != null) {
       bool.must(f.range().field("roomTypes.basePrice").atMost(request.getMaxPrice()));
+    }
+
+    // 6. Amenities filter
+    if (request.getAmenityIds() != null && !request.getAmenityIds().isEmpty()) {
+      var amenityBool = f.bool();
+      for (UUID amenityId : request.getAmenityIds()) {
+        amenityBool.must(f.match().field("amenities.id").matching(amenityId));
+      }
+      bool.must(amenityBool.toPredicate());
+    }
+
+    // 7. Availability filter (Hybrid Search from SQL)
+    if (request.getAvailableHotelIds() != null) {
+      if (request.getAvailableHotelIds().isEmpty()) {
+        // If the list is empty, no hotels are available
+        return f.matchNone().toPredicate();
+      }
+      bool.must(f.terms().field("id").matchingAny(request.getAvailableHotelIds()));
     }
 
     return bool.toPredicate();

@@ -30,6 +30,8 @@ public interface ReceptionistService {
 
   CheckOutResponse checkOut(UUID bookingId, UUID receptionistId);
 
+  void confirmCheckOut(UUID bookingId, UUID receptionistId);
+
   List<ReceptionistRoomResponse> getAllRooms(UUID receptionistId);
 
   void updateRoomStatus(UUID roomId, RoomStatus status, UUID receptionistId);

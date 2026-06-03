@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.staff;
 
+import com.travery.traverybackend.enums.hotel.RoomStatus;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,6 @@ public class ReceptionistRoomResponse {
   private UUID id;
   private String roomNumber;
   private String roomTypeName;
-  private String status;
+  private RoomStatus status;
   private Integer floor;
 }

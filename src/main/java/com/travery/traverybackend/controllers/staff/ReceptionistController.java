@@ -3,6 +3,7 @@ package com.travery.traverybackend.controllers.staff;
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.staff.CheckInRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.booking.AddOnOrderResponse;
 import com.travery.traverybackend.dtos.response.staff.*;
 import com.travery.traverybackend.enums.booking.AddOnOrderStatus;
@@ -73,12 +74,12 @@ public class ReceptionistController extends AbstractBaseController {
 
   @PostMapping("/bookings/{bookingId}/check-in")
   @PreAuthorize("hasRole('RECEPTIONIST')")
-  public ResponseEntity<SingleResponse<Void>> checkIn(
+  public ResponseEntity<SuccessResponse> checkIn(
       @PathVariable UUID bookingId,
       @Valid @RequestBody CheckInRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
     receptionistService.checkIn(bookingId, request, currentUser.getUserId());
-    return success(null, "Check-in successful");
+    return success("Check-in successful");
   }
 
   @PostMapping("/bookings/{bookingId}/check-out")
@@ -86,7 +87,15 @@ public class ReceptionistController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<CheckOutResponse>> checkOut(
       @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
     CheckOutResponse response = receptionistService.checkOut(bookingId, currentUser.getUserId());
-    return success(response, "Check-out successful");
+    return success(response, "Check-out bill calculated successfully");
+  }
+
+  @PostMapping("/bookings/{bookingId}/confirm-check-out")
+  @PreAuthorize("hasRole('RECEPTIONIST')")
+  public ResponseEntity<SuccessResponse> confirmCheckOut(
+      @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
+    receptionistService.confirmCheckOut(bookingId, currentUser.getUserId());
+    return success("Check-out confirmed successfully");
   }
 
   @GetMapping("/rooms")
@@ -99,12 +108,12 @@ public class ReceptionistController extends AbstractBaseController {
 
   @PatchMapping("/rooms/{roomId}/status")
   @PreAuthorize("hasRole('RECEPTIONIST')")
-  public ResponseEntity<SingleResponse<Void>> updateRoomStatus(
+  public ResponseEntity<SuccessResponse> updateRoomStatus(
       @PathVariable UUID roomId,
       @RequestParam RoomStatus status,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
     receptionistService.updateRoomStatus(roomId, status, currentUser.getUserId());
-    return success(null, "Room status updated successfully");
+    return success("Room status updated successfully");
   }
 
   @GetMapping("/add-on-orders")
@@ -118,11 +127,11 @@ public class ReceptionistController extends AbstractBaseController {
 
   @PatchMapping("/add-on-orders/{orderId}/status")
   @PreAuthorize("hasRole('RECEPTIONIST')")
-  public ResponseEntity<SingleResponse<Void>> updateAddOnOrderStatus(
+  public ResponseEntity<SuccessResponse> updateAddOnOrderStatus(
       @PathVariable UUID orderId,
       @RequestParam AddOnOrderStatus status,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
     receptionistService.updateAddOnOrderStatus(orderId, status, currentUser.getUserId());
-    return success(null, "Add-on order status updated successfully");
+    return success("Add-on order status updated successfully");
   }
 }

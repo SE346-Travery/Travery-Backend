@@ -1,4 +1,4 @@
-package com.travery.traverybackend.dtos.request.admin;
+package com.travery.traverybackend.dtos.request.hotel;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +15,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateRoomRequest {
-  @NotBlank private String roomNumber;
-  @NotNull private Integer floor;
-  @NotNull private UUID roomTypeId;
+  @NotBlank
+  private String roomNumber;
+
+  @NotNull
+  private Integer floor;
+
+  @NotNull
+  private UUID roomTypeId;
 }

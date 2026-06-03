@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.request.booking;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -16,10 +17,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAddOnOrderRequest {
-  @NotNull private UUID serviceId;
+  @NotNull
+  private UUID serviceId;
 
   @Min(1)
   private int quantity;
 
-  @NotNull private LocalDateTime scheduledTime;
+  @NotNull(message = "Scheduled time is required")
+
+  @Future(message = "Scheduled time cannot be in the past")
+  private LocalDateTime scheduledTime;
 }

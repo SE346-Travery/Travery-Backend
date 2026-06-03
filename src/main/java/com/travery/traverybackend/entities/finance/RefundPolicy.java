@@ -2,6 +2,8 @@ package com.travery.traverybackend.entities.finance;
 
 import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.enums.finance.RefundServiceType;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,6 +33,10 @@ public class RefundPolicy extends AbstractBaseEntity {
   @Column(name = "service_type", nullable = false, length = 50)
   private RefundServiceType serviceType;
 
-  @OneToMany(mappedBy = "refundPolicy")
+  @OneToMany(mappedBy = "refundPolicy", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<RefundPolicyRule> rules;
+
+  @Column(name = "is_deleted", nullable = false)
+  @lombok.Builder.Default
+  private boolean isDeleted = false;
 }

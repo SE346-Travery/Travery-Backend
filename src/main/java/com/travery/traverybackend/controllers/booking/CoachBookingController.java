@@ -2,17 +2,18 @@ package com.travery.traverybackend.controllers.booking;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
-import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingDetailResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.CoachBookingService;
+
 import com.travery.traverybackend.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -48,8 +49,7 @@ public class CoachBookingController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       HttpServletRequest httpRequest) {
     String ipAddress = requestUtil.getIpAddress(httpRequest);
-    CoachBookingResponse response =
-        coachBookingService.createBooking(request, userDetails.getUserId(), ipAddress);
+    CoachBookingResponse response = coachBookingService.createBooking(request, userDetails.getUserId(), ipAddress);
     return created(response, "Coach booking created successfully");
   }
 
@@ -61,11 +61,10 @@ public class CoachBookingController extends AbstractBaseController {
       HttpServletRequest httpRequest) {
 
     String ipAddress = requestUtil.getIpAddress(httpRequest);
-    InitiatePaymentRequest request =
-        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
+    InitiatePaymentRequest request = InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
 
-    PaymentInitiationResponse response =
-        coachBookingService.generatePaymentUrl(bookingId, request, userDetails.getUserId());
+    PaymentInitiationResponse response = coachBookingService.generatePaymentUrl(bookingId, request,
+        userDetails.getUserId());
     return success(response, "Payment URL generated successfully");
   }
 
@@ -96,4 +95,5 @@ public class CoachBookingController extends AbstractBaseController {
     var response = coachBookingService.cancelBooking(bookingId, request, userDetails.getUserId());
     return success(response, "Coach booking cancelled successfully");
   }
+
 }

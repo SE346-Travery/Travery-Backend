@@ -1,4 +1,4 @@
-package com.travery.traverybackend.dtos.response.coach;
+package com.travery.traverybackend.dtos.response.booking;
 
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.finance.PaymentMethod;

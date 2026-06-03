@@ -6,6 +6,7 @@ import com.travery.traverybackend.entities.finance.RefundPolicy;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,4 +41,8 @@ public class Route extends AbstractBaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "refund_policy_id")
   private RefundPolicy refundPolicy;
+
+  @Column(name = "average_rating")
+  @Builder.Default
+  private Double averageRating = 0.0;
 }

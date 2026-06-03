@@ -5,6 +5,7 @@ import com.travery.traverybackend.enums.hotel.ServiceCategory;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,4 +39,12 @@ public class HotelService extends AbstractBaseEntity {
 
   @Column(columnDefinition = "TEXT")
   private String description;
+
+  @Column(name = "is_active")
+  @Builder.Default
+  private boolean isActive = true;
+
+  @Column(name = "is_deleted")
+  @Builder.Default
+  private boolean isDeleted = false;
 }

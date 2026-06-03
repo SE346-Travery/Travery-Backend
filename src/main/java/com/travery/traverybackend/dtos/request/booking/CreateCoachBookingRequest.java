@@ -1,4 +1,4 @@
-package com.travery.traverybackend.dtos.request.coach;
+package com.travery.traverybackend.dtos.request.booking;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

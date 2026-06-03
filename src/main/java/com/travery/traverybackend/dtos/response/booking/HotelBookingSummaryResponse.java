@@ -2,6 +2,7 @@ package com.travery.traverybackend.dtos.response.booking;
 
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,8 @@ import lombok.Setter;
 public class HotelBookingSummaryResponse {
   private UUID id;
   private String hotelName;
+  private LocalDate startDate;
+  private LocalDate endDate;
   private BigDecimal totalPrice;
   private LocalDateTime paymentDeadline;
   private BookingStatus status;

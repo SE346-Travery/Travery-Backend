@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoomAssignmentRepository extends JpaRepository<RoomAssignment, UUID> {
   List<RoomAssignment> findAllByHotelBookingDetail_Id(UUID hotelBookingDetailId);
+  List<RoomAssignment> findAllByHotelBookingDetail_HotelBooking_Id(UUID hotelBookingId);
 }

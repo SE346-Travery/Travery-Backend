@@ -1,6 +1,7 @@
 package com.travery.traverybackend.mappers;
 
 import com.travery.traverybackend.dtos.response.hotel.AmenityResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelBasicResponse;
 import com.travery.traverybackend.dtos.response.hotel.HotelDetailResponse;
 import com.travery.traverybackend.dtos.response.hotel.HotelResponse;
 import com.travery.traverybackend.dtos.response.hotel.RoomTypeResponse;
@@ -19,10 +20,12 @@ public interface HotelMapper {
   HotelResponse toHotelResponse(Hotel hotel);
 
   @Mapping(target = "amenities", source = "amenities")
-  @Mapping(target = "roomTypes", source = "roomTypes")
+  @Mapping(target = "roomTypes", ignore = true) // Set in service to avoid N+1 and redundancy
   @Mapping(target = "images", ignore = true) // Set in service
-  @Mapping(target = "reviews", ignore = true) // Set in service
   HotelDetailResponse toHotelDetailResponse(Hotel hotel);
+
+  @Mapping(target = "amenities", source = "amenities")
+  HotelBasicResponse toHotelBasicResponse(Hotel hotel);
 
   @Mapping(target = "amenities", source = "amenities")
   @Mapping(target = "images", ignore = true) // Set in service

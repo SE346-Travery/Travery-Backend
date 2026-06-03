@@ -8,7 +8,7 @@ import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
-import com.travery.traverybackend.dtos.response.booking.StayBillResponse;
+import com.travery.traverybackend.dtos.response.booking.AddOnBillResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -22,13 +22,11 @@ public interface HotelBookingService {
 
   HotelBookingDetailResponse getBookingDetail(UUID bookingId, UUID userId);
 
-  CancelBookingResponse getCancelQuote(UUID bookingId, UUID userId);
-
-  void cancelBooking(UUID bookingId, CancelBookingRequest request, UUID userId);
+  CancelBookingResponse cancelBooking(UUID bookingId, CancelBookingRequest request, UUID userId);
 
   AddOnOrderResponse createAddOnOrder(UUID bookingId, CreateAddOnOrderRequest request, UUID userId);
 
-  StayBillResponse getStayBill(UUID bookingId, UUID userId);
+  AddOnBillResponse getAddOnBill(UUID bookingId, UUID userId);
 
   void cancelAddOnOrder(UUID orderId, UUID userId);
 }

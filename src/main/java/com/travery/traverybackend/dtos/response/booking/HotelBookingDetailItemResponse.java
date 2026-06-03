@@ -20,6 +20,4 @@ public class HotelBookingDetailItemResponse {
   private String roomTypeName;
   private int quantity;
   private BigDecimal priceAtBooking;
-  private LocalDate startDate;
-  private LocalDate endDate;
 }

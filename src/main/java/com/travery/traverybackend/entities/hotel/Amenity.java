@@ -31,8 +31,15 @@ public class Amenity extends AbstractBaseEntity {
   @Column(name = "icon_url", length = 255)
   private String iconUrl;
 
+  @Column(name = "icon_public_id", length = 255)
+  private String iconPublicId;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 50)
   @GenericField
   private AmenityType type;
+
+  @Column(name = "is_active")
+  @lombok.Builder.Default
+  private boolean isActive = true;
 }

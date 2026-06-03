@@ -2,22 +2,22 @@ package com.travery.traverybackend.controllers.booking;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
-import com.travery.traverybackend.dtos.request.booking.CreateReviewRequest;
+
 import com.travery.traverybackend.dtos.request.booking.CreateTourBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.booking.ReviewResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingSummaryResponse;
+
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.PaymentService;
-import com.travery.traverybackend.services.booking.ReviewService;
 import com.travery.traverybackend.services.booking.TourBookingService;
+
 import com.travery.traverybackend.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -43,7 +43,7 @@ public class TourBookingController extends AbstractBaseController {
 
   private final TourBookingService tourBookingService;
   private final PaymentService paymentService;
-  private final ReviewService reviewService;
+
   private final RequestUtil requestUtil;
 
   @PostMapping("/api/v1/tour-instances/{instanceId}/bookings")
@@ -56,8 +56,7 @@ public class TourBookingController extends AbstractBaseController {
 
     var ipAddress = requestUtil.getIpAddress(httpServletRequest);
     request.setIpAddress(ipAddress);
-    TourBookingResponse response =
-        tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
+    TourBookingResponse response = tourBookingService.createBooking(instanceId, request, currentUser.getUserId());
     return created(response, "Tour booking created successfully");
   }
 
@@ -65,11 +64,9 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<Page<TourBookingSummaryResponse>>> getMyBookings(
       @RequestParam(required = false) BookingStatus status,
-      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-          Pageable pageable,
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    Page<TourBookingSummaryResponse> page =
-        tourBookingService.getMyBookings(currentUser.getUserId(), status, pageable);
+    Page<TourBookingSummaryResponse> page = tourBookingService.getMyBookings(currentUser.getUserId(), status, pageable);
     return success(page, "Bookings retrieved successfully");
   }
 
@@ -77,8 +74,7 @@ public class TourBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<TourBookingDetailResponse>> getBookingDetail(
       @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
-    TourBookingDetailResponse response =
-        tourBookingService.getBookingDetail(bookingId, currentUser.getUserId());
+    TourBookingDetailResponse response = tourBookingService.getBookingDetail(bookingId, currentUser.getUserId());
     return success(response, "Booking detail retrieved successfully");
   }
 
@@ -88,8 +84,7 @@ public class TourBookingController extends AbstractBaseController {
       @PathVariable UUID bookingId,
       @RequestBody(required = false) CancelBookingRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    CancelBookingResponse response =
-        tourBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
+    CancelBookingResponse response = tourBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
     return success(response, "Booking cancelled successfully");
   }
 
@@ -100,23 +95,10 @@ public class TourBookingController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest httpServletRequest) {
     String ipAddress = requestUtil.getIpAddress(httpServletRequest);
-    InitiatePaymentRequest request =
-        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
-    PaymentInitiationResponse response =
-        paymentService.initiatePayment(
-            bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
+    InitiatePaymentRequest request = InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
+    PaymentInitiationResponse response = paymentService.initiatePayment(
+        bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
     return created(response, "Payment initiated successfully");
   }
 
-  @PostMapping("/api/v1/bookings/{bookingId}/reviews")
-  @PreAuthorize("hasRole('TOURIST')")
-  public ResponseEntity<SingleResponse<ReviewResponse>> createReview(
-      @PathVariable UUID bookingId,
-      @Valid @RequestBody CreateReviewRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
-    ReviewResponse response =
-        reviewService.createReview(
-            bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
-    return created(response, "Review submitted successfully");
-  }
 }

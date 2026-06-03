@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.hotel;
 
+import com.travery.traverybackend.enums.hotel.ServiceCategory;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -16,8 +17,9 @@ import lombok.Setter;
 public class HotelServiceResponse {
   private UUID id;
   private String name;
-  private String category;
+  private ServiceCategory category;
   private BigDecimal price;
   private String unit;
   private String description;
+  private boolean isActive;
 }
