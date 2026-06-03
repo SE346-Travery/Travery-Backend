@@ -69,7 +69,7 @@ public class GuideTourInstanceController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<List<BookingMemberResponse>>> searchPassengers(
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @PathVariable UUID id,
-      @RequestParam String query) {
+      @RequestParam(required = false) String query) {
     List<BookingMemberResponse> passengers =
         guideTourInstanceService.searchPassengers(userDetails.getUserId(), id, query);
     return success(passengers, "Searched passengers successfully");

@@ -35,6 +35,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
+  private final jakarta.persistence.EntityManager entityManager;
 
   @Override
   @Transactional(readOnly = true)
@@ -192,7 +195,36 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   public List<BookingMemberResponse> searchPassengers(UUID guideId, UUID instanceId, String query) {
     TourInstance tourInstance = getTourInstanceById(instanceId);
     validateGuideOwnership(guideId, tourInstance);
-    return bookingMemberRepository.searchInTourInstance(instanceId, query).stream()
+
+    List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
+    if (bookings.isEmpty()) {
+      return List.of();
+    }
+
+    List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
+
+    if (query == null || query.isBlank()) {
+      return bookingMemberRepository
+          .findByBookingIdInAndBookingType(bookingIds, BookingType.TOUR_BOOKING)
+          .stream()
+          .map(tourInstanceMapper::toBookingMemberResponse)
+          .collect(Collectors.toList());
+    }
+
+    SearchSession searchSession = Search.session(entityManager);
+    return searchSession
+        .search(BookingMember.class)
+        .where(
+            f ->
+                f.bool()
+                    .must(f.match().field("bookingType").matching(BookingType.TOUR_BOOKING))
+                    .must(f.terms().field("bookingId").matchingAny(bookingIds))
+                    .must(
+                        f.bool()
+                            .should(f.match().field("fullName").matching(query).fuzzy(1))
+                            .should(f.match().field("identityNumber").matching(query).fuzzy(1))))
+        .fetchHits(100)
+        .stream()
         .map(tourInstanceMapper::toBookingMemberResponse)
         .collect(Collectors.toList());
   }
