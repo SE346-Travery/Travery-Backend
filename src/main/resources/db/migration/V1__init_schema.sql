@@ -197,7 +197,8 @@
     );
 
     create table hotels (
-        average_rating integer,
+        average_rating float(53),
+        review_count integer default 0,
         check_in_time time(0),
         check_out_time time(0),
         created_at timestamp(6) not null,
@@ -358,6 +359,7 @@
 
     create table routes (
         average_rating float(53),
+        review_count integer default 0,
         base_price numeric(12,2) not null,
         distance_km numeric(6,2),
         estimated_hours numeric(4,1),
@@ -471,6 +473,7 @@
 
     create table tours (
         average_rating float(53),
+        review_count integer default 0,
         duration_days integer,
         is_custom boolean not null,
         max_participants integer not null check ((max_participants>=10) and (max_participants<=30)),

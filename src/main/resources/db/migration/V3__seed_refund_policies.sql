@@ -1,6 +1,5 @@
 -- =============================================
 -- Travery Backend - Seed Refund Policies (V3)
--- Seed standard refund policies based on Wiki
 -- =============================================
 
 -- 1. TOUR Standard Policy
