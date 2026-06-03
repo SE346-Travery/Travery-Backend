@@ -4,23 +4,20 @@ import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateAddOnOrderRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateHotelBookingRequest;
-
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
+import com.travery.traverybackend.dtos.response.booking.AddOnBillResponse;
 import com.travery.traverybackend.dtos.response.booking.AddOnOrderResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-
-import com.travery.traverybackend.dtos.response.booking.AddOnBillResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.HotelBookingService;
 import com.travery.traverybackend.services.booking.PaymentService;
-
 import com.travery.traverybackend.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -60,7 +57,8 @@ public class HotelBookingController extends AbstractBaseController {
       HttpServletRequest httpServletRequest) {
 
     request.setIpAddress(requestUtil.getIpAddress(httpServletRequest));
-    HotelBookingResponse response = hotelBookingService.createBooking(request, currentUser.getUserId());
+    HotelBookingResponse response =
+        hotelBookingService.createBooking(request, currentUser.getUserId());
     return created(response, "Hotel booking created successfully");
   }
 
@@ -68,10 +66,11 @@ public class HotelBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<Page<HotelBookingSummaryResponse>>> getMyBookings(
       @RequestParam(required = false) BookingStatus status,
-      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+          Pageable pageable,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    Page<HotelBookingSummaryResponse> page = hotelBookingService.getMyBookings(currentUser.getUserId(), status,
-        pageable);
+    Page<HotelBookingSummaryResponse> page =
+        hotelBookingService.getMyBookings(currentUser.getUserId(), status, pageable);
     return success(page, "Hotel bookings retrieved successfully");
   }
 
@@ -79,7 +78,8 @@ public class HotelBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<HotelBookingDetailResponse>> getBookingDetail(
       @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
-    HotelBookingDetailResponse response = hotelBookingService.getBookingDetail(bookingId, currentUser.getUserId());
+    HotelBookingDetailResponse response =
+        hotelBookingService.getBookingDetail(bookingId, currentUser.getUserId());
     return success(response, "Hotel booking detail retrieved successfully");
   }
 
@@ -89,7 +89,8 @@ public class HotelBookingController extends AbstractBaseController {
       @PathVariable UUID bookingId,
       @RequestBody(required = false) CancelBookingRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    CancelBookingResponse response = hotelBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
+    CancelBookingResponse response =
+        hotelBookingService.cancelBooking(bookingId, request, currentUser.getUserId());
     return success(response, "Hotel booking cancelled successfully");
   }
 
@@ -100,9 +101,11 @@ public class HotelBookingController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest httpServletRequest) {
     String ipAddress = requestUtil.getIpAddress(httpServletRequest);
-    InitiatePaymentRequest request = InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
-    PaymentInitiationResponse response = paymentService.initiatePayment(
-        bookingId, request, currentUser.getUserId(), BookingType.HOTEL_BOOKING);
+    InitiatePaymentRequest request =
+        InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
+    PaymentInitiationResponse response =
+        paymentService.initiatePayment(
+            bookingId, request, currentUser.getUserId(), BookingType.HOTEL_BOOKING);
     return created(response, "Payment initiated successfully");
   }
 
@@ -112,7 +115,8 @@ public class HotelBookingController extends AbstractBaseController {
       @PathVariable UUID bookingId,
       @Valid @RequestBody CreateAddOnOrderRequest request,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    AddOnOrderResponse response = hotelBookingService.createAddOnOrder(bookingId, request, currentUser.getUserId());
+    AddOnOrderResponse response =
+        hotelBookingService.createAddOnOrder(bookingId, request, currentUser.getUserId());
     return created(response, "Add-on order created successfully");
   }
 
@@ -120,7 +124,8 @@ public class HotelBookingController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<AddOnBillResponse>> getAddOnBill(
       @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
-    AddOnBillResponse response = hotelBookingService.getAddOnBill(bookingId, currentUser.getUserId());
+    AddOnBillResponse response =
+        hotelBookingService.getAddOnBill(bookingId, currentUser.getUserId());
     return success(response, "Current add-on bill retrieved successfully");
   }
 

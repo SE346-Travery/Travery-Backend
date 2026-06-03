@@ -15,8 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HotelBookingRequestDetail {
-  @NotNull
-  private UUID roomTypeId;
+  @NotNull private UUID roomTypeId;
 
   @Min(1)
   private int quantity;

@@ -17,25 +17,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateHotelRequest {
-  @NotBlank
-  private String name;
+  @NotBlank private String name;
 
   private String description;
 
-  @NotBlank
-  private String address;
+  @NotBlank private String address;
 
-  @NotBlank
-  private String cityProvince;
+  @NotBlank private String cityProvince;
 
-  @NotNull
-  private LocalTime checkInTime;
+  @NotNull private LocalTime checkInTime;
 
-  @NotNull
-  private LocalTime checkOutTime;
+  @NotNull private LocalTime checkOutTime;
 
   private List<UUID> amenityIds;
 
-  @NotNull
-  private UUID refundPolicyId;
+  @NotNull private UUID refundPolicyId;
 }

@@ -17,8 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateRoomTypeRequest {
-  @NotBlank
-  private String name;
+  @NotBlank private String name;
   private String description;
 
   @Min(1)
@@ -27,10 +26,8 @@ public class CreateRoomTypeRequest {
   @Min(0)
   private int capacityChildren;
 
-  @NotNull
-  private BigDecimal basePrice;
-  @NotNull
-  private BedType bedType;
+  @NotNull private BigDecimal basePrice;
+  @NotNull private BedType bedType;
 
   @Min(1)
   private int area;

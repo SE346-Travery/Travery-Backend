@@ -27,10 +27,11 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
   @Override
   @Transactional
   public RefundPolicyResponse createPolicy(RefundPolicyRequest request) {
-    if (refundPolicyRepository.findByNameAndServiceTypeAndIsDeletedFalse(request.getName(), request.getServiceType())
+    if (refundPolicyRepository
+        .findByNameAndServiceTypeAndIsDeletedFalse(request.getName(), request.getServiceType())
         .isPresent()) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST,
-          "Refund policy with this name and service type already exists");
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Refund policy with this name and service type already exists");
     }
 
     RefundPolicy policy = refundPolicyMapper.toRefundPolicy(request);
@@ -49,17 +50,22 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
   @Override
   @Transactional
   public RefundPolicyResponse updatePolicy(UUID id, RefundPolicyRequest request) {
-    RefundPolicy policy = refundPolicyRepository
-        .findByIdAndIsDeletedFalse(id)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
+    RefundPolicy policy =
+        refundPolicyRepository
+            .findByIdAndIsDeletedFalse(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
 
     // Check name conflict
-    refundPolicyRepository.findByNameAndServiceTypeAndIsDeletedFalse(request.getName(), request.getServiceType())
+    refundPolicyRepository
+        .findByNameAndServiceTypeAndIsDeletedFalse(request.getName(), request.getServiceType())
         .filter(p -> !p.getId().equals(id))
-        .ifPresent(p -> {
-          throw new BaseAppException(WebErrorCode.BAD_REQUEST,
-              "Refund policy with this name and service type already exists");
-        });
+        .ifPresent(
+            p -> {
+              throw new BaseAppException(
+                  WebErrorCode.BAD_REQUEST,
+                  "Refund policy with this name and service type already exists");
+            });
 
     policy.setName(request.getName());
     policy.setServiceType(request.getServiceType());
@@ -67,9 +73,8 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
     // Update rules (orphanRemoval = true will delete old rules not in the new list)
     policy.getRules().clear();
 
-    List<RefundPolicyRule> newRules = request.getRules().stream()
-        .map(refundPolicyMapper::toRefundPolicyRule)
-        .toList();
+    List<RefundPolicyRule> newRules =
+        request.getRules().stream().map(refundPolicyMapper::toRefundPolicyRule).toList();
 
     for (RefundPolicyRule rule : newRules) {
       rule.setRefundPolicy(policy);
@@ -83,25 +88,30 @@ public class RefundPolicyServiceImpl implements RefundPolicyService {
   @Override
   @Transactional(readOnly = true)
   public RefundPolicyResponse getPolicyById(UUID id) {
-    RefundPolicy policy = refundPolicyRepository
-        .findByIdAndIsDeletedFalse(id)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
+    RefundPolicy policy =
+        refundPolicyRepository
+            .findByIdAndIsDeletedFalse(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
     return refundPolicyMapper.toRefundPolicyResponse(policy);
   }
 
   @Override
   @Transactional(readOnly = true)
   public Page<RefundPolicyResponse> getAllPolicies(Pageable pageable) {
-    return refundPolicyRepository.findAllByIsDeletedFalse(pageable)
+    return refundPolicyRepository
+        .findAllByIsDeletedFalse(pageable)
         .map(refundPolicyMapper::toRefundPolicyResponse);
   }
 
   @Override
   @Transactional
   public void deletePolicy(UUID id) {
-    RefundPolicy policy = refundPolicyRepository
-        .findByIdAndIsDeletedFalse(id)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
+    RefundPolicy policy =
+        refundPolicyRepository
+            .findByIdAndIsDeletedFalse(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund policy not found"));
 
     policy.setDeleted(true);
     refundPolicyRepository.save(policy);

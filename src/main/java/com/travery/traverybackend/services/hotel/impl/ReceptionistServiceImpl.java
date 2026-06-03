@@ -62,13 +62,15 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     long checkInCount = hotelBookingDetailRepository.countTodayCheckIns(hotelId, today);
     long checkOutCount = hotelBookingDetailRepository.countTodayCheckOuts(hotelId, today);
 
-    List<HotelBooking> checkInBookings = hotelBookingRepository.findTodayCheckInBookings(hotelId, today);
-    List<HotelBooking> checkOutBookings = hotelBookingRepository.findTodayCheckOutBookings(hotelId, today);
+    List<HotelBooking> checkInBookings =
+        hotelBookingRepository.findTodayCheckInBookings(hotelId, today);
+    List<HotelBooking> checkOutBookings =
+        hotelBookingRepository.findTodayCheckOutBookings(hotelId, today);
 
-    List<DashboardGuestResponse> checkInQueue = checkInBookings.stream().map(this::mapToDashboardGuestResponse)
-        .toList();
-    List<DashboardGuestResponse> checkOutQueue = checkOutBookings.stream().map(this::mapToDashboardGuestResponse)
-        .toList();
+    List<DashboardGuestResponse> checkInQueue =
+        checkInBookings.stream().map(this::mapToDashboardGuestResponse).toList();
+    List<DashboardGuestResponse> checkOutQueue =
+        checkOutBookings.stream().map(this::mapToDashboardGuestResponse).toList();
 
     return ReceptionistDashboardResponse.builder()
         .availableRooms(available)
@@ -83,17 +85,20 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   }
 
   private DashboardGuestResponse mapToDashboardGuestResponse(HotelBooking booking) {
-    List<HotelBookingDetail> details = hotelBookingDetailRepository.findAllByHotelBooking_Id(booking.getId());
+    List<HotelBookingDetail> details =
+        hotelBookingDetailRepository.findAllByHotelBooking_Id(booking.getId());
 
-    int memberCount = bookingMemberRepository.countByBookingIdAndBookingType(
-        booking.getId(), BookingType.HOTEL_BOOKING);
+    int memberCount =
+        bookingMemberRepository.countByBookingIdAndBookingType(
+            booking.getId(), BookingType.HOTEL_BOOKING);
 
     int totalRooms = details.stream().mapToInt(HotelBookingDetail::getQuantity).sum();
 
-    Map<String, Integer> breakdown = details.stream()
-        .collect(
-            Collectors.toMap(
-                d -> d.getRoomType().getName(), HotelBookingDetail::getQuantity, Integer::sum));
+    Map<String, Integer> breakdown =
+        details.stream()
+            .collect(
+                Collectors.toMap(
+                    d -> d.getRoomType().getName(), HotelBookingDetail::getQuantity, Integer::sum));
 
     return DashboardGuestResponse.builder()
         .bookingId(booking.getId())
@@ -115,8 +120,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     Receptionist receptionist = getReceptionist(receptionistId);
     UUID hotelId = receptionist.getHotel().getId();
 
-    Page<HotelBooking> bookings = hotelBookingRepository.findReceptionistQueue(hotelId, date, guestName, status,
-        pageable);
+    Page<HotelBooking> bookings =
+        hotelBookingRepository.findReceptionistQueue(hotelId, date, guestName, status, pageable);
 
     return bookings.map(
         b -> {
@@ -139,42 +144,48 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     Receptionist receptionist = getReceptionist(receptionistId);
     HotelBooking booking = getBooking(bookingId, receptionist.getHotel().getId());
 
-    List<HotelBookingDetail> details = hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
-    List<BookingMember> members = bookingMemberRepository.findAllByBookingIdAndBookingType(
-        bookingId, BookingType.HOTEL_BOOKING);
+    List<HotelBookingDetail> details =
+        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
+    List<BookingMember> members =
+        bookingMemberRepository.findAllByBookingIdAndBookingType(
+            bookingId, BookingType.HOTEL_BOOKING);
     List<AddOnOrder> addOnOrders = addOnOrderRepository.findAllByHotelBooking_Id(bookingId);
 
     // Fetch all assignments for this booking to prevent N+1
-    List<RoomAssignment> allAssignments = roomAssignmentRepository
-        .findAllByHotelBookingDetail_HotelBooking_Id(bookingId);
+    List<RoomAssignment> allAssignments =
+        roomAssignmentRepository.findAllByHotelBookingDetail_HotelBooking_Id(bookingId);
 
     // Group by HotelBookingDetail.id
-    Map<UUID, List<RoomAssignment>> assignmentMap = allAssignments.stream()
-        .collect(Collectors.groupingBy(a -> a.getHotelBookingDetail().getId()));
+    Map<UUID, List<RoomAssignment>> assignmentMap =
+        allAssignments.stream()
+            .collect(Collectors.groupingBy(a -> a.getHotelBookingDetail().getId()));
 
-    List<RoomAllocationResponse> allocations = details.stream()
-        .map(
-            d -> {
-              List<RoomAssignment> assignments = assignmentMap.getOrDefault(d.getId(), List.of());
-              List<String> roomNumbers = assignments.stream()
-                  .map(a -> a.getRoom().getRoomNumber())
-                  .toList();
+    List<RoomAllocationResponse> allocations =
+        details.stream()
+            .map(
+                d -> {
+                  List<RoomAssignment> assignments =
+                      assignmentMap.getOrDefault(d.getId(), List.of());
+                  List<String> roomNumbers =
+                      assignments.stream().map(a -> a.getRoom().getRoomNumber()).toList();
 
-              return receptionistMapper.toRoomAllocationResponse(d, roomNumbers);
-            })
-        .toList();
+                  return receptionistMapper.toRoomAllocationResponse(d, roomNumbers);
+                })
+            .toList();
 
-    List<HotelGuestResponse> manifest = members.stream().map(receptionistMapper::toHotelGuestResponse).toList();
+    List<HotelGuestResponse> manifest =
+        members.stream().map(receptionistMapper::toHotelGuestResponse).toList();
 
-    List<AddOnOrderResponse> addOnOrdersResponse = addOnOrders.stream().map(receptionistMapper::toAddOnOrderResponse)
-        .toList();
+    List<AddOnOrderResponse> addOnOrdersResponse =
+        addOnOrders.stream().map(receptionistMapper::toAddOnOrderResponse).toList();
 
-    BigDecimal totalAddOnCharges = addOnOrders.stream()
-        .map(AddOnOrder::getTotalPrice)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal totalAddOnCharges =
+        addOnOrders.stream()
+            .map(AddOnOrder::getTotalPrice)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    return receptionistMapper.toBookingDetailResponse(booking, totalAddOnCharges, manifest, allocations,
-        addOnOrdersResponse);
+    return receptionistMapper.toBookingDetailResponse(
+        booking, totalAddOnCharges, manifest, allocations, addOnOrdersResponse);
   }
 
   @Override
@@ -184,12 +195,11 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     // Fetch directly from DB with hotelId filter to avoid loading unwanted rooms
     // into memory.
     // Also uses @EntityGraph to prevent N+1 on roomType.
-    List<Room> rooms = roomRepository.findAllByRoomType_IdAndHotel_IdAndStatus(
-        roomTypeId, receptionist.getHotel().getId(), RoomStatus.AVAILABLE);
+    List<Room> rooms =
+        roomRepository.findAllByRoomType_IdAndHotel_IdAndStatus(
+            roomTypeId, receptionist.getHotel().getId(), RoomStatus.AVAILABLE);
 
-    return rooms.stream()
-        .map(receptionistMapper::toReceptionistRoomResponse)
-        .toList();
+    return rooms.stream().map(receptionistMapper::toReceptionistRoomResponse).toList();
   }
 
   @Override
@@ -207,16 +217,19 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     // 3. Validate Check-in time (from 12:00 PM on startDate)
     LocalDateTime earliestCheckIn = LocalDateTime.of(booking.getStartDate(), LocalTime.of(12, 0));
     if (LocalDateTime.now().isBefore(earliestCheckIn)) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST,
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST,
           "Check-in is only allowed after 12:00 PM on " + booking.getStartDate());
     }
 
-    List<HotelBookingDetail> details = hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
+    List<HotelBookingDetail> details =
+        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
 
     // 4. Match Requested Keys with Booked Rooms Quantity
     int totalNeededRooms = details.stream().mapToInt(HotelBookingDetail::getQuantity).sum();
     if (request.getRoomIds().size() != totalNeededRooms) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Number of requested rooms does not match booking quantity");
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Number of requested rooms does not match booking quantity");
     }
 
     // 5. Batch Fetch Physical Rooms (Fix N+1)
@@ -230,7 +243,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     for (Room room : requestedRooms) {
       // Ensure physical room is empty and clean (AVAILABLE)
       if (room.getStatus() != RoomStatus.AVAILABLE) {
-        throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Room " + room.getRoomNumber() + " is not available");
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST, "Room " + room.getRoomNumber() + " is not available");
       }
       roomsByType.computeIfAbsent(room.getRoomType().getId(), k -> new ArrayList<>()).add(room);
     }
@@ -241,10 +255,12 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     for (HotelBookingDetail detail : details) {
       int needed = detail.getQuantity();
       UUID detailRoomTypeId = detail.getRoomType().getId();
-      List<Room> availableForThisType = roomsByType.getOrDefault(detailRoomTypeId, new ArrayList<>());
+      List<Room> availableForThisType =
+          roomsByType.getOrDefault(detailRoomTypeId, new ArrayList<>());
       // Ensure we have enough physical rooms for this specific RoomType
       if (availableForThisType.size() < needed) {
-        throw new BaseAppException(WebErrorCode.BAD_REQUEST,
+        throw new BaseAppException(
+            WebErrorCode.BAD_REQUEST,
             "Insufficient rooms provided for room type: " + detail.getRoomType().getName());
       }
 
@@ -255,7 +271,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         // Mark room as OCCUPIED (Dirty checking handles DB update)
         roomToAssign.setStatus(RoomStatus.OCCUPIED);
 
-        assignmentsToSave.add(RoomAssignment.builder().hotelBookingDetail(detail).room(roomToAssign).build());
+        assignmentsToSave.add(
+            RoomAssignment.builder().hotelBookingDetail(detail).room(roomToAssign).build());
       }
     }
 
@@ -283,10 +300,11 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     List<AddOnOrder> orders = addOnOrderRepository.findAllByHotelBooking_Id(bookingId);
 
     // 4. Calculate Add-on Charges (only for DELIVERED orders)
-    BigDecimal addOnCharges = orders.stream()
-        .filter(o -> o.getStatus() == AddOnOrderStatus.DELIVERED)
-        .map(AddOnOrder::getTotalPrice)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal addOnCharges =
+        orders.stream()
+            .filter(o -> o.getStatus() == AddOnOrderStatus.DELIVERED)
+            .map(AddOnOrder::getTotalPrice)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     // 5. Calculate Late Check-out Fees (20,000 VND per hour after 12:00 PM of
     // endDate)
@@ -306,18 +324,15 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     }
 
     // 6. Identify unpaid Add-on Orders (PENDING status) for the bill
-    List<AddOnOrderResponse> unpaidAddOns = orders.stream()
-        .filter(o -> o.getStatus() == AddOnOrderStatus.PENDING)
-        .map(receptionistMapper::toAddOnOrderResponse)
-        .toList();
+    List<AddOnOrderResponse> unpaidAddOns =
+        orders.stream()
+            .filter(o -> o.getStatus() == AddOnOrderStatus.PENDING)
+            .map(receptionistMapper::toAddOnOrderResponse)
+            .toList();
 
     // 7. Generate Final Bill via Mapper
     return receptionistMapper.toCheckOutResponse(
-        booking,
-        addOnCharges,
-        lateFees,
-        addOnCharges.add(lateFees),
-        unpaidAddOns);
+        booking, addOnCharges, lateFees, addOnCharges.add(lateFees), unpaidAddOns);
   }
 
   @Override
@@ -331,7 +346,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     }
 
     // Fetch all assignments for this booking in 1 query to prevent N+1
-    List<RoomAssignment> assignments = roomAssignmentRepository.findAllByHotelBookingDetail_HotelBooking_Id(bookingId);
+    List<RoomAssignment> assignments =
+        roomAssignmentRepository.findAllByHotelBookingDetail_HotelBooking_Id(bookingId);
 
     // Set all assigned rooms to CLEANING status (Dirty checking will save
     // automatically)
@@ -356,9 +372,10 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   @Transactional
   public void updateRoomStatus(UUID roomId, RoomStatus status, UUID receptionistId) {
     Receptionist receptionist = getReceptionist(receptionistId);
-    Room room = roomRepository
-        .findById(roomId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Room not found"));
+    Room room =
+        roomRepository
+            .findById(roomId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Room not found"));
 
     if (!room.getHotel().getId().equals(receptionist.getHotel().getId())) {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "Access denied");
@@ -381,9 +398,10 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   @Transactional
   public void updateAddOnOrderStatus(UUID orderId, AddOnOrderStatus status, UUID receptionistId) {
     Receptionist receptionist = getReceptionist(receptionistId);
-    AddOnOrder order = addOnOrderRepository
-        .findWithServiceById(orderId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Order not found"));
+    AddOnOrder order =
+        addOnOrderRepository
+            .findWithServiceById(orderId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Order not found"));
 
     // Verify hotel
     if (!order.getHotelService().getHotel().getId().equals(receptionist.getHotel().getId())) {
@@ -407,24 +425,24 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   }
 
   /**
-   * Retrieves the HotelBooking entity and verifies that it belongs to the
-   * specified hotel.
-   * This acts as a security check to ensure receptionists can only access
-   * bookings for their own hotel.
+   * Retrieves the HotelBooking entity and verifies that it belongs to the specified hotel. This
+   * acts as a security check to ensure receptionists can only access bookings for their own hotel.
    *
    * @param bookingId The UUID of the booking to retrieve.
-   * @param hotelId   The UUID of the hotel that the booking should belong to.
+   * @param hotelId The UUID of the hotel that the booking should belong to.
    * @return The verified HotelBooking entity.
-   * @throws BaseAppException if the booking is not found, or if it does not
-   *                          belong to the specified hotel.
+   * @throws BaseAppException if the booking is not found, or if it does not belong to the specified
+   *     hotel.
    */
   private HotelBooking getBooking(UUID bookingId, UUID hotelId) {
-    HotelBooking booking = hotelBookingRepository
-        .findById(bookingId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Booking not found"));
+    HotelBooking booking =
+        hotelBookingRepository
+            .findById(bookingId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Booking not found"));
 
     // Verify this booking belongs to the receptionist's hotel
-    List<HotelBookingDetail> details = hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
+    List<HotelBookingDetail> details =
+        hotelBookingDetailRepository.findAllByHotelBooking_Id(bookingId);
     if (details.isEmpty() || !details.get(0).getRoomType().getHotel().getId().equals(hotelId)) {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "Booking does not belong to this hotel");
     }

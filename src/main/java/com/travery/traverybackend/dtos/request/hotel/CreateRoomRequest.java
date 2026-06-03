@@ -15,12 +15,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateRoomRequest {
-  @NotBlank
-  private String roomNumber;
+  @NotBlank private String roomNumber;
 
-  @NotNull
-  private Integer floor;
+  @NotNull private Integer floor;
 
-  @NotNull
-  private UUID roomTypeId;
+  @NotNull private UUID roomTypeId;
 }

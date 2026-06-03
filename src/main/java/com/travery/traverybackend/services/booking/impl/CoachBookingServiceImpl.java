@@ -70,14 +70,16 @@ public class CoachBookingServiceImpl implements CoachBookingService {
       CreateCoachBookingRequest request, UUID userId, String ipAddress) {
 
     // 1. Validate User
-    var user = userRepository
-        .findById(userId)
-        .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
+    var user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
 
     // 2. Load Trip with PESSIMISTIC_WRITE lock to prevent double-booking
-    CoachTrip trip = coachTripRepository
-        .findByIdForUpdate(request.getTripId())
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.COACH_TRIP_NOT_FOUND));
+    CoachTrip trip =
+        coachTripRepository
+            .findByIdForUpdate(request.getTripId())
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.COACH_TRIP_NOT_FOUND));
 
     if (trip.getStatus() != CoachTripStatus.OPEN) {
       throw new BaseAppException(BookingErrorCode.COACH_TRIP_NOT_OPEN);
@@ -100,8 +102,9 @@ public class CoachBookingServiceImpl implements CoachBookingService {
       throw new BaseAppException(BookingErrorCode.INVALID_SEAT_LAYOUT);
     }
 
-    Map<UUID, SeatLayoutItem> layoutSeatMap = trip.getCoach().getSeatLayout().getItems().stream()
-        .collect(Collectors.toMap(SeatLayoutItem::getId, item -> item));
+    Map<UUID, SeatLayoutItem> layoutSeatMap =
+        trip.getCoach().getSeatLayout().getItems().stream()
+            .collect(Collectors.toMap(SeatLayoutItem::getId, item -> item));
 
     for (UUID requestedSeatId : request.getSeatLayoutItemIds()) {
       SeatLayoutItem seat = layoutSeatMap.get(requestedSeatId);
@@ -113,12 +116,14 @@ public class CoachBookingServiceImpl implements CoachBookingService {
 
     // 4. Check seat availability
     List<BookingStatus> excludedStatuses = List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW);
-    List<CoachBookingSeat> existingBookedSeats = coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(
-        trip.getId(), excludedStatuses);
+    List<CoachBookingSeat> existingBookedSeats =
+        coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(
+            trip.getId(), excludedStatuses);
 
-    Set<UUID> bookedSeatIds = existingBookedSeats.stream()
-        .map(bs -> bs.getSeatLayoutItem().getId())
-        .collect(Collectors.toSet());
+    Set<UUID> bookedSeatIds =
+        existingBookedSeats.stream()
+            .map(bs -> bs.getSeatLayoutItem().getId())
+            .collect(Collectors.toSet());
 
     for (SeatLayoutItem seat : requestedSeats) {
       if (bookedSeatIds.contains(seat.getId())) {
@@ -139,16 +144,17 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     BigDecimal totalPrice = basePrice.multiply(BigDecimal.valueOf(requestedSeats.size()));
 
     // 7. Create CoachBooking
-    CoachBooking booking = CoachBooking.builder()
-        .user(user)
-        .coachTrip(trip)
-        .basePrice(basePrice)
-        .totalPrice(totalPrice)
-        .contactName(request.getContactName())
-        .contactPhone(request.getContactPhone())
-        .status(BookingStatus.PENDING)
-        .paymentDeadline(LocalDateTime.now().plusMinutes(15)) // 15 mins to pay
-        .build();
+    CoachBooking booking =
+        CoachBooking.builder()
+            .user(user)
+            .coachTrip(trip)
+            .basePrice(basePrice)
+            .totalPrice(totalPrice)
+            .contactName(request.getContactName())
+            .contactPhone(request.getContactPhone())
+            .status(BookingStatus.PENDING)
+            .paymentDeadline(LocalDateTime.now().plusMinutes(15)) // 15 mins to pay
+            .build();
 
     booking = coachBookingRepository.save(booking);
 
@@ -163,14 +169,15 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     coachBookingSeatRepository.saveAll(bookingSeatsToSave);
 
     // 9. Initiate VNPAY Payment
-    var paymentRequest = InitiatePaymentRequest.builder()
-        .bookingId(booking.getId())
-        .amount(booking.getTotalPrice())
-        .ipAddress(ipAddress)
-        .build();
+    var paymentRequest =
+        InitiatePaymentRequest.builder()
+            .bookingId(booking.getId())
+            .amount(booking.getTotalPrice())
+            .ipAddress(ipAddress)
+            .build();
 
-    PaymentInitiationResponse paymentResponse = paymentService.initiateCoachPayment(booking.getId(), paymentRequest,
-        userId);
+    PaymentInitiationResponse paymentResponse =
+        paymentService.initiateCoachPayment(booking.getId(), paymentRequest, userId);
 
     // 10. Return response
     return CoachBookingResponse.builder()
@@ -220,29 +227,33 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     return bookingPage.map(
-        booking -> coachMapper.toCoachBookingSummaryResponse(
-            booking, seatCountMap.getOrDefault(booking.getId(), 0)));
+        booking ->
+            coachMapper.toCoachBookingSummaryResponse(
+                booking, seatCountMap.getOrDefault(booking.getId(), 0)));
   }
 
   @Override
   @Transactional(readOnly = true)
   public CoachBookingDetailResponse getBookingDetail(UUID bookingId, UUID userId) {
-    CoachBooking booking = coachBookingRepository
-        .findByIdWithDetails(bookingId)
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    CoachBooking booking =
+        coachBookingRepository
+            .findByIdWithDetails(bookingId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     if (!booking.getUser().getId().equals(userId)) {
       throw new BaseAppException(BookingErrorCode.BOOKING_ACCESS_DENIED);
     }
 
-    List<String> bookedSeatNames = booking.getBookedSeats().stream()
-        .map(bs -> bs.getSeatLayoutItem().getSeatName())
-        .collect(Collectors.toList());
+    List<String> bookedSeatNames =
+        booking.getBookedSeats().stream()
+            .map(bs -> bs.getSeatLayoutItem().getSeatName())
+            .collect(Collectors.toList());
 
-    PaymentTransaction payment = paymentTransactionRepository
-        .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
-            booking.getId(), BookingType.COACH_BOOKING)
-        .orElse(null);
+    PaymentTransaction payment =
+        paymentTransactionRepository
+            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                booking.getId(), BookingType.COACH_BOOKING)
+            .orElse(null);
 
     return coachMapper.toCoachBookingDetailResponse(booking, bookedSeatNames, payment);
   }
@@ -253,9 +264,10 @@ public class CoachBookingServiceImpl implements CoachBookingService {
       UUID bookingId, CancelBookingRequest request, UUID userId) {
 
     // 1. Load booking with details
-    CoachBooking booking = coachBookingRepository
-        .findByIdWithDetails(bookingId)
-        .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
+    CoachBooking booking =
+        coachBookingRepository
+            .findByIdWithDetails(bookingId)
+            .orElseThrow(() -> new BaseAppException(BookingErrorCode.BOOKING_NOT_FOUND));
 
     // 2. Verify ownership
     if (!booking.getUser().getId().equals(userId)) {
@@ -299,10 +311,11 @@ public class CoachBookingServiceImpl implements CoachBookingService {
   private CancelBookingResponse processRefund(
       CoachBooking booking, CoachTrip trip, CancelBookingRequest request) {
 
-    PaymentTransaction payment = paymentTransactionRepository
-        .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
-            booking.getId(), BookingType.COACH_BOOKING)
-        .orElse(null);
+    PaymentTransaction payment =
+        paymentTransactionRepository
+            .findFirstByBookingIdAndBookingTypeOrderByCreatedAtDesc(
+                booking.getId(), BookingType.COACH_BOOKING)
+            .orElse(null);
 
     if (payment == null) {
       return CancelBookingResponse.builder()
@@ -313,24 +326,28 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     // Calculate refund percentage from RefundPolicy (HOURS)
-    long hoursBeforeDeparture = ChronoUnit.HOURS.between(LocalDateTime.now(), trip.getDepartureTime());
-    BigDecimal refundPct = calculateRefundPercentage(trip.getRoute().getRefundPolicy(), hoursBeforeDeparture);
+    long hoursBeforeDeparture =
+        ChronoUnit.HOURS.between(LocalDateTime.now(), trip.getDepartureTime());
+    BigDecimal refundPct =
+        calculateRefundPercentage(trip.getRoute().getRefundPolicy(), hoursBeforeDeparture);
 
-    BigDecimal refundAmount = booking
-        .getTotalPrice()
-        .multiply(refundPct)
-        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+    BigDecimal refundAmount =
+        booking
+            .getTotalPrice()
+            .multiply(refundPct)
+            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
     // Create RefundRequest
-    RefundRequest refundRequest = RefundRequest.builder()
-        .paymentTransaction(payment)
-        .user(booking.getUser())
-        .requestedAmount(refundAmount)
-        .customerReason(request != null ? request.getReason() : null)
-        .bankName(request != null ? request.getBankName() : null)
-        .accountNumber(request != null ? request.getAccountNumber() : null)
-        .accountHolderName(request != null ? request.getAccountHolderName() : null)
-        .build();
+    RefundRequest refundRequest =
+        RefundRequest.builder()
+            .paymentTransaction(payment)
+            .user(booking.getUser())
+            .requestedAmount(refundAmount)
+            .customerReason(request != null ? request.getReason() : null)
+            .bankName(request != null ? request.getBankName() : null)
+            .accountNumber(request != null ? request.getAccountNumber() : null)
+            .accountHolderName(request != null ? request.getAccountHolderName() : null)
+            .build();
     refundRequestRepository.save(refundRequest);
 
     log.info(
@@ -357,16 +374,20 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     return policy.getRules().stream()
-        .filter(rule -> {
-          long ruleHours = rule.getTimeUnit() == RefundTimeUnit.DAYS
-              ? rule.getTimeBefore() * 24L
-              : rule.getTimeBefore();
-          return hoursBeforeDeparture >= ruleHours;
-        })
-        .max(java.util.Comparator.comparingLong(rule -> 
-            rule.getTimeUnit() == RefundTimeUnit.DAYS
-                ? rule.getTimeBefore() * 24L
-                : rule.getTimeBefore()))
+        .filter(
+            rule -> {
+              long ruleHours =
+                  rule.getTimeUnit() == RefundTimeUnit.DAYS
+                      ? rule.getTimeBefore() * 24L
+                      : rule.getTimeBefore();
+              return hoursBeforeDeparture >= ruleHours;
+            })
+        .max(
+            java.util.Comparator.comparingLong(
+                rule ->
+                    rule.getTimeUnit() == RefundTimeUnit.DAYS
+                        ? rule.getTimeBefore() * 24L
+                        : rule.getTimeBefore()))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }

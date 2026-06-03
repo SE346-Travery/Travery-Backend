@@ -12,18 +12,19 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AddOnOrderRepository extends JpaRepository<AddOnOrder, UUID> {
-  @EntityGraph(attributePaths = { "hotelService" })
+  @EntityGraph(attributePaths = {"hotelService"})
   List<AddOnOrder> findAllByHotelBooking_Id(UUID hotelBookingId);
 
-  @EntityGraph(attributePaths = { "hotelService" })
-  @Query("SELECT o FROM AddOnOrder o "
-      + "WHERE o.hotelService.hotel.id = :hotelId "
-      + "AND o.status = 'PENDING'")
+  @EntityGraph(attributePaths = {"hotelService"})
+  @Query(
+      "SELECT o FROM AddOnOrder o "
+          + "WHERE o.hotelService.hotel.id = :hotelId "
+          + "AND o.status = 'PENDING'")
   List<AddOnOrder> findActiveByHotelId(@Param("hotelId") UUID hotelId);
 
-  @EntityGraph(attributePaths = { "hotelBooking" })
+  @EntityGraph(attributePaths = {"hotelBooking"})
   Optional<AddOnOrder> findWithBookingById(UUID id);
 
-  @EntityGraph(attributePaths = { "hotelService" })
+  @EntityGraph(attributePaths = {"hotelService"})
   Optional<AddOnOrder> findWithServiceById(UUID id);
 }

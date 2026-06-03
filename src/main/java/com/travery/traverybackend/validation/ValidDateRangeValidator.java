@@ -33,7 +33,7 @@ public class ValidDateRangeValidator implements ConstraintValidator<ValidDateRan
 
       return isValid;
     }
-    
+
     return true;
   }
 }

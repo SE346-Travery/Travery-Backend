@@ -68,7 +68,10 @@ public class RoomType extends AbstractBaseEntity {
   private int area;
 
   @ManyToMany
-  @JoinTable(name = "room_type_amenities", joinColumns = @JoinColumn(name = "room_type_id"), inverseJoinColumns = @JoinColumn(name = "amenity_id"))
+  @JoinTable(
+      name = "room_type_amenities",
+      joinColumns = @JoinColumn(name = "room_type_id"),
+      inverseJoinColumns = @JoinColumn(name = "amenity_id"))
   @IndexedEmbedded
   @IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)
   private Set<Amenity> amenities;

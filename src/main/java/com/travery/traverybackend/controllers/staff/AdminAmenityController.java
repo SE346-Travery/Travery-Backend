@@ -7,7 +7,6 @@ import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.hotel.AmenityResponse;
 import com.travery.traverybackend.services.hotel.AdminAmenityService;
-
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;

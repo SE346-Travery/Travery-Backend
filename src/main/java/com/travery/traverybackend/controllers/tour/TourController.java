@@ -30,14 +30,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,7 +80,8 @@ public class TourController extends AbstractBaseController {
   @PostMapping(value = "/templates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<TourResponse>> createTemplate(
-      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data") String requestJson,
+      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
+          String requestJson,
       @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
       @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages,
       @AuthenticationPrincipal CustomUserDetails userDetails)
@@ -92,7 +93,8 @@ public class TourController extends AbstractBaseController {
       throw new ConstraintViolationException(violations);
     }
 
-    TourResponse response = tourService.createTemplate(request, tourImages, itineraryImages, userDetails.getUserId());
+    TourResponse response =
+        tourService.createTemplate(request, tourImages, itineraryImages, userDetails.getUserId());
     return created(response, "Tour template created successfully");
   }
 
@@ -100,8 +102,7 @@ public class TourController extends AbstractBaseController {
   @PostMapping("/{tourId}/images")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<List<ImageResponse>>> uploadTourImages(
-      @PathVariable UUID tourId,
-      @RequestParam("files") List<MultipartFile> files) {
+      @PathVariable UUID tourId, @RequestParam("files") List<MultipartFile> files) {
     List<ImageResponse> response = tourService.uploadTourImages(tourId, files);
     return created(response, "Tour images uploaded successfully");
   }
@@ -126,8 +127,7 @@ public class TourController extends AbstractBaseController {
   @PostMapping("/itineraries/{itineraryId}/image")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<ImageResponse>> uploadItineraryImage(
-      @PathVariable UUID itineraryId,
-      @RequestParam("file") MultipartFile file) {
+      @PathVariable UUID itineraryId, @RequestParam("file") MultipartFile file) {
     ImageResponse response = tourService.uploadItineraryImage(itineraryId, file);
     return created(response, "Itinerary image uploaded successfully");
   }

@@ -14,7 +14,6 @@ import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.hotel.*;
 import com.travery.traverybackend.dtos.response.staff.ReceptionistRoomResponse;
 import com.travery.traverybackend.services.hotel.AdminInventoryService;
-
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -159,8 +158,7 @@ public class AdminHotelController extends AbstractBaseController {
   @PostMapping("/hotels/{hotelId}/images")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<List<HotelImageResponse>>> uploadHotelImages(
-      @PathVariable UUID hotelId,
-      @RequestParam("files") List<MultipartFile> files) {
+      @PathVariable UUID hotelId, @RequestParam("files") List<MultipartFile> files) {
     List<HotelImageResponse> response = adminInventoryService.uploadHotelImages(hotelId, files);
     return created(response, "Hotel images uploaded successfully");
   }
@@ -185,9 +183,9 @@ public class AdminHotelController extends AbstractBaseController {
   @PostMapping("/room-types/{roomTypeId}/images")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<List<HotelImageResponse>>> uploadRoomTypeImages(
-      @PathVariable UUID roomTypeId,
-      @RequestParam("files") List<MultipartFile> files) {
-    List<HotelImageResponse> response = adminInventoryService.uploadRoomTypeImages(roomTypeId, files);
+      @PathVariable UUID roomTypeId, @RequestParam("files") List<MultipartFile> files) {
+    List<HotelImageResponse> response =
+        adminInventoryService.uploadRoomTypeImages(roomTypeId, files);
     return created(response, "Room type images uploaded successfully");
   }
 

@@ -14,7 +14,6 @@ import com.travery.traverybackend.enums.coach.SeatStatus;
 import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
-import com.travery.traverybackend.repositories.coach.RouteRepository;
 import com.travery.traverybackend.repositories.coach.StationRepository;
 import com.travery.traverybackend.services.coach.CoachTripService;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,20 +52,23 @@ public class CoachTripServiceImpl implements CoachTripService {
     LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
     LocalDateTime endOfDay = request.getDepartureDate().atTime(LocalTime.MAX);
 
-    List<CoachTrip> trips = coachTripRepository.searchTrips(
-        request.getOriginId(), request.getDestinationId(), startOfDay, endOfDay);
+    List<CoachTrip> trips =
+        coachTripRepository.searchTrips(
+            request.getOriginId(), request.getDestinationId(), startOfDay, endOfDay);
 
     // Apply filters
     if (request.getCoachType() != null) {
-      trips = trips.stream()
-          .filter(t -> t.getCoach().getCoachType() == request.getCoachType())
-          .collect(Collectors.toList());
+      trips =
+          trips.stream()
+              .filter(t -> t.getCoach().getCoachType() == request.getCoachType())
+              .collect(Collectors.toList());
     }
 
     if (request.getDepartureTimeSlot() != null) {
-      trips = trips.stream()
-          .filter(t -> matchesTimeSlot(t.getDepartureTime(), request.getDepartureTimeSlot()))
-          .collect(Collectors.toList());
+      trips =
+          trips.stream()
+              .filter(t -> matchesTimeSlot(t.getDepartureTime(), request.getDepartureTimeSlot()))
+              .collect(Collectors.toList());
     }
 
     if (trips.isEmpty()) {
@@ -75,7 +77,8 @@ public class CoachTripServiceImpl implements CoachTripService {
 
     List<UUID> tripIds = trips.stream().map(CoachTrip::getId).collect(Collectors.toList());
     List<BookingStatus> excludedStatuses = List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW);
-    List<Object[]> bookedCounts = coachBookingSeatRepository.countBookedSeatsForTrips(tripIds, excludedStatuses);
+    List<Object[]> bookedCounts =
+        coachBookingSeatRepository.countBookedSeatsForTrips(tripIds, excludedStatuses);
 
     java.util.Map<UUID, Integer> bookedSeatsMap = new java.util.HashMap<>();
     for (Object[] count : bookedCounts) {
@@ -91,22 +94,23 @@ public class CoachTripServiceImpl implements CoachTripService {
       int bookedSeats = bookedSeatsMap.getOrDefault(trip.getId(), 0);
       int availableSeats = totalSeats - bookedSeats;
 
-      CoachTripResponse response = CoachTripResponse.builder()
-          .id(trip.getId())
-          .departureTime(trip.getDepartureTime())
-          .arrivalTime(trip.getArrivalTime())
-          .coachType(trip.getCoach().getCoachType())
-          .totalSeats(totalSeats)
-          .availableSeats(availableSeats)
-          .basePrice(trip.getRoute().getBasePrice())
-          .originDestination(
-              coachMapper.toDestinationWithStationsResponse(
-                  trip.getRoute().getOriginDestination()))
-          .destinationDestination(
-              coachMapper.toDestinationWithStationsResponse(
-                  trip.getRoute().getDestinationDestination()))
-          .status(trip.getStatus())
-          .build();
+      CoachTripResponse response =
+          CoachTripResponse.builder()
+              .id(trip.getId())
+              .departureTime(trip.getDepartureTime())
+              .arrivalTime(trip.getArrivalTime())
+              .coachType(trip.getCoach().getCoachType())
+              .totalSeats(totalSeats)
+              .availableSeats(availableSeats)
+              .basePrice(trip.getRoute().getBasePrice())
+              .originDestination(
+                  coachMapper.toDestinationWithStationsResponse(
+                      trip.getRoute().getOriginDestination()))
+              .destinationDestination(
+                  coachMapper.toDestinationWithStationsResponse(
+                      trip.getRoute().getDestinationDestination()))
+              .status(trip.getStatus())
+              .build();
       responses.add(response);
     }
 
@@ -128,22 +132,24 @@ public class CoachTripServiceImpl implements CoachTripService {
   @Override
   @Transactional(readOnly = true)
   public SeatMapResponse getSeatMap(UUID tripId) {
-    CoachTrip trip = coachTripRepository
-        .findById(tripId)
-        .orElseThrow(() -> new EntityNotFoundException("Coach trip not found"));
+    CoachTrip trip =
+        coachTripRepository
+            .findById(tripId)
+            .orElseThrow(() -> new EntityNotFoundException("Coach trip not found"));
 
     List<BookingStatus> excludedStatuses = List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW);
-    List<CoachBookingSeat> bookedSeats = coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(tripId,
-        excludedStatuses);
+    List<CoachBookingSeat> bookedSeats =
+        coachBookingSeatRepository.findByTripIdAndBookingStatusNotIn(tripId, excludedStatuses);
 
-    Set<UUID> bookedSeatItemIds = bookedSeats.stream().map(bs -> bs.getSeatLayoutItem().getId())
-        .collect(Collectors.toSet());
+    Set<UUID> bookedSeatItemIds =
+        bookedSeats.stream().map(bs -> bs.getSeatLayoutItem().getId()).collect(Collectors.toSet());
 
     List<SeatLayoutItem> items = trip.getCoach().getSeatLayout().getItems();
     List<SeatStatusResponse> seatStatuses = new ArrayList<>();
 
     for (SeatLayoutItem item : items) {
-      SeatStatus status = bookedSeatItemIds.contains(item.getId()) ? SeatStatus.BOOKED : SeatStatus.AVAILABLE;
+      SeatStatus status =
+          bookedSeatItemIds.contains(item.getId()) ? SeatStatus.BOOKED : SeatStatus.AVAILABLE;
 
       seatStatuses.add(
           SeatStatusResponse.builder()

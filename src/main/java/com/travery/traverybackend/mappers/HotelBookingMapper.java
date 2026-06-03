@@ -46,7 +46,10 @@ public interface HotelBookingMapper {
   @Mapping(target = "transactionId", source = "payment.id")
   @Mapping(target = "gatewayTransactionId", source = "payment.transactionReference")
   HotelBookingDetailResponse toHotelBookingDetailResponse(
-      HotelBooking booking, List<HotelBookingDetail> details, List<BookingMember> members, PaymentTransaction payment);
+      HotelBooking booking,
+      List<HotelBookingDetail> details,
+      List<BookingMember> members,
+      PaymentTransaction payment);
 
   @Mapping(target = "roomTypeId", source = "roomType.id")
   @Mapping(target = "roomTypeName", source = "roomType.name")

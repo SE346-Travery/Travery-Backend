@@ -4,7 +4,6 @@ import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.hotel.AmenityResponse;
 import com.travery.traverybackend.services.hotel.AdminAmenityService;
-
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

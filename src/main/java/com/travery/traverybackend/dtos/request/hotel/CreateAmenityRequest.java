@@ -16,11 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAmenityRequest {
-  @NotBlank
-  private String name;
+  @NotBlank private String name;
 
-  @NotNull
-  private AmenityType type;
+  @NotNull private AmenityType type;
 
   private MultipartFile iconImage;
 }

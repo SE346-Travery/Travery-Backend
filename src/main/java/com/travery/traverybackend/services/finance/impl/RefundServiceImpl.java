@@ -14,14 +14,13 @@ import com.travery.traverybackend.mappers.RefundMapper;
 import com.travery.traverybackend.repositories.finance.RefundRequestRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.finance.RefundService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,23 +33,33 @@ public class RefundServiceImpl implements RefundService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<RefundRequestResponse> getRefundRequests(RefundStatus status, BookingType bookingType, Pageable pageable) {
-    Page<RefundRequest> refunds = refundRequestRepository.findByFilters(status, bookingType, pageable);
+  public Page<RefundRequestResponse> getRefundRequests(
+      RefundStatus status, BookingType bookingType, Pageable pageable) {
+    Page<RefundRequest> refunds =
+        refundRequestRepository.findByFilters(status, bookingType, pageable);
     return refunds.map(refundMapper::toRefundRequestResponse);
   }
 
   @Override
   @Transactional
-  public RefundRequestResponse processRefund(UUID refundId, ProcessRefundRequest request, UUID coordinatorId) {
-    RefundRequest refund = refundRequestRepository.findWithUserById(refundId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund request not found"));
+  public RefundRequestResponse processRefund(
+      UUID refundId, ProcessRefundRequest request, UUID coordinatorId) {
+    RefundRequest refund =
+        refundRequestRepository
+            .findWithUserById(refundId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund request not found"));
 
     if (refund.getStatus() != RefundStatus.PENDING) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Only pending refund requests can be processed");
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Only pending refund requests can be processed");
     }
 
-    User coordinatorUser = userRepository.findById(coordinatorId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
+    User coordinatorUser =
+        userRepository
+            .findById(coordinatorId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
 
     if (!(coordinatorUser instanceof Coordinator)) {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator");
@@ -62,24 +71,35 @@ public class RefundServiceImpl implements RefundService {
 
     refund = refundRequestRepository.save(refund);
 
-    log.info("Refund request {} processed by coordinator {}. Actual refunded amount: {}",
-        refund.getId(), coordinatorUser.getId(), refund.getActualRefunded());
+    log.info(
+        "Refund request {} processed by coordinator {}. Actual refunded amount: {}",
+        refund.getId(),
+        coordinatorUser.getId(),
+        refund.getActualRefunded());
 
     return refundMapper.toRefundRequestResponse(refund);
   }
 
   @Override
   @Transactional
-  public RefundRequestResponse rejectRefund(UUID refundId, RejectRefundRequest request, UUID coordinatorId) {
-    RefundRequest refund = refundRequestRepository.findWithUserById(refundId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund request not found"));
+  public RefundRequestResponse rejectRefund(
+      UUID refundId, RejectRefundRequest request, UUID coordinatorId) {
+    RefundRequest refund =
+        refundRequestRepository
+            .findWithUserById(refundId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Refund request not found"));
 
     if (refund.getStatus() != RefundStatus.PENDING) {
-      throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Only pending refund requests can be rejected");
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Only pending refund requests can be rejected");
     }
 
-    User coordinatorUser = userRepository.findById(coordinatorId)
-        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
+    User coordinatorUser =
+        userRepository
+            .findById(coordinatorId)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coordinator not found"));
 
     if (!(coordinatorUser instanceof Coordinator)) {
       throw new BaseAppException(WebErrorCode.FORBIDDEN, "User is not a coordinator");
@@ -91,8 +111,11 @@ public class RefundServiceImpl implements RefundService {
 
     refund = refundRequestRepository.save(refund);
 
-    log.info("Refund request {} rejected by coordinator {}. Reason: {}",
-        refund.getId(), coordinatorUser.getId(), request.getReason());
+    log.info(
+        "Refund request {} rejected by coordinator {}. Reason: {}",
+        refund.getId(),
+        coordinatorUser.getId(),
+        request.getReason());
 
     return refundMapper.toRefundRequestResponse(refund);
   }

@@ -9,7 +9,10 @@ import com.travery.traverybackend.entities.finance.RefundPolicyRule;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", builder = @org.mapstruct.Builder(disableBuilder = true), unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(
+    componentModel = "spring",
+    builder = @org.mapstruct.Builder(disableBuilder = true),
+    unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RefundPolicyMapper {
 
   RefundPolicy toRefundPolicy(RefundPolicyRequest request);

@@ -15,16 +15,16 @@ import org.springframework.data.domain.Pageable;
 
 public interface CoachBookingService {
 
-        CoachBookingResponse createBooking(
-                        CreateCoachBookingRequest request, UUID userId, String ipAddress);
+  CoachBookingResponse createBooking(
+      CreateCoachBookingRequest request, UUID userId, String ipAddress);
 
-        PaymentInitiationResponse generatePaymentUrl(
-                        UUID bookingId, InitiatePaymentRequest request, UUID userId);
+  PaymentInitiationResponse generatePaymentUrl(
+      UUID bookingId, InitiatePaymentRequest request, UUID userId);
 
-        Page<CoachBookingSummaryResponse> getMyBookings(
-                        UUID userId, BookingStatus status, Pageable pageable);
+  Page<CoachBookingSummaryResponse> getMyBookings(
+      UUID userId, BookingStatus status, Pageable pageable);
 
-        CoachBookingDetailResponse getBookingDetail(UUID bookingId, UUID userId);
+  CoachBookingDetailResponse getBookingDetail(UUID bookingId, UUID userId);
 
-        CancelBookingResponse cancelBooking(UUID bookingId, CancelBookingRequest request, UUID userId);
+  CancelBookingResponse cancelBooking(UUID bookingId, CancelBookingRequest request, UUID userId);
 }

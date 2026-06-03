@@ -354,16 +354,20 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
 
     return policy.getRules().stream()
-        .filter(rule -> {
-          long ruleDays = rule.getTimeUnit() == RefundTimeUnit.HOURS
-              ? rule.getTimeBefore() / 24L
-              : rule.getTimeBefore();
-          return daysBeforeDeparture >= ruleDays;
-        })
-        .max(Comparator.comparingLong(rule -> 
-            rule.getTimeUnit() == RefundTimeUnit.HOURS
-                ? rule.getTimeBefore() / 24L
-                : rule.getTimeBefore()))
+        .filter(
+            rule -> {
+              long ruleDays =
+                  rule.getTimeUnit() == RefundTimeUnit.HOURS
+                      ? rule.getTimeBefore() / 24L
+                      : rule.getTimeBefore();
+              return daysBeforeDeparture >= ruleDays;
+            })
+        .max(
+            Comparator.comparingLong(
+                rule ->
+                    rule.getTimeUnit() == RefundTimeUnit.HOURS
+                        ? rule.getTimeBefore() / 24L
+                        : rule.getTimeBefore()))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }

@@ -3,9 +3,6 @@ package com.travery.traverybackend.dtos.response.hotel;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
-import com.travery.traverybackend.dtos.response.common.ReviewResponse;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

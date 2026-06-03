@@ -28,50 +28,48 @@ import org.springframework.data.domain.PageRequest;
 @ExtendWith(MockitoExtension.class)
 class CoachBookingServiceImplTest {
 
-    @Mock
-    private CoachBookingRepository coachBookingRepository;
+  @Mock private CoachBookingRepository coachBookingRepository;
 
-    @Mock
-    private CoachBookingSeatRepository coachBookingSeatRepository;
+  @Mock private CoachBookingSeatRepository coachBookingSeatRepository;
 
-    @Mock
-    private CoachMapper coachMapper;
+  @Mock private CoachMapper coachMapper;
 
-    @InjectMocks
-    private CoachBookingServiceImpl coachBookingService;
+  @InjectMocks private CoachBookingServiceImpl coachBookingService;
 
-    private UUID userId;
-    private UUID bookingId;
+  private UUID userId;
+  private UUID bookingId;
 
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        bookingId = UUID.randomUUID();
-    }
+  @BeforeEach
+  void setUp() {
+    userId = UUID.randomUUID();
+    bookingId = UUID.randomUUID();
+  }
 
-    @Test
-    void getMyBookings_ReturnsPageOfSummaries() {
-        CoachBooking booking = CoachBooking.builder().id(bookingId).bookedSeats(Collections.emptyList()).build();
-        Page<CoachBooking> page = new PageImpl<>(Collections.singletonList(booking));
+  @Test
+  void getMyBookings_ReturnsPageOfSummaries() {
+    CoachBooking booking =
+        CoachBooking.builder().id(bookingId).bookedSeats(Collections.emptyList()).build();
+    Page<CoachBooking> page = new PageImpl<>(Collections.singletonList(booking));
 
-        when(coachBookingRepository.findByUser_IdAndStatus(
-                eq(userId), eq(BookingStatus.PENDING), any()))
-                .thenReturn(page);
+    when(coachBookingRepository.findByUser_IdAndStatus(
+            eq(userId), eq(BookingStatus.PENDING), any()))
+        .thenReturn(page);
 
-        when(coachBookingSeatRepository.countSeatsByBookingIds(any()))
-                .thenReturn(Collections.emptyList());
+    when(coachBookingSeatRepository.countSeatsByBookingIds(any()))
+        .thenReturn(Collections.emptyList());
 
-        CoachBookingSummaryResponse summary = CoachBookingSummaryResponse.builder().id(bookingId).build();
-        when(coachMapper.toCoachBookingSummaryResponse(eq(booking), any(Integer.class)))
-                .thenReturn(summary);
+    CoachBookingSummaryResponse summary =
+        CoachBookingSummaryResponse.builder().id(bookingId).build();
+    when(coachMapper.toCoachBookingSummaryResponse(eq(booking), any(Integer.class)))
+        .thenReturn(summary);
 
-        Page<CoachBookingSummaryResponse> result = coachBookingService.getMyBookings(userId, BookingStatus.PENDING,
-                PageRequest.of(0, 10));
+    Page<CoachBookingSummaryResponse> result =
+        coachBookingService.getMyBookings(userId, BookingStatus.PENDING, PageRequest.of(0, 10));
 
-        assertNotNull(result);
-        assertEquals(1, result.getContent().size());
-        assertEquals(bookingId, result.getContent().get(0).getId());
-        verify(coachBookingRepository)
-                .findByUser_IdAndStatus(eq(userId), eq(BookingStatus.PENDING), any());
-    }
+    assertNotNull(result);
+    assertEquals(1, result.getContent().size());
+    assertEquals(bookingId, result.getContent().get(0).getId());
+    verify(coachBookingRepository)
+        .findByUser_IdAndStatus(eq(userId), eq(BookingStatus.PENDING), any());
+  }
 }

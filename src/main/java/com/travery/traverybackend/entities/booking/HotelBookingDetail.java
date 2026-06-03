@@ -4,7 +4,6 @@ import com.travery.traverybackend.entities.AbstractBaseEntity;
 import com.travery.traverybackend.entities.hotel.RoomType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -16,17 +16,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateHotelServiceRequest {
-  @NotBlank
-  private String name;
+  @NotBlank private String name;
 
-  @NotNull
-  private ServiceCategory category;
+  @NotNull private ServiceCategory category;
 
-  @NotNull
-  private BigDecimal price;
+  @NotNull private BigDecimal price;
 
-  @NotBlank
-  private String unit;
+  @NotBlank private String unit;
 
   private String description;
 }

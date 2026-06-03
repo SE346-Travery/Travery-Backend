@@ -8,7 +8,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.Set;
 import java.util.UUID;
-
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.sort.SearchSort;
@@ -22,8 +21,7 @@ import org.springframework.data.domain.Sort;
 
 public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomRepository {
 
-  @PersistenceContext
-  private EntityManager entityManager;
+  @PersistenceContext private EntityManager entityManager;
 
   @Override
   public Page<Hotel> searchHotels(HotelSearchRequest request, Pageable pageable) {
@@ -32,11 +30,12 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
     int offset = (int) pageable.getOffset();
     int size = pageable.getPageSize();
-    var result = searchSession
-        .search(scope)
-        .where(buildPredicate(scope.predicate(), request))
-        .sort(buildSort(scope.sort(), pageable.getSort()))
-        .fetch(offset, size);
+    var result =
+        searchSession
+            .search(scope)
+            .where(buildPredicate(scope.predicate(), request))
+            .sort(buildSort(scope.sort(), pageable.getSort()))
+            .fetch(offset, size);
     return new PageImpl<>(result.hits(), pageable, result.total().hitCount());
   }
 
@@ -75,7 +74,8 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
       int totalAdults = request.getAdults() != null ? request.getAdults() : 0;
       int totalChildren = request.getChildren() != null ? request.getChildren() : 0;
-      int roomCount = request.getRoomCount() != null && request.getRoomCount() > 0 ? request.getRoomCount() : 1;
+      int roomCount =
+          request.getRoomCount() != null && request.getRoomCount() > 0 ? request.getRoomCount() : 1;
 
       int adultsPerRoom = (int) Math.ceil((double) totalAdults / roomCount);
       int childrenPerRoom = (int) Math.ceil((double) totalChildren / roomCount);
@@ -87,9 +87,10 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
       // TH2: Ngủ đúng giường của ai nấy lo (Adults >= Yêu cầu Lớn, Children >= Yêu
       // cầu Nhỏ)
-      var splitBeds = f.bool()
-          .must(f.range().field("roomTypes.capacityAdults").atLeast(adultsPerRoom))
-          .must(f.range().field("roomTypes.capacityChildren").atLeast(childrenPerRoom));
+      var splitBeds =
+          f.bool()
+              .must(f.range().field("roomTypes.capacityAdults").atLeast(adultsPerRoom))
+              .must(f.range().field("roomTypes.capacityChildren").atLeast(childrenPerRoom));
 
       // Gom lại bằng phép HOẶC (should)
       roomBool.must(f.bool().should(allInAdultBeds).should(splitBeds));

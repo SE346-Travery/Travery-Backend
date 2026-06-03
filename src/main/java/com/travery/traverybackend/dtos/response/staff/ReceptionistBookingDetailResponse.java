@@ -1,7 +1,6 @@
 package com.travery.traverybackend.dtos.response.staff;
 
 import com.travery.traverybackend.dtos.response.booking.AddOnOrderResponse;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

@@ -9,8 +9,8 @@ import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.finance.RefundStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.finance.RefundService;
-
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/coordinator/refunds")
@@ -35,7 +33,8 @@ public class CoordinatorRefundController extends AbstractBaseController {
   public ResponseEntity<SingleResponse<Page<RefundRequestResponse>>> getRefundRequests(
       @RequestParam(required = false, defaultValue = "PENDING") RefundStatus status,
       @RequestParam(required = false) BookingType type,
-      @PageableDefault(size = 10, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+      @PageableDefault(size = 10, sort = "createdAt", direction = Direction.DESC)
+          Pageable pageable) {
 
     Page<RefundRequestResponse> response = refundService.getRefundRequests(status, type, pageable);
 
@@ -49,7 +48,8 @@ public class CoordinatorRefundController extends AbstractBaseController {
       @Valid @RequestBody ProcessRefundRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    RefundRequestResponse response = refundService.processRefund(refundId, request, userDetails.getUserId());
+    RefundRequestResponse response =
+        refundService.processRefund(refundId, request, userDetails.getUserId());
     return success(response, "Refund request processed successfully");
   }
 
@@ -59,8 +59,9 @@ public class CoordinatorRefundController extends AbstractBaseController {
       @PathVariable UUID refundId,
       @Valid @RequestBody RejectRefundRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-      
-    RefundRequestResponse response = refundService.rejectRefund(refundId, request, userDetails.getUserId());
+
+    RefundRequestResponse response =
+        refundService.rejectRefund(refundId, request, userDetails.getUserId());
     return success(response, "Refund request rejected successfully");
   }
 }

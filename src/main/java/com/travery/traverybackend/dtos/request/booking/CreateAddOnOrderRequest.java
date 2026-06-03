@@ -17,14 +17,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAddOnOrderRequest {
-  @NotNull
-  private UUID serviceId;
+  @NotNull private UUID serviceId;
 
   @Min(1)
   private int quantity;
 
   @NotNull(message = "Scheduled time is required")
-
   @Future(message = "Scheduled time cannot be in the past")
   private LocalDateTime scheduledTime;
 }
