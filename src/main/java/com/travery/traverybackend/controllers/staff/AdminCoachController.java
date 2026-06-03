@@ -2,12 +2,15 @@ package com.travery.traverybackend.controllers.staff;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
+import com.travery.traverybackend.dtos.request.coach.CreateDriverRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateSeatLayoutRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateDriverRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
+import com.travery.traverybackend.dtos.response.coach.DriverResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.services.coach.AdminCoachService;
@@ -29,13 +32,49 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1/staff/admin")
 @RequiredArgsConstructor
 public class AdminCoachController extends AbstractBaseController {
 
   private final AdminCoachService adminCoachService;
 
-  @PostMapping("/seat-layouts")
+  // ===== Driver Endpoints =====
+
+  @GetMapping("/drivers")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<List<DriverResponse>>> getDrivers() {
+    return success(adminCoachService.getDrivers(), "Drivers fetched successfully");
+  }
+
+  @GetMapping("/drivers/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<DriverResponse>> getDriverDetail(@PathVariable UUID id) {
+    return success(adminCoachService.getDriverDetail(id), "Driver fetched successfully");
+  }
+
+  @PostMapping("/drivers")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<DriverResponse>> createDriver(
+      @Valid @RequestBody CreateDriverRequest request) {
+    return created(adminCoachService.createDriver(request), "Driver created successfully");
+  }
+
+  @PutMapping("/drivers/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<DriverResponse>> updateDriver(
+      @PathVariable UUID id, @Valid @RequestBody UpdateDriverRequest request) {
+    return success(adminCoachService.updateDriver(id, request), "Driver updated successfully");
+  }
+
+  @DeleteMapping("/drivers/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> deleteDriver(@PathVariable UUID id) {
+    adminCoachService.deleteDriver(id);
+    return success("Driver deleted successfully");
+  }
+
+  // ===== Seat Layout Endpoints =====
+
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<SeatLayoutResponse>> createSeatLayout(
       @Valid @RequestBody CreateSeatLayoutRequest request) {

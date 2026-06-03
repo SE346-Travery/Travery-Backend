@@ -5,12 +5,14 @@ import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryRespons
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
+import com.travery.traverybackend.dtos.response.coach.DriverResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutItemResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
 import com.travery.traverybackend.dtos.response.coach.StationResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.coach.Coach;
 import com.travery.traverybackend.entities.coach.CoachTrip;
+import com.travery.traverybackend.entities.coach.Driver;
 import com.travery.traverybackend.entities.coach.SeatLayout;
 import com.travery.traverybackend.entities.coach.SeatLayoutItem;
 import com.travery.traverybackend.entities.coach.Station;
@@ -47,6 +49,8 @@ public abstract class CoachMapper {
   public abstract CoachResponse toCoachResponse(Coach coach);
 
   public abstract List<CoachResponse> toCoachResponseList(List<Coach> coaches);
+
+  public abstract DriverResponse toDriverResponse(Driver driver);
 
   @Mapping(target = "coachType", source = "trip.coach.coachType")
   @Mapping(target = "totalSeats", source = "trip.coach.seatLayout.totalSeats")
