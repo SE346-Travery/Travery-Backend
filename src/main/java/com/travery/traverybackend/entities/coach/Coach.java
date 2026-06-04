@@ -30,6 +30,10 @@ public class Coach extends AbstractBaseEntity {
   @Column(nullable = false)
   private int capacity;
 
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 20)
   @Builder.Default
