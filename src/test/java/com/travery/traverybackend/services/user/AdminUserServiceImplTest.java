@@ -17,6 +17,7 @@ import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.media.MediaService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.user.impl.AdminUserServiceImpl;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,8 @@ class AdminUserServiceImplTest {
 
   @Mock private MediaService mediaService;
 
+  @Mock private NotificationService notificationService;
+
   @InjectMocks private AdminUserServiceImpl adminUserService;
 
   private Guide guide;
@@ -58,6 +61,7 @@ class AdminUserServiceImplTest {
         Guide.builder()
             .id(userId)
             .fullName("Test Guide")
+            .email("guide@example.com")
             .role(UserRoles.GUIDE)
             .status(UserStatus.ACTIVE)
             .build();
