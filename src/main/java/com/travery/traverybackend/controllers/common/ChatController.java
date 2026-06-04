@@ -3,6 +3,7 @@ package com.travery.traverybackend.controllers.common;
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
+import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.common.ChatSessionService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class ChatController extends AbstractBaseController {
   }
 
   private UUID getCurrentUserId() {
-    return UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+    return ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+        .getUserId();
   }
 }
