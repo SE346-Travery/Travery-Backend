@@ -64,9 +64,6 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     String guid = "consult_" + userId + "_" + UUID.randomUUID().toString().substring(0, 8);
     String name = "Tư vấn Tour: " + tourist.getFullName();
 
-    ensureCometChatUser(tourist);
-    ensureCometChatUser(coordinator);
-
     cometChatService.createGroup(guid, name);
     cometChatService.addMemberToGroup(guid, coordinator.getCometchatUID(), "admins");
     cometChatService.addMemberToGroup(guid, tourist.getCometchatUID(), "participants");
@@ -124,9 +121,6 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     User guide = instance.getGuide();
     Coordinator coordinator = instance.getCoordinator();
 
-    ensureCometChatUser(guide);
-    ensureCometChatUser(coordinator);
-
     cometChatService.createGroup(guid, name);
 
     if (guide != null) {
@@ -183,7 +177,6 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             .findById(userId)
             .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
 
-    ensureCometChatUser(user);
     String role = (user instanceof Tourist) ? "participants" : "admins";
     cometChatService.addMemberToGroup(chatSession.getCometchatGuid(), user.getCometchatUID(), role);
   }
@@ -259,16 +252,6 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     session.setStatus(ChatSessionStatus.CLOSED);
     chatSessionRepository.save(session);
     log.info("Group chat for instance {} closed by coordinator {}", instanceId, coordinatorId);
-  }
-
-  private void ensureCometChatUser(User user) {
-    if (user == null) return;
-    if (user.getCometchatUID() == null) {
-      String uid = "user_" + user.getId().toString();
-      cometChatService.createUser(uid, user.getFullName(), user.getAvatarUrl());
-      user.setCometchatUID(uid);
-      userRepository.save(user);
-    }
   }
 
   private ChatSessionResponse toResponse(ChatSession chatSession) {

@@ -23,6 +23,7 @@ import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.common.FcmService;
 import com.travery.traverybackend.services.common.NotificationService;
 import io.jsonwebtoken.Claims;
@@ -56,6 +57,7 @@ public class AuthService {
   private final HotelRepository hotelRepository;
   private final FcmService fcmService;
   private final NotificationService notificationService;
+  private final CometChatService cometChatService;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -100,6 +102,7 @@ public class AuthService {
     sendOtp(user.getEmail());
   }
 
+  @Transactional
   public void verifyOtp(VerifyOtpRequest request) {
     User user =
         userRepository
@@ -118,6 +121,7 @@ public class AuthService {
     }
 
     user.setStatus(UserStatus.ACTIVE);
+    ensureCometChatUser(user);
     userRepository.save(user);
   }
 
@@ -431,7 +435,9 @@ public class AuthService {
     user.setStatus(UserStatus.ACTIVE);
     user.setAuthProvider(AuthProvider.LOCAL);
 
-    userRepository.save(user);
+    userRepository.save(user); // Save to get the ID
+    ensureCometChatUser(user);
+    userRepository.save(user); // Save again with cometchatUID
   }
 
   private void sendOtp(String email) {
@@ -439,5 +445,22 @@ public class AuthService {
     otpService.saveRegisterOtp(email, otp);
     emailService.sendOtp(email, otp);
     otpService.markResend(email);
+  }
+
+  private void ensureCometChatUser(User user) {
+    if (user == null || user.getId() == null) return;
+
+    // Only Tourist, Guide, and Coordinator roles are created on CometChat
+    if (user.getRole() != UserRoles.TOURIST
+        && user.getRole() != UserRoles.GUIDE
+        && user.getRole() != UserRoles.COORDINATOR) {
+      return;
+    }
+
+    if (user.getCometchatUID() == null) {
+      String uid = user.getId().toString();
+      cometChatService.createUser(uid, user.getFullName(), user.getAvatarUrl());
+      user.setCometchatUID(uid);
+    }
   }
 }
