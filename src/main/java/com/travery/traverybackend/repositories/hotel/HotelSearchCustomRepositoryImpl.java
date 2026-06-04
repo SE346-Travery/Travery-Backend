@@ -21,7 +21,8 @@ import org.springframework.data.domain.Sort;
 
 public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomRepository {
 
-  @PersistenceContext private EntityManager entityManager;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Page<Hotel> searchHotels(HotelSearchRequest request, Pageable pageable) {
@@ -30,21 +31,16 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
     int offset = (int) pageable.getOffset();
     int size = pageable.getPageSize();
-    var result =
-        searchSession
-            .search(scope)
-            .where(buildPredicate(scope.predicate(), request))
-            .sort(buildSort(scope.sort(), pageable.getSort()))
-            .fetch(offset, size);
+    var result = searchSession
+        .search(scope)
+        .where(buildPredicate(scope.predicate(), request))
+        .sort(buildSort(scope.sort(), pageable.getSort()))
+        .fetch(offset, size);
     return new PageImpl<>(result.hits(), pageable, result.total().hitCount());
   }
 
   private SearchPredicate buildPredicate(SearchPredicateFactory f, HotelSearchRequest request) {
     var bool = f.bool();
-
-    if (!bool.hasClause()) {
-      return f.matchAll().toPredicate();
-    }
 
     // 1. Text Search (Keyword)
     if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
@@ -74,8 +70,7 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
       int totalAdults = request.getAdults() != null ? request.getAdults() : 0;
       int totalChildren = request.getChildren() != null ? request.getChildren() : 0;
-      int roomCount =
-          request.getRoomCount() != null && request.getRoomCount() > 0 ? request.getRoomCount() : 1;
+      int roomCount = request.getRoomCount() != null && request.getRoomCount() > 0 ? request.getRoomCount() : 1;
 
       int adultsPerRoom = (int) Math.ceil((double) totalAdults / roomCount);
       int childrenPerRoom = (int) Math.ceil((double) totalChildren / roomCount);
@@ -87,10 +82,9 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
 
       // TH2: Ngủ đúng giường của ai nấy lo (Adults >= Yêu cầu Lớn, Children >= Yêu
       // cầu Nhỏ)
-      var splitBeds =
-          f.bool()
-              .must(f.range().field("roomTypes.capacityAdults").atLeast(adultsPerRoom))
-              .must(f.range().field("roomTypes.capacityChildren").atLeast(childrenPerRoom));
+      var splitBeds = f.bool()
+          .must(f.range().field("roomTypes.capacityAdults").atLeast(adultsPerRoom))
+          .must(f.range().field("roomTypes.capacityChildren").atLeast(childrenPerRoom));
 
       // Gom lại bằng phép HOẶC (should)
       roomBool.must(f.bool().should(allInAdultBeds).should(splitBeds));
@@ -104,7 +98,9 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
               .field("roomTypes.basePrice")
               .between(request.getMinPrice(), request.getMaxPrice()));
     } else if (request.getMinPrice() != null) {
-      bool.must(f.range().field("roomTypes.basePrice").atLeast(request.getMinPrice()));
+      // mustNot(lessThan) = "no room is cheaper than minPrice"
+      // = hotel's cheapest room >= minPrice (correct UX: filter out budget hotels)
+      bool.mustNot(f.range().field("roomTypes.basePrice").lessThan(request.getMinPrice()));
     } else if (request.getMaxPrice() != null) {
       bool.must(f.range().field("roomTypes.basePrice").atMost(request.getMaxPrice()));
     }
@@ -125,6 +121,10 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
         return f.matchNone().toPredicate();
       }
       bool.must(f.terms().field("id").matchingAny(request.getAvailableHotelIds()));
+    }
+
+    if (!bool.hasClause()) {
+      return f.matchAll().toPredicate();
     }
 
     return bool.toPredicate();
