@@ -89,6 +89,7 @@
         coach_id uuid not null,
         coordinator_id uuid not null,
         driver_id uuid not null,
+        guide_id uuid,
         id uuid not null,
         route_id uuid not null,
         status varchar(50) check ((status in ('OPEN','FULL','IN_PROGRESS','COMPLETED','CANCELLED'))),
@@ -97,6 +98,7 @@
 
     create table coaches (
         capacity integer not null,
+        is_deleted boolean not null default false,
         created_at timestamp(6) not null,
         updated_at timestamp(6) not null,
         id uuid not null,
@@ -124,6 +126,7 @@
     );
 
     create table drivers (
+        is_deleted boolean not null default false,
         created_at timestamp(6) not null,
         updated_at timestamp(6) not null,
         id uuid not null,
@@ -359,6 +362,7 @@
 
     create table routes (
         average_rating float(53),
+        is_deleted boolean not null default false,
         review_count integer default 0,
         base_price numeric(12,2) not null,
         distance_km numeric(6,2),
@@ -396,6 +400,7 @@
     );
 
     create table stations (
+        is_deleted boolean not null default false,
         latitude numeric(10,8),
         longitude numeric(11,8),
         created_at timestamp(6) not null,
@@ -580,6 +585,11 @@
        add constraint fk_coach_trips_driver_id
        foreign key (driver_id)
        references drivers;
+
+    alter table if exists coach_trips
+       add constraint fk_coach_trips_guide_id
+       foreign key (guide_id)
+       references guides;
 
     alter table if exists coach_trips
        add constraint fk_coach_trips_route_id
