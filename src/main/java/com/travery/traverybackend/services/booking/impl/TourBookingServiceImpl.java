@@ -19,6 +19,7 @@ import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.finance.RefundTimeUnit;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.BookingErrorCode;
@@ -146,7 +147,9 @@ public class TourBookingServiceImpl implements TourBookingService {
             .ipAddress(request.getIpAddress())
             .build();
 
-    var paymentResponse = paymentService.initiatePayment(booking.getId(), paymentRequest, userId);
+    var paymentResponse =
+        paymentService.initiatePayment(
+            booking.getId(), paymentRequest, userId, BookingType.TOUR_BOOKING);
 
     log.info("Booking {} created with payment deadline at {}", booking.getId(), paymentDeadline);
 
@@ -316,6 +319,9 @@ public class TourBookingServiceImpl implements TourBookingService {
             .user(booking.getUser())
             .requestedAmount(refundAmount)
             .customerReason(request != null ? request.getReason() : null)
+            .bankName(request != null ? request.getBankName() : null)
+            .accountNumber(request != null ? request.getAccountNumber() : null)
+            .accountHolderName(request != null ? request.getAccountHolderName() : null)
             .build();
     refundRequestRepository.save(refundRequest);
 
@@ -348,8 +354,20 @@ public class TourBookingServiceImpl implements TourBookingService {
     }
 
     return policy.getRules().stream()
-        .filter(rule -> daysBeforeDeparture >= rule.getTimeBefore())
-        .max(Comparator.comparingInt(RefundPolicyRule::getTimeBefore))
+        .filter(
+            rule -> {
+              long ruleDays =
+                  rule.getTimeUnit() == RefundTimeUnit.HOURS
+                      ? rule.getTimeBefore() / 24L
+                      : rule.getTimeBefore();
+              return daysBeforeDeparture >= ruleDays;
+            })
+        .max(
+            Comparator.comparingLong(
+                rule ->
+                    rule.getTimeUnit() == RefundTimeUnit.HOURS
+                        ? rule.getTimeBefore() / 24L
+                        : rule.getTimeBefore()))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }

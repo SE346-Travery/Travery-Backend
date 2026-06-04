@@ -12,10 +12,9 @@ public enum CoachErrorCode implements AppErrorCode {
   DRIVER_NOT_FOUND("COACH_102", "Driver not found", HttpStatus.NOT_FOUND),
   ROUTE_NOT_FOUND("COACH_103", "Route not found", HttpStatus.NOT_FOUND),
   COACH_TRIP_NOT_FOUND("COACH_104", "Coach trip not found", HttpStatus.NOT_FOUND),
-  COACH_TRIP_UPDATE_FAILED(
-      "COACH_105",
-      "Failed to update coach trip. Check pending or unchecked bookings.",
-      HttpStatus.BAD_REQUEST);
+  INVALID_STATUS_TRANSITION("COACH_105", "Invalid trip status transition", HttpStatus.valueOf(422)),
+  TRIP_NOT_IN_PROGRESS(
+      "COACH_106", "Action only allowed when trip is in progress", HttpStatus.CONFLICT);
 
   private final String errorCode;
   private final String message;

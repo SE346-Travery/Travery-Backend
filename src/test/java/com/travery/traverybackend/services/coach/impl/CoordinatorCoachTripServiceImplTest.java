@@ -10,7 +10,7 @@ import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
 import com.travery.traverybackend.entities.coach.*;
 import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.entities.user.Coordinator;
-import com.travery.traverybackend.enums.coach.CoachStatus;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.exception.BaseAppException;
@@ -51,11 +51,13 @@ class CoordinatorCoachTripServiceImplTest {
   private UUID routeId;
   private UUID coachId;
   private UUID driverId;
+  private UUID guideId;
 
   private Coordinator coordinator;
   private Route route;
   private Coach coach;
   private Driver driver;
+  private Guide guide;
   private CoachTrip trip;
 
   @BeforeEach
@@ -65,8 +67,10 @@ class CoordinatorCoachTripServiceImplTest {
     routeId = UUID.randomUUID();
     coachId = UUID.randomUUID();
     driverId = UUID.randomUUID();
+    guideId = UUID.randomUUID();
 
     coordinator = Coordinator.builder().id(coordinatorId).build();
+    guide = Guide.builder().id(guideId).fullName("Guide Name").build();
 
     Destination origin = Destination.builder().name("HN").build();
     Destination dest = Destination.builder().name("HCM").build();
@@ -84,6 +88,7 @@ class CoordinatorCoachTripServiceImplTest {
             .route(route)
             .coach(coach)
             .driver(driver)
+            .guide(guide)
             .coordinator(coordinator)
             .departureTime(LocalDateTime.now().plusDays(1))
             .status(CoachTripStatus.OPEN)
@@ -97,13 +102,15 @@ class CoordinatorCoachTripServiceImplTest {
             .routeId(routeId)
             .coachId(coachId)
             .driverId(driverId)
+            .guideId(guideId)
             .departureTime(LocalDateTime.now().plusDays(1))
             .build();
 
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
-    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
-    when(driverRepository.findById(driverId)).thenReturn(Optional.of(driver));
+    when(routeRepository.findByIdAndIsDeletedFalse(routeId)).thenReturn(Optional.of(route));
+    when(coachRepository.findByIdAndIsDeletedFalse(coachId)).thenReturn(Optional.of(coach));
+    when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.of(driver));
+    when(userRepository.findActiveGuideById(guideId)).thenReturn(Optional.of(guide));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     // removed unused stubs
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
@@ -115,19 +122,77 @@ class CoordinatorCoachTripServiceImplTest {
   }
 
   @Test
+  void createTrip_WithDeletedRoute_ThrowsException() {
+    CreateCoachTripRequest request =
+        CreateCoachTripRequest.builder()
+            .routeId(routeId)
+            .coachId(coachId)
+            .driverId(driverId)
+            .guideId(guideId)
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .build();
+
+    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
+    when(routeRepository.findByIdAndIsDeletedFalse(routeId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
+    verify(coachTripRepository, never()).save(any(CoachTrip.class));
+  }
+
+  @Test
+  void createTrip_WithDeletedDriver_ThrowsException() {
+    CreateCoachTripRequest request =
+        CreateCoachTripRequest.builder()
+            .routeId(routeId)
+            .coachId(coachId)
+            .driverId(driverId)
+            .guideId(guideId)
+            .departureTime(LocalDateTime.now().plusDays(1))
+            .build();
+
+    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
+    when(routeRepository.findByIdAndIsDeletedFalse(routeId)).thenReturn(Optional.of(route));
+    when(coachRepository.findByIdAndIsDeletedFalse(coachId)).thenReturn(Optional.of(coach));
+    when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
+    verify(coachTripRepository, never()).save(any(CoachTrip.class));
+  }
+
+  @Test
   void getTrips_Success() {
     Pageable pageable = PageRequest.of(0, 10);
     Page<CoachTrip> tripPage = new PageImpl<>(List.of(trip));
 
-    when(coachTripRepository.findByCoordinator_Id(coordinatorId, pageable)).thenReturn(tripPage);
+    when(coachTripRepository.findAll(pageable)).thenReturn(tripPage);
     when(coachBookingSeatRepository.countBookedSeatsForTrips(any(), any()))
         .thenReturn(java.util.Collections.emptyList());
     when(coachMapper.toCoachTripResponse(eq(trip), anyInt())).thenReturn(new CoachTripResponse());
 
-    Page<CoachTripResponse> response = coordinatorService.getTrips(coordinatorId, null, pageable);
+    Page<CoachTripResponse> response = coordinatorService.getTrips(null, pageable);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
+    verify(coachTripRepository).findAll(pageable);
+  }
+
+  @Test
+  void getTrips_WithStatus_FiltersByStatusAcrossAllCoordinators() {
+    Pageable pageable = PageRequest.of(0, 10);
+    Page<CoachTrip> tripPage = new PageImpl<>(List.of(trip));
+
+    when(coachTripRepository.findByStatus(CoachTripStatus.OPEN, pageable)).thenReturn(tripPage);
+    when(coachBookingSeatRepository.countBookedSeatsForTrips(any(), any()))
+        .thenReturn(java.util.Collections.emptyList());
+    when(coachMapper.toCoachTripResponse(eq(trip), anyInt())).thenReturn(new CoachTripResponse());
+
+    Page<CoachTripResponse> response = coordinatorService.getTrips(CoachTripStatus.OPEN, pageable);
+
+    assertNotNull(response);
+    assertEquals(1, response.getContent().size());
+    verify(coachTripRepository).findByStatus(CoachTripStatus.OPEN, pageable);
   }
 
   @Test
@@ -154,7 +219,7 @@ class CoordinatorCoachTripServiceImplTest {
             .build();
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachRepository.findById(newCoachId)).thenReturn(Optional.of(newCoach));
+    when(coachRepository.findByIdAndIsDeletedFalse(newCoachId)).thenReturn(Optional.of(newCoach));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
@@ -165,12 +230,25 @@ class CoordinatorCoachTripServiceImplTest {
   }
 
   @Test
+  void reassignCoach_WithDeletedCoach_ThrowsException() {
+    UUID newCoachId = UUID.randomUUID();
+
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
+    when(coachRepository.findByIdAndIsDeletedFalse(newCoachId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.reassignCoach(tripId, newCoachId));
+    verify(coachTripRepository, never()).save(any(CoachTrip.class));
+  }
+
+  @Test
   void reassignDriver_Success() {
     UUID newDriverId = UUID.randomUUID();
     Driver newDriver = Driver.builder().id(newDriverId).fullName("Jane Doe").build();
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(driverRepository.findById(newDriverId)).thenReturn(Optional.of(newDriver));
+    when(driverRepository.findByIdAndIsDeletedFalse(newDriverId))
+        .thenReturn(Optional.of(newDriver));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
@@ -181,34 +259,15 @@ class CoordinatorCoachTripServiceImplTest {
   }
 
   @Test
-  void createTrip_InactiveCoach_ThrowsException() {
-    CreateCoachTripRequest request =
-        CreateCoachTripRequest.builder()
-            .routeId(routeId)
-            .coachId(coachId)
-            .driverId(driverId)
-            .departureTime(LocalDateTime.now().plusDays(1))
-            .build();
-
-    coach.setStatus(CoachStatus.INACTIVE);
-
-    when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
-    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(coachRepository.findById(coachId)).thenReturn(Optional.of(coach));
-
-    assertThrows(
-        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
-  }
-
-  @Test
-  void reassignCoach_InactiveCoach_ThrowsException() {
-    UUID newCoachId = UUID.randomUUID();
-    Coach newCoach = Coach.builder().id(newCoachId).status(CoachStatus.INACTIVE).build();
+  void reassignDriver_WithDeletedDriver_ThrowsException() {
+    UUID newDriverId = UUID.randomUUID();
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachRepository.findById(newCoachId)).thenReturn(Optional.of(newCoach));
+    when(driverRepository.findByIdAndIsDeletedFalse(newDriverId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> coordinatorService.reassignCoach(tripId, newCoachId));
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.reassignDriver(tripId, newDriverId));
+    verify(coachTripRepository, never()).save(any(CoachTrip.class));
   }
 
   @Test

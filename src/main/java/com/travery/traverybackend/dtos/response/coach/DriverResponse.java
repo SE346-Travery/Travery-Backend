@@ -19,5 +19,6 @@ public class DriverResponse {
   private String phoneNumber;
   private String licenseNumber;
   private String avatarUrl;
+  private String avatarPublicId;
   private DriverStatus status;
 }

@@ -35,6 +35,10 @@ public class CoachTrip extends AbstractBaseEntity {
   private Driver driver;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "guide_id")
+  private Guide guide;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "coordinator_id", nullable = false)
   private Coordinator coordinator;
 

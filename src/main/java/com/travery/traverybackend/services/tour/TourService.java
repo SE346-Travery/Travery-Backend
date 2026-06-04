@@ -43,4 +43,15 @@ public interface TourService {
   void setTourThumbnail(UUID tourId, UUID imageId, UUID coordinatorId);
 
   void deleteTourImage(UUID tourId, UUID imageId, UUID coordinatorId);
+
+  // Images
+  List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files);
+
+  void deleteTourImage(UUID tourId, UUID imageId);
+
+  void setTourThumbnail(UUID tourId, UUID imageId);
+
+  ImageResponse uploadItineraryImage(UUID itineraryId, MultipartFile file);
+
+  void deleteItineraryImage(UUID itineraryId, UUID imageId);
 }

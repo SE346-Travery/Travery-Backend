@@ -43,4 +43,8 @@ public class HotelService extends AbstractBaseEntity {
   @Column(name = "is_active")
   @Builder.Default
   private boolean isActive = true;
+
+  @Column(name = "is_deleted")
+  @Builder.Default
+  private boolean isDeleted = false;
 }

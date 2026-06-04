@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID> {
+  @EntityGraph(attributePaths = {"user", "coachTrip", "coachTrip.route"})
   Optional<CoachBooking> findByIdAndUser_Id(UUID id, UUID userId);
 
   @EntityGraph(
@@ -53,5 +54,16 @@ public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID
 
   int countByCoachTrip_Id(UUID tripId);
 
-  List<CoachBooking> findByCoachTrip_Id(UUID tripId);
+  /**
+   * Retrieves the list of bookings for attendance: only fetches paid bookings (PAID, CHECKED_IN,
+   * NO_SHOW) along with their seat information.
+   */
+  @Query(
+      "SELECT cb FROM CoachBooking cb "
+          + "LEFT JOIN FETCH cb.bookedSeats bs "
+          + "LEFT JOIN FETCH bs.seatLayoutItem "
+          + "WHERE cb.coachTrip.id = :tripId "
+          + "AND cb.status NOT IN ('PENDING', 'CANCELLED') "
+          + "ORDER BY cb.contactName ASC")
+  List<CoachBooking> findAttendanceListByTripId(@Param("tripId") UUID tripId);
 }

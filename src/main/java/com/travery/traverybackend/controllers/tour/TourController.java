@@ -35,7 +35,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -157,5 +159,47 @@ public class TourController extends AbstractBaseController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     tourService.deleteTourImage(id, imageId, userDetails.getUserId());
     return success("Tour image deleted successfully");
+  }
+
+  // --- Tour Images ---
+  @PostMapping("/{tourId}/images")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<List<ImageResponse>>> uploadTourImages(
+      @PathVariable UUID tourId, @RequestParam("files") List<MultipartFile> files) {
+    List<ImageResponse> response = tourService.uploadTourImages(tourId, files);
+    return created(response, "Tour images uploaded successfully");
+  }
+
+  @DeleteMapping("/{tourId}/images/{imageId}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> deleteTourImage(
+      @PathVariable UUID tourId, @PathVariable UUID imageId) {
+    tourService.deleteTourImage(tourId, imageId);
+    return success("Tour image deleted successfully");
+  }
+
+  @PutMapping("/{tourId}/images/{imageId}/thumbnail")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> setTourThumbnail(
+      @PathVariable UUID tourId, @PathVariable UUID imageId) {
+    tourService.setTourThumbnail(tourId, imageId);
+    return success("Tour thumbnail set successfully");
+  }
+
+  // --- Itinerary Images ---
+  @PostMapping("/itineraries/{itineraryId}/image")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<ImageResponse>> uploadItineraryImage(
+      @PathVariable UUID itineraryId, @RequestParam("file") MultipartFile file) {
+    ImageResponse response = tourService.uploadItineraryImage(itineraryId, file);
+    return created(response, "Itinerary image uploaded successfully");
+  }
+
+  @DeleteMapping("/itineraries/{itineraryId}/images/{imageId}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> deleteItineraryImage(
+      @PathVariable UUID itineraryId, @PathVariable UUID imageId) {
+    tourService.deleteItineraryImage(itineraryId, imageId);
+    return success("Itinerary image deleted successfully");
   }
 }

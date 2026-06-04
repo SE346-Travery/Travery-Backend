@@ -10,6 +10,7 @@ import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.coach.Coach;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
@@ -310,5 +311,38 @@ public class CoordinatorTourInstanceServiceTest {
     assertEquals(newStart, tourInstance.getStartDate());
     verify(chatSessionService).removeUserFromChat(id, oldCoordinatorId);
     verify(chatSessionService).addUserToChat(id, coordinatorId);
+  }
+
+  @Test
+  void updateInstance_withDeletedCoach_throwsException() {
+    UUID id = UUID.randomUUID();
+    UUID coachId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().coachId(coachId).build();
+
+    Coach oldCoach = new Coach();
+    oldCoach.setId(UUID.randomUUID());
+    tourInstance.setCoach(oldCoach);
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(coachRepository.findByIdAndIsDeletedFalse(coachId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
+  }
+
+  @Test
+  void updateInstance_withDeletedDriver_throwsException() {
+    UUID id = UUID.randomUUID();
+    UUID driverId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().driverId(driverId).build();
+
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
   }
 }

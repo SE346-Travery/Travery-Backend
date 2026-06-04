@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,6 +34,10 @@ public class Station extends AbstractBaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "destination_id", nullable = false)
   private Destination destination;
+
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
 
   @Column(precision = 10, scale = 8)
   private BigDecimal latitude;

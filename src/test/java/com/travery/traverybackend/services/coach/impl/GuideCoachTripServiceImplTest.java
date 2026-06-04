@@ -36,17 +36,23 @@ class GuideCoachTripServiceImplTest {
 
   @InjectMocks private GuideCoachTripServiceImpl guideService;
 
-  private UUID guideId;
   private UUID tripId;
   private UUID bookingId;
-  private CoachTrip trip;
+  private UUID guideId;
+
+  /** OPEN trip — used for status-transition tests. */
+  private CoachTrip openTrip;
+
+  /** IN_PROGRESS trip — required for attendance (check-in / no-show) tests. */
+  private CoachTrip inProgressTrip;
+
   private CoachBooking booking;
 
   @BeforeEach
   void setUp() {
-    guideId = UUID.randomUUID();
     tripId = UUID.randomUUID();
     bookingId = UUID.randomUUID();
+    guideId = UUID.randomUUID();
 
     Route route =
         Route.builder()
@@ -62,9 +68,9 @@ class GuideCoachTripServiceImplTest {
             .seatLayout(seatLayout)
             .build();
     Driver driver = Driver.builder().id(UUID.randomUUID()).fullName("John Doe").build();
-    Guide guide = Guide.builder().id(guideId).build();
+    Guide guide = Guide.builder().id(guideId).fullName("Guide Name").build();
 
-    trip =
+    openTrip =
         CoachTrip.builder()
             .id(tripId)
             .route(route)
@@ -74,23 +80,105 @@ class GuideCoachTripServiceImplTest {
             .status(CoachTripStatus.OPEN)
             .build();
 
+    inProgressTrip =
+        CoachTrip.builder()
+            .id(tripId)
+            .route(route)
+            .coach(coach)
+            .driver(driver)
+            .guide(guide)
+            .status(CoachTripStatus.IN_PROGRESS)
+            .build();
+
+    // booking belongs to inProgressTrip so attendance methods can proceed past the status gate
     booking =
-        CoachBooking.builder().id(bookingId).coachTrip(trip).status(BookingStatus.PAID).build();
+        CoachBooking.builder()
+            .id(bookingId)
+            .coachTrip(inProgressTrip)
+            .status(BookingStatus.PAID)
+            .build();
   }
+
+  // -------------------------------------------------------------------------
+  // updateTripStatus
+  // -------------------------------------------------------------------------
 
   @Test
   void updateTripStatus_Success() {
     UpdateCoachTripStatusRequest request =
         new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
 
-    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(openTrip));
+    when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(openTrip);
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
     CoachTripDetailResponse response = guideService.updateTripStatus(guideId, tripId, request);
 
     assertNotNull(response);
-    assertEquals(CoachTripStatus.IN_PROGRESS, trip.getStatus());
-    verify(coachTripRepository).save(trip);
+    assertEquals(CoachTripStatus.IN_PROGRESS, openTrip.getStatus());
+    verify(coachTripRepository).save(openTrip);
+  }
+
+  @Test
+  void updateTripStatus_NotAssignedGuide_ThrowsException() {
+    UpdateCoachTripStatusRequest request =
+        new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
+
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(openTrip));
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideService.updateTripStatus(UUID.randomUUID(), tripId, request));
+    verify(coachTripRepository, never()).save(any(CoachTrip.class));
+  }
+
+  // -------------------------------------------------------------------------
+  // markPassengerNoShow — service requires IN_PROGRESS trip
+  // -------------------------------------------------------------------------
+
+  @Test
+  void markPassengerNoShow_Success() {
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(inProgressTrip));
+    // service calls findByIdWithDetails, NOT findById
+    when(coachBookingRepository.findByIdWithDetails(bookingId)).thenReturn(Optional.of(booking));
+
+    guideService.markPassengerNoShow(guideId, tripId, bookingId);
+
+    assertEquals(BookingStatus.NO_SHOW, booking.getStatus());
+    verify(coachBookingRepository).save(booking);
+  }
+
+  @Test
+  void markPassengerNoShow_BookingNotPaid_ThrowsException() {
+    booking.setStatus(BookingStatus.PENDING);
+
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(inProgressTrip));
+    when(coachBookingRepository.findByIdWithDetails(bookingId)).thenReturn(Optional.of(booking));
+
+    assertThrows(
+        BaseAppException.class, () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
+  }
+
+  @Test
+  void markPassengerNoShow_BookingNotBelongToTrip_ThrowsException() {
+    CoachTrip anotherTrip = CoachTrip.builder().id(UUID.randomUUID()).build();
+    booking.setCoachTrip(anotherTrip);
+
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(inProgressTrip));
+    when(coachBookingRepository.findByIdWithDetails(bookingId)).thenReturn(Optional.of(booking));
+
+    assertThrows(
+        BaseAppException.class, () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
+  }
+
+  @Test
+  void markPassengerNoShow_NotAssignedGuide_ThrowsException() {
+    when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(inProgressTrip));
+
+    assertThrows(
+        BaseAppException.class,
+        () -> guideService.markPassengerNoShow(UUID.randomUUID(), tripId, bookingId));
+    // booking repo should never be called when guide ownership check fails
+    verify(coachBookingRepository, never()).findByIdWithDetails(bookingId);
   }
 }

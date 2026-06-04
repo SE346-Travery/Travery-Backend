@@ -25,12 +25,17 @@ public abstract class TourMapper {
 
   @Mapping(target = "images", ignore = true)
   @Mapping(target = "startLocation", source = "pickupLocation")
-  @Mapping(target = "ratingCount", ignore = true) // Chưa có rating count
+  @Mapping(target = "ratingCount", source = "reviewCount")
   @Mapping(target = "itineraryList", source = "itineraries")
   public abstract TourDetailResponse toTourDetailResponse(Tour tour);
 
   @Mapping(
-      target = "images",
+      target = "availableSlots",
+      ignore = true) // Cần logic tính availableSlots nếu chưa có sẵn trong DB
+  public abstract TourInstanceResponse toTourInstanceResponse(TourInstance instance);
+
+  @Mapping(
+      target = "image",
       ignore = true) // Hình ảnh sẽ được map sau hoặc bỏ qua nếu không cần thiết
   public abstract TourItineraryResponse toTourItineraryResponse(TourItinerary itinerary);
 
@@ -53,9 +58,10 @@ public abstract class TourMapper {
 
   public ImageResponse toImageResponse(Image image) {
     if (image == null) return null;
-    ImageResponse response = new ImageResponse();
-    response.setUrl(image.getUrl());
-    response.setIsThumnail(image.isThumbnail());
-    return response;
+    return ImageResponse.builder()
+        .id(image.getId())
+        .url(image.getUrl())
+        .isThumbnail(image.isThumbnail())
+        .build();
   }
 }

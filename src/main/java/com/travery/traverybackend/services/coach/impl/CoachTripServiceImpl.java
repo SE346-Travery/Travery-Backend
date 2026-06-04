@@ -2,19 +2,20 @@ package com.travery.traverybackend.services.coach.impl;
 
 import com.travery.traverybackend.dtos.request.coach.SearchCoachTripRequest;
 import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
+import com.travery.traverybackend.dtos.response.coach.DestinationWithStationsResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatMapResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatStatusResponse;
 import com.travery.traverybackend.dtos.response.coach.StationResponse;
 import com.travery.traverybackend.entities.booking.CoachBookingSeat;
 import com.travery.traverybackend.entities.coach.CoachTrip;
 import com.travery.traverybackend.entities.coach.SeatLayoutItem;
+import com.travery.traverybackend.entities.common.Destination;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.coach.DepartureTimeSlot;
 import com.travery.traverybackend.enums.coach.SeatStatus;
 import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
-import com.travery.traverybackend.repositories.coach.RouteRepository;
 import com.travery.traverybackend.repositories.coach.StationRepository;
 import com.travery.traverybackend.services.coach.CoachTripService;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +23,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CoachTripServiceImpl implements CoachTripService {
 
   private final StationRepository stationRepository;
-  private final RouteRepository routeRepository;
   private final CoachTripRepository coachTripRepository;
   private final CoachBookingSeatRepository coachBookingSeatRepository;
   private final CoachMapper coachMapper;
@@ -45,7 +47,7 @@ public class CoachTripServiceImpl implements CoachTripService {
   @Override
   @Transactional(readOnly = true)
   public List<StationResponse> getStations() {
-    return coachMapper.toStationResponseList(stationRepository.findAll());
+    return coachMapper.toStationResponseList(stationRepository.findAllByIsDeletedFalse());
   }
 
   @Override
@@ -57,6 +59,11 @@ public class CoachTripServiceImpl implements CoachTripService {
     List<CoachTrip> trips =
         coachTripRepository.searchTrips(
             request.getOriginId(), request.getDestinationId(), startOfDay, endOfDay);
+
+    trips =
+        trips.stream()
+            .filter(t -> t.getCoach() != null && !t.getCoach().isDeleted())
+            .collect(Collectors.toList());
 
     // Apply filters
     if (request.getCoachType() != null) {
@@ -82,10 +89,13 @@ public class CoachTripServiceImpl implements CoachTripService {
     List<Object[]> bookedCounts =
         coachBookingSeatRepository.countBookedSeatsForTrips(tripIds, excludedStatuses);
 
-    java.util.Map<UUID, Integer> bookedSeatsMap = new java.util.HashMap<>();
+    Map<UUID, Integer> bookedSeatsMap = new HashMap<>();
     for (Object[] count : bookedCounts) {
       bookedSeatsMap.put((UUID) count[0], ((Number) count[1]).intValue());
     }
+
+    Map<UUID, List<StationResponse>> stationsByDestinationId =
+        getActiveStationsByDestinationId(trips);
 
     List<CoachTripResponse> responses = new ArrayList<>();
 
@@ -106,11 +116,11 @@ public class CoachTripServiceImpl implements CoachTripService {
               .availableSeats(availableSeats)
               .basePrice(trip.getRoute().getBasePrice())
               .originDestination(
-                  coachMapper.toDestinationWithStationsResponse(
-                      trip.getRoute().getOriginDestination()))
+                  toDestinationWithStationsResponse(
+                      trip.getRoute().getOriginDestination(), stationsByDestinationId))
               .destinationDestination(
-                  coachMapper.toDestinationWithStationsResponse(
-                      trip.getRoute().getDestinationDestination()))
+                  toDestinationWithStationsResponse(
+                      trip.getRoute().getDestinationDestination(), stationsByDestinationId))
               .status(trip.getStatus())
               .build();
       responses.add(response);
@@ -183,5 +193,43 @@ public class CoachTripServiceImpl implements CoachTripService {
     LocalTime localTime = time.toLocalTime();
     return !localTime.isBefore(slot.getStartTime())
         && (localTime.isBefore(slot.getEndTime()) || localTime.equals(slot.getEndTime()));
+  }
+
+  private Map<UUID, List<StationResponse>> getActiveStationsByDestinationId(List<CoachTrip> trips) {
+    List<UUID> destinationIds =
+        trips.stream()
+            .flatMap(
+                trip ->
+                    List.of(
+                        trip.getRoute().getOriginDestination().getId(),
+                        trip.getRoute().getDestinationDestination().getId())
+                        .stream())
+            .distinct()
+            .toList();
+
+    if (destinationIds.isEmpty()) {
+      return Map.of();
+    }
+
+    Map<UUID, List<StationResponse>> stationsByDestinationId = new HashMap<>();
+    stationRepository.findAllByDestinationIdInAndIsDeletedFalse(destinationIds).stream()
+        .collect(Collectors.groupingBy(station -> station.getDestination().getId()))
+        .forEach(
+            (destinationId, stations) ->
+                stationsByDestinationId.put(
+                    destinationId, coachMapper.toStationResponseList(stations)));
+
+    return stationsByDestinationId;
+  }
+
+  private DestinationWithStationsResponse toDestinationWithStationsResponse(
+      Destination destination, Map<UUID, List<StationResponse>> stationsByDestinationId) {
+    DestinationWithStationsResponse response =
+        coachMapper.toDestinationWithStationsResponse(destination);
+    if (response == null) {
+      return null;
+    }
+    response.setStations(stationsByDestinationId.getOrDefault(destination.getId(), List.of()));
+    return response;
   }
 }

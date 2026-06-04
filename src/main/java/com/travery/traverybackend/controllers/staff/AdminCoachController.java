@@ -4,14 +4,16 @@ import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateDriverRequest;
 import com.travery.traverybackend.dtos.request.coach.CreateSeatLayoutRequest;
+import com.travery.traverybackend.dtos.request.coach.CreateStationRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
-import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateDriverRequest;
+import com.travery.traverybackend.dtos.request.coach.UpdateStationRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.DriverResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
+import com.travery.traverybackend.dtos.response.coach.StationResponse;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.services.coach.AdminCoachService;
 import jakarta.validation.Valid;
@@ -25,56 +27,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/staff/admin")
+@RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 public class AdminCoachController extends AbstractBaseController {
 
   private final AdminCoachService adminCoachService;
 
-  // ===== Driver Endpoints =====
-
-  @GetMapping("/drivers")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SingleResponse<List<DriverResponse>>> getDrivers() {
-    return success(adminCoachService.getDrivers(), "Drivers fetched successfully");
-  }
-
-  @GetMapping("/drivers/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SingleResponse<DriverResponse>> getDriverDetail(@PathVariable UUID id) {
-    return success(adminCoachService.getDriverDetail(id), "Driver fetched successfully");
-  }
-
-  @PostMapping("/drivers")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SingleResponse<DriverResponse>> createDriver(
-      @Valid @RequestBody CreateDriverRequest request) {
-    return created(adminCoachService.createDriver(request), "Driver created successfully");
-  }
-
-  @PutMapping("/drivers/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SingleResponse<DriverResponse>> updateDriver(
-      @PathVariable UUID id, @Valid @RequestBody UpdateDriverRequest request) {
-    return success(adminCoachService.updateDriver(id, request), "Driver updated successfully");
-  }
-
-  @DeleteMapping("/drivers/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SuccessResponse> deleteDriver(@PathVariable UUID id) {
-    adminCoachService.deleteDriver(id);
-    return success("Driver deleted successfully");
-  }
-
-  // ===== Seat Layout Endpoints =====
-
+  @PostMapping("/seat-layouts")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<SeatLayoutResponse>> createSeatLayout(
       @Valid @RequestBody CreateSeatLayoutRequest request) {
@@ -107,20 +72,20 @@ public class AdminCoachController extends AbstractBaseController {
   }
 
   @GetMapping("/coaches")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
   public ResponseEntity<SingleResponse<List<CoachResponse>>> getCoaches() {
     List<CoachResponse> response = adminCoachService.getCoaches();
     return success(response, "Fetched coaches successfully");
   }
 
   @GetMapping("/coaches/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
   public ResponseEntity<SingleResponse<CoachResponse>> getCoachDetail(@PathVariable UUID id) {
     CoachResponse response = adminCoachService.getCoachDetail(id);
     return success(response, "Fetched coach detail successfully");
   }
 
-  @PutMapping("/coaches/{id}")
+  @PatchMapping("/coaches/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SingleResponse<CoachResponse>> updateCoach(
       @PathVariable UUID id, @Valid @RequestBody UpdateCoachRequest request) {
@@ -128,18 +93,84 @@ public class AdminCoachController extends AbstractBaseController {
     return success(response, "Coach updated successfully");
   }
 
-  @PatchMapping("/coaches/{id}/status")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<SingleResponse<CoachResponse>> updateCoachStatus(
-      @PathVariable UUID id, @Valid @RequestBody UpdateCoachStatusRequest request) {
-    CoachResponse response = adminCoachService.updateCoachStatus(id, request);
-    return success(response, "Coach status updated successfully");
-  }
-
   @DeleteMapping("/coaches/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<SuccessResponse> deleteCoach(@PathVariable UUID id) {
     adminCoachService.deleteCoach(id);
-    return success("Coach soft-deleted successfully");
+    return success("Coach deleted successfully");
+  }
+
+  @PostMapping("/drivers")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<DriverResponse>> createDriver(
+      @Valid @RequestBody CreateDriverRequest request) {
+    DriverResponse response = adminCoachService.createDriver(request);
+    return created(response, "Driver created successfully");
+  }
+
+  @GetMapping("/drivers")
+  @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+  public ResponseEntity<SingleResponse<List<DriverResponse>>> getDrivers() {
+    List<DriverResponse> response = adminCoachService.getDrivers();
+    return success(response, "Fetched drivers successfully");
+  }
+
+  @GetMapping("/drivers/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+  public ResponseEntity<SingleResponse<DriverResponse>> getDriverDetail(@PathVariable UUID id) {
+    DriverResponse response = adminCoachService.getDriverDetail(id);
+    return success(response, "Fetched driver detail successfully");
+  }
+
+  @PatchMapping("/drivers/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<DriverResponse>> updateDriver(
+      @PathVariable UUID id, @Valid @RequestBody UpdateDriverRequest request) {
+    DriverResponse response = adminCoachService.updateDriver(id, request);
+    return success(response, "Driver updated successfully");
+  }
+
+  @DeleteMapping("/drivers/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> deleteDriver(@PathVariable UUID id) {
+    adminCoachService.deleteDriver(id);
+    return success("Driver deleted successfully");
+  }
+
+  @PostMapping("/stations")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<StationResponse>> createStation(
+      @Valid @RequestBody CreateStationRequest request) {
+    StationResponse response = adminCoachService.createStation(request);
+    return created(response, "Station created successfully");
+  }
+
+  @GetMapping("/stations")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<List<StationResponse>>> getStations() {
+    List<StationResponse> response = adminCoachService.getStations();
+    return success(response, "Fetched stations successfully");
+  }
+
+  @GetMapping("/stations/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<StationResponse>> getStationDetail(@PathVariable UUID id) {
+    StationResponse response = adminCoachService.getStationDetail(id);
+    return success(response, "Fetched station detail successfully");
+  }
+
+  @PatchMapping("/stations/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SingleResponse<StationResponse>> updateStation(
+      @PathVariable UUID id, @Valid @RequestBody UpdateStationRequest request) {
+    StationResponse response = adminCoachService.updateStation(id, request);
+    return success(response, "Station updated successfully");
+  }
+
+  @DeleteMapping("/stations/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<SuccessResponse> deleteStation(@PathVariable UUID id) {
+    adminCoachService.deleteStation(id);
+    return success("Station deleted successfully");
   }
 }

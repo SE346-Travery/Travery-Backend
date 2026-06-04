@@ -14,4 +14,7 @@ import lombok.Setter;
 public class CancelBookingRequest {
 
   private String reason;
+  private String bankName;
+  private String accountNumber;
+  private String accountHolderName;
 }

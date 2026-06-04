@@ -6,6 +6,7 @@ import com.travery.traverybackend.entities.finance.RefundPolicy;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,7 +38,19 @@ public class Route extends AbstractBaseEntity {
   @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal basePrice;
 
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "refund_policy_id")
   private RefundPolicy refundPolicy;
+
+  @Column(name = "average_rating")
+  @Builder.Default
+  private Double averageRating = 0.0;
+
+  @Column(name = "review_count")
+  @Builder.Default
+  private Integer reviewCount = 0;
 }
