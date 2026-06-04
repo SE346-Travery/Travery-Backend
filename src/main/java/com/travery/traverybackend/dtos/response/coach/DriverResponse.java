@@ -1,6 +1,6 @@
 package com.travery.traverybackend.dtos.response.coach;
 
-import java.math.BigDecimal;
+import com.travery.traverybackend.enums.coach.DriverStatus;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +13,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StationResponse {
+public class DriverResponse {
   private UUID id;
-  private String name;
-  private String address;
-  private UUID destinationId;
-  private String destinationName;
-  private BigDecimal latitude;
-  private BigDecimal longitude;
+  private String fullName;
+  private String phoneNumber;
+  private String licenseNumber;
+  private String avatarUrl;
+  private String avatarPublicId;
+  private DriverStatus status;
 }
