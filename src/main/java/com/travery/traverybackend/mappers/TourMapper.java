@@ -27,7 +27,7 @@ public abstract class TourMapper {
 
   @Mapping(target = "images", ignore = true)
   @Mapping(target = "startLocation", source = "pickupLocation")
-  @Mapping(target = "ratingCount", ignore = true) // Chưa có rating count
+  @Mapping(target = "ratingCount", source = "reviewCount")
   @Mapping(target = "itineraryList", source = "itineraries")
   public abstract TourDetailResponse toTourDetailResponse(Tour tour);
 

@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.hotel;
 
+import com.travery.traverybackend.dtos.response.finance.RefundPolicyResponse;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,5 +26,6 @@ public class HotelDetailResponse {
   private List<AmenityResponse> amenities;
   private List<RoomTypeResponse> roomTypes;
   private List<HotelImageResponse> images;
+  private RefundPolicyResponse refundPolicy;
   private Integer averageRating;
 }

@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -334,6 +335,7 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "featuredTours", allEntries = true)
   public List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files) {
     if (!tourRepository.existsById(tourId)) {
       throw new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found");
@@ -375,6 +377,7 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "featuredTours", allEntries = true)
   public void deleteTourImage(UUID tourId, UUID imageId) {
     Image image =
         imageRepository
@@ -404,6 +407,7 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "featuredTours", allEntries = true)
   public void setTourThumbnail(UUID tourId, UUID imageId) {
     Image newThumbnail =
         imageRepository
