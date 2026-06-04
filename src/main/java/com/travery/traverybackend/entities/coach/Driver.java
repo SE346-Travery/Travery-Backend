@@ -34,6 +34,10 @@ public class Driver extends AbstractBaseEntity {
   @Column(name = "avatar_public_id", length = 255)
   private String avatarPublicId;
 
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 20)
   @Builder.Default

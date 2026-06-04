@@ -46,11 +46,8 @@ public class CoordinatorCoachTripController extends AbstractBaseController {
 
   @GetMapping
   public ResponseEntity<SingleResponse<Page<CoachTripResponse>>> getTrips(
-      @RequestParam(required = false) CoachTripStatus status,
-      Pageable pageable,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    Page<CoachTripResponse> response =
-        coordinatorService.getTrips(userDetails.getUserId(), status, pageable);
+      @RequestParam(required = false) CoachTripStatus status, Pageable pageable) {
+    Page<CoachTripResponse> response = coordinatorService.getTrips(status, pageable);
     return success(response, "Get coach trips successfully");
   }
 

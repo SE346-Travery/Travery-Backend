@@ -92,6 +92,7 @@ class CoordinatorCoachTripControllerTest {
             .routeId(UUID.randomUUID())
             .coachId(UUID.randomUUID())
             .driverId(UUID.randomUUID())
+            .guideId(UUID.randomUUID())
             .departureTime(LocalDateTime.now().plusDays(1))
             .build();
 
@@ -120,7 +121,6 @@ class CoordinatorCoachTripControllerTest {
   void getTrips_ReturnsOk() throws Exception {
     Page<CoachTripResponse> page = new PageImpl<>(List.of(new CoachTripResponse()));
     when(coordinatorService.getTrips(
-            eq(coordinatorId),
             org.mockito.ArgumentMatchers.nullable(
                 com.travery.traverybackend.enums.coach.CoachTripStatus.class),
             any()))

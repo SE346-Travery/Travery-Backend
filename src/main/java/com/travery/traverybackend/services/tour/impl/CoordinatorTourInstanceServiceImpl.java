@@ -210,14 +210,14 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     if (request.getCoachId() != null) {
       tourInstance.setCoach(
           coachRepository
-              .findById(request.getCoachId())
+              .findByIdAndIsDeletedFalse(request.getCoachId())
               .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coach not found")));
     }
 
     if (request.getDriverId() != null) {
       tourInstance.setDriver(
           driverRepository
-              .findById(request.getDriverId())
+              .findByIdAndIsDeletedFalse(request.getDriverId())
               .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Driver not found")));
     }
 
