@@ -121,7 +121,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     UUID hotelId = receptionist.getHotel().getId();
 
     Page<HotelBooking> bookings =
-        hotelBookingRepository.findReceptionistQueue(hotelId, date, guestName, status, pageable);
+        hotelBookingRepository.findReceptionistQueue(
+            hotelId, date, guestName, status != null ? status.name() : null, pageable);
 
     return bookings.map(
         b -> {
