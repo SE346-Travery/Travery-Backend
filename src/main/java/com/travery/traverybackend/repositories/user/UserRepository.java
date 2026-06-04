@@ -3,6 +3,7 @@ package com.travery.traverybackend.repositories.user;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.user.UserRoles;
 import com.travery.traverybackend.enums.user.UserStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
   Optional<User> findByEmail(String email);
+
+  Optional<User> findByCometchatUID(String cometchatUID);
+
+  @Query("SELECT u FROM User u WHERE u.role = 'COORDINATOR' AND u.status = 'ACTIVE' ORDER BY u.createdAt ASC")
+  List<User> findAllActiveCoordinators();
 
   @Query(
       "SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:status IS NULL OR u.status = :status)")

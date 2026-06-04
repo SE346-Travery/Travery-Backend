@@ -8,6 +8,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,11 +19,10 @@ public class ChatController extends AbstractBaseController {
   private final ChatSessionService chatSessionService;
 
   @PostMapping("/initiate")
-  @PreAuthorize("isAuthenticated()")
-  public ResponseEntity<SingleResponse<ChatSessionResponse>> initiateChat(
-      @RequestParam UUID tourId) {
-    ChatSessionResponse response = chatSessionService.getOrCreateChatSession(tourId);
-    return success(response, "Chat session initiated successfully");
+  @PreAuthorize("hasRole('TOURIST')")
+  public ResponseEntity<SingleResponse<ChatSessionResponse>> initiateChat() {
+    ChatSessionResponse response = chatSessionService.initiateCustomTourChat(getCurrentUserId());
+    return success(response, "Custom tour consultation initiated successfully");
   }
 
   @PostMapping("/initiate-group")
@@ -32,5 +32,23 @@ public class ChatController extends AbstractBaseController {
     ChatSessionResponse response =
         chatSessionService.getOrCreateInstanceChatSession(tourInstanceId);
     return success(response, "Group chat session initiated successfully");
+  }
+
+  @PostMapping("/{id}/request-close")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<Void>> requestCloseConsultation(@PathVariable UUID id) {
+    chatSessionService.requestCloseConsultation(id, getCurrentUserId());
+    return success(null, "Consultation close request sent successfully");
+  }
+
+  @PostMapping("/instance/{instanceId}/close")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<Void>> closeInstanceChat(@PathVariable UUID instanceId) {
+    chatSessionService.closeInstanceChat(instanceId, getCurrentUserId());
+    return success(null, "Group chat closed successfully");
+  }
+
+  private UUID getCurrentUserId() {
+    return UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
   }
 }
