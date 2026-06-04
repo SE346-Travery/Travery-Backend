@@ -2,20 +2,18 @@ package com.travery.traverybackend.controllers.booking;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
-import com.travery.traverybackend.dtos.request.booking.CreateReviewRequest;
 import com.travery.traverybackend.dtos.request.booking.CreateTourBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.booking.ReviewResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.TourBookingSummaryResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.PaymentService;
-import com.travery.traverybackend.services.booking.ReviewService;
 import com.travery.traverybackend.services.booking.TourBookingService;
 import com.travery.traverybackend.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +40,7 @@ public class TourBookingController extends AbstractBaseController {
 
   private final TourBookingService tourBookingService;
   private final PaymentService paymentService;
-  private final ReviewService reviewService;
+
   private final RequestUtil requestUtil;
 
   @PostMapping("/api/v1/tour-instances/{instanceId}/bookings")
@@ -102,18 +100,8 @@ public class TourBookingController extends AbstractBaseController {
     InitiatePaymentRequest request =
         InitiatePaymentRequest.builder().bookingId(bookingId).ipAddress(ipAddress).build();
     PaymentInitiationResponse response =
-        paymentService.initiatePayment(bookingId, request, currentUser.getUserId());
+        paymentService.initiatePayment(
+            bookingId, request, currentUser.getUserId(), BookingType.TOUR_BOOKING);
     return created(response, "Payment initiated successfully");
-  }
-
-  @PostMapping("/api/v1/bookings/{bookingId}/reviews")
-  @PreAuthorize("hasRole('TOURIST')")
-  public ResponseEntity<SingleResponse<ReviewResponse>> createReview(
-      @PathVariable UUID bookingId,
-      @Valid @RequestBody CreateReviewRequest request,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
-    ReviewResponse response =
-        reviewService.createReview(bookingId, request, currentUser.getUserId());
-    return created(response, "Review submitted successfully");
   }
 }

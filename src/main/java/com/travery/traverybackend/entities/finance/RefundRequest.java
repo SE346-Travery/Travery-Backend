@@ -43,6 +43,18 @@ public class RefundRequest extends AbstractBaseEntity {
   @Column(name = "customer_reason", columnDefinition = "TEXT")
   private String customerReason;
 
+  @Column(name = "reject_reason", columnDefinition = "TEXT")
+  private String rejectReason;
+
+  @Column(name = "bank_name", length = 100)
+  private String bankName;
+
+  @Column(name = "account_number", length = 50)
+  private String accountNumber;
+
+  @Column(name = "account_holder_name", length = 100)
+  private String accountHolderName;
+
   @Enumerated(EnumType.STRING)
   @Column(length = 50)
   @Builder.Default

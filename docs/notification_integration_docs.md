@@ -25,7 +25,9 @@ Frontend nên dựa vào trường `type` và `dataId` để thực hiện đi�
 | :--- | :--- | :--- | :--- |
 | `BOOKING_CONFIRMED` | Tourist | Thanh toán/Đặt chỗ thành công | Chi tiết đơn hàng (`dataId`: Booking ID) |
 | `UPCOMING_TOUR` | Tourist | Nhắc nhở 24h trước khi khởi hành | Chi tiết đơn hàng (`dataId`: Booking ID) |
-| `POST_TOUR_REVIEW` | Tourist | Mời đánh giá sau khi hoàn thành tour | Màn hình đánh giá (`dataId`: Tour Instance ID) |
+| `UPCOMING_HOTEL` | Tourist | Nhắc nhở 24h trước khi nhận phòng | Chi tiết đơn hàng (`dataId`: Booking ID) |
+| `UPCOMING_COACH` | Tourist | Nhắc nhở 24h trước khi xe chạy | Chi tiết đơn hàng (`dataId`: Booking ID) |
+| `POST_TOUR_REVIEW` | Tourist | Mời đánh giá sau khi hoàn thành dịch vụ | Màn hình đánh giá (`dataId`: Booking ID) |
 | `SECURITY_ALERT` | Mọi Role | Đổi mật khẩu thành công | Màn hình bảo mật/Cài đặt |
 | `NEW_REVIEW` | Staff | Có khách hàng đánh giá mới | Màn hình chi tiết đánh giá (`dataId`: Review ID) |
 | `SYSTEM_ALERT` | Mọi Role | Thông báo hệ thống (Khóa/Mở tài khoản) | Chi tiết thông báo |

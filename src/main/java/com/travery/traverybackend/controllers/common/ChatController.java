@@ -50,7 +50,8 @@ public class ChatController extends AbstractBaseController {
   }
 
   private UUID getCurrentUserId() {
-    return ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+    return ((CustomUserDetails)
+            SecurityContextHolder.getContext().getAuthentication().getPrincipal())
         .getUserId();
   }
 }

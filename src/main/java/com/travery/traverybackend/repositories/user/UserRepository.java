@@ -20,7 +20,8 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
   Optional<User> findByCometchatUID(String cometchatUID);
 
-  @Query("SELECT u FROM User u WHERE u.role = 'COORDINATOR' AND u.status = 'ACTIVE' ORDER BY u.createdAt ASC")
+  @Query(
+      "SELECT u FROM User u WHERE u.role = 'COORDINATOR' AND u.status = 'ACTIVE' ORDER BY u.createdAt ASC")
   List<User> findAllActiveCoordinators();
 
   @Query(

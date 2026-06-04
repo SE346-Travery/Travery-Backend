@@ -6,7 +6,9 @@ import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.common.ChatSessionStatus;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
@@ -17,9 +19,6 @@ import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.common.NotificationService;
-import com.travery.traverybackend.enums.common.NotificationType;
-import com.travery.traverybackend.enums.booking.BookingStatus;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +54,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     // 1. Round Robin to find active coordinator
     List<User> activeCoordinators = userRepository.findAllActiveCoordinators();
     if (activeCoordinators.isEmpty()) {
-      throw new BaseAppException(
-          WebErrorCode.NOT_FOUND, "No active coordinators available");
+      throw new BaseAppException(WebErrorCode.NOT_FOUND, "No active coordinators available");
     }
 
     int index = coordinatorIndex.getAndIncrement() % activeCoordinators.size();
@@ -154,7 +152,8 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     if (guide != null) memberEmails.add(guide.getEmail());
     if (coordinator != null) memberEmails.add(coordinator.getEmail());
 
-    tourBookingRepository.findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+    tourBookingRepository
+        .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
         .forEach(booking -> memberEmails.add(booking.getUser().getEmail()));
 
     if (!memberEmails.isEmpty()) {
@@ -229,7 +228,8 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     // For now, we update status to CLOSE as requested.
     session.setStatus(ChatSessionStatus.CLOSED);
     chatSessionRepository.save(session);
-    log.info("Custom tour consultation session {} closed by coordinator {}", sessionId, coordinatorId);
+    log.info(
+        "Custom tour consultation session {} closed by coordinator {}", sessionId, coordinatorId);
   }
 
   @Override
@@ -248,7 +248,8 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     ChatSession session =
         chatSessionRepository
             .findByTourInstanceId(instanceId)
-            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Chat session not found"));
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Chat session not found"));
 
     if (session.getCoordinator() == null
         || !session.getCoordinator().getId().equals(coordinatorId)) {

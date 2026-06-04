@@ -72,6 +72,7 @@ spring:
     connect-retries: 30
     connect-retries-interval: 5
 
+
 app:
   jwt:
     secret: ${JWT_SECRET}
@@ -144,4 +145,3 @@ cometchat:
   app-id: ${COMETCHAT_APP_ID}
   api-key: ${COMETCHAT_API_KEY}
   region: ${COMETCHAT_REGION}
-  auth-key: ${COMETCHAT_AUTH_KEY}

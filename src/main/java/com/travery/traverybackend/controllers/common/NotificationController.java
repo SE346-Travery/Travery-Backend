@@ -37,8 +37,7 @@ public class NotificationController extends AbstractBaseController {
 
   @PutMapping("/{notificationId}/read")
   public ResponseEntity<SuccessResponse> markAsRead(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @PathVariable UUID notificationId) {
+      @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable UUID notificationId) {
     notificationHistoryService.markAsRead(notificationId, userDetails.getEmail());
     return success("Notification marked as read");
   }
@@ -52,8 +51,7 @@ public class NotificationController extends AbstractBaseController {
 
   @DeleteMapping("/{notificationId}")
   public ResponseEntity<SuccessResponse> deleteNotification(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @PathVariable UUID notificationId) {
+      @AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable UUID notificationId) {
     notificationHistoryService.deleteNotification(notificationId, userDetails.getEmail());
     return success("Notification deleted successfully");
   }

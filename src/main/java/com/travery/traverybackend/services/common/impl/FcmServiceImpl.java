@@ -2,7 +2,6 @@ package com.travery.traverybackend.services.common.impl;
 
 import com.google.firebase.messaging.*;
 import com.travery.traverybackend.dtos.request.common.NotificationRequest;
-import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.entities.user.UserDeviceToken;
 import com.travery.traverybackend.repositories.user.UserDeviceTokenRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -43,8 +42,7 @@ public class FcmServiceImpl implements FcmService {
       }
     } else {
       log.info("Registering new FCM token for email: {}", email);
-      UserDeviceToken newToken =
-          UserDeviceToken.builder().email(email).fcmToken(fcmToken).build();
+      UserDeviceToken newToken = UserDeviceToken.builder().email(email).fcmToken(fcmToken).build();
       userDeviceTokenRepository.save(newToken);
     }
 

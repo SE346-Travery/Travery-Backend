@@ -1,7 +1,7 @@
 package com.travery.traverybackend.mappers;
 
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingDetailResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;

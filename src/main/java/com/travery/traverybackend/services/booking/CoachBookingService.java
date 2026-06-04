@@ -1,13 +1,13 @@
 package com.travery.traverybackend.services.booking;
 
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
-import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingDetailResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.util.UUID;
 import org.springframework.data.domain.Page;

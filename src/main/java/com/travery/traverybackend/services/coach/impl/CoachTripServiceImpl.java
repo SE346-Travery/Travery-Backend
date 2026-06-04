@@ -14,7 +14,6 @@ import com.travery.traverybackend.enums.coach.SeatStatus;
 import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
-import com.travery.traverybackend.repositories.coach.RouteRepository;
 import com.travery.traverybackend.repositories.coach.StationRepository;
 import com.travery.traverybackend.services.coach.CoachTripService;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CoachTripServiceImpl implements CoachTripService {
 
   private final StationRepository stationRepository;
-  private final RouteRepository routeRepository;
   private final CoachTripRepository coachTripRepository;
   private final CoachBookingSeatRepository coachBookingSeatRepository;
   private final CoachMapper coachMapper;

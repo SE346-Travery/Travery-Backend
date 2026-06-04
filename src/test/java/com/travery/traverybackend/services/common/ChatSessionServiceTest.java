@@ -7,18 +7,13 @@ import static org.mockito.Mockito.*;
 
 import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
 import com.travery.traverybackend.entities.common.ChatSession;
-import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.common.ChatSessionStatus;
-import com.travery.traverybackend.exception.BaseAppException;
-import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.common.ChatSessionRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.impl.ChatSessionServiceImpl;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,12 +43,7 @@ class ChatSessionServiceTest {
   @BeforeEach
   void setUp() {
     userId = UUID.randomUUID();
-    tourist =
-        User.builder()
-            .id(userId)
-            .fullName("Tourist")
-            .cometchatUID("user_" + userId)
-            .build();
+    tourist = User.builder().id(userId).fullName("Tourist").cometchatUID("user_" + userId).build();
     coordinator =
         Coordinator.builder()
             .id(UUID.randomUUID())
@@ -68,16 +58,18 @@ class ChatSessionServiceTest {
     when(userRepository.findById(userId)).thenReturn(Optional.of(tourist));
     when(userRepository.findAllActiveCoordinators()).thenReturn(List.of(coordinator));
     when(chatSessionRepository.save(any(ChatSession.class)))
-        .thenAnswer(invocation -> {
-          ChatSession session = invocation.getArgument(0);
-          session.setId(UUID.randomUUID());
-          return session;
-        });
+        .thenAnswer(
+            invocation -> {
+              ChatSession session = invocation.getArgument(0);
+              session.setId(UUID.randomUUID());
+              return session;
+            });
 
     ChatSessionResponse response = chatSessionService.initiateCustomTourChat(userId);
 
     assertNotNull(response);
     verify(cometChatService).createGroup(anyString(), anyString());
-    verify(notificationService).sendToUser(eq(coordinator.getEmail()), any(), anyString(), anyString(), any());
+    verify(notificationService)
+        .sendToUser(eq(coordinator.getEmail()), any(), anyString(), anyString(), any());
   }
 }

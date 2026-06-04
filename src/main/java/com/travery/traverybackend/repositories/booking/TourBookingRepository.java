@@ -23,6 +23,7 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, UUID> 
 
   List<TourBooking> findByTourInstanceIdAndStatus(UUID instanceId, BookingStatus status);
 
+  @EntityGraph(attributePaths = {"user", "tourInstance", "tourInstance.tour"})
   Optional<TourBooking> findByIdAndUser_Id(UUID id, UUID userId);
 
   @EntityGraph(attributePaths = {"tourInstance", "tourInstance.tour"})

@@ -26,7 +26,6 @@ public class UserDeviceToken extends AbstractBaseEntity {
   @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false)
   private User user;
 
-
   @Column(name = "fcm_token", nullable = false, unique = true, columnDefinition = "TEXT")
   private String fcmToken;
 }

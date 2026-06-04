@@ -1,13 +1,13 @@
 package com.travery.traverybackend.services.booking.impl;
 
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
-import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingDetailResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.booking.CoachBookingSeat;
 import com.travery.traverybackend.entities.coach.CoachTrip;
@@ -37,6 +37,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -218,7 +219,7 @@ public class CoachBookingServiceImpl implements CoachBookingService {
 
     List<UUID> bookingIds = bookingPage.getContent().stream().map(CoachBooking::getId).toList();
 
-    java.util.Map<UUID, Integer> seatCountMap = new java.util.HashMap<>();
+    Map<UUID, Integer> seatCountMap = new HashMap<>();
     if (!bookingIds.isEmpty()) {
       coachBookingSeatRepository
           .countSeatsByBookingIds(bookingIds)
@@ -343,6 +344,9 @@ public class CoachBookingServiceImpl implements CoachBookingService {
             .user(booking.getUser())
             .requestedAmount(refundAmount)
             .customerReason(request != null ? request.getReason() : null)
+            .bankName(request != null ? request.getBankName() : null)
+            .accountNumber(request != null ? request.getAccountNumber() : null)
+            .accountHolderName(request != null ? request.getAccountHolderName() : null)
             .build();
     refundRequestRepository.save(refundRequest);
 
@@ -370,9 +374,20 @@ public class CoachBookingServiceImpl implements CoachBookingService {
     }
 
     return policy.getRules().stream()
-        .filter(rule -> rule.getTimeUnit() == RefundTimeUnit.HOURS)
-        .filter(rule -> hoursBeforeDeparture >= rule.getTimeBefore())
-        .max(java.util.Comparator.comparing(RefundPolicyRule::getTimeBefore))
+        .filter(
+            rule -> {
+              long ruleHours =
+                  rule.getTimeUnit() == RefundTimeUnit.DAYS
+                      ? rule.getTimeBefore() * 24L
+                      : rule.getTimeBefore();
+              return hoursBeforeDeparture >= ruleHours;
+            })
+        .max(
+            java.util.Comparator.comparingLong(
+                rule ->
+                    rule.getTimeUnit() == RefundTimeUnit.DAYS
+                        ? rule.getTimeBefore() * 24L
+                        : rule.getTimeBefore()))
         .map(RefundPolicyRule::getRefundPercentage)
         .orElse(BigDecimal.ZERO);
   }

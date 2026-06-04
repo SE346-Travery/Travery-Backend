@@ -43,5 +43,6 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
 
   List<TourInstance> findByGuideIdAndStatus(UUID guideId, TourInstanceStatus status);
 
-  List<TourInstance> findByStartDateAndStatusIn(LocalDate startDate, List<TourInstanceStatus> statuses);
+  List<TourInstance> findByStartDateAndStatusIn(
+      LocalDate startDate, List<TourInstanceStatus> statuses);
 }

@@ -85,9 +85,7 @@ public class ChatControllerTest {
 
     mockMvc
         .perform(
-            post("/api/v1/chats/initiate")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON))
+            post("/api/v1/chats/initiate").with(csrf()).contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.cometchatGuid").value("guid123"))
         .andExpect(jsonPath("$.message").value("Custom tour consultation initiated successfully"));
