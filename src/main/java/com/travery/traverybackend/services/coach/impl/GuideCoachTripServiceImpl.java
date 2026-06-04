@@ -8,6 +8,7 @@ import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.BookingErrorCode;
 import com.travery.traverybackend.exception.error.CoachErrorCode;
+import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.CoachMapper;
 import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachTripRepository;
@@ -28,11 +29,12 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
   @Override
   @Transactional
   public CoachTripDetailResponse updateTripStatus(
-      UUID tripId, UpdateCoachTripStatusRequest request) {
+      UUID guideId, UUID tripId, UpdateCoachTripStatusRequest request) {
     CoachTrip trip =
         coachTripRepository
             .findById(tripId)
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
+    validateAssignedGuide(guideId, trip);
 
     trip.setStatus(request.getStatus());
     trip = coachTripRepository.save(trip);
@@ -41,11 +43,12 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
 
   @Override
   @Transactional
-  public void markPassengerNoShow(UUID tripId, UUID bookingId) {
+  public void markPassengerNoShow(UUID guideId, UUID tripId, UUID bookingId) {
     CoachTrip trip =
         coachTripRepository
             .findById(tripId)
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_TRIP_NOT_FOUND));
+    validateAssignedGuide(guideId, trip);
 
     CoachBooking booking =
         coachBookingRepository
@@ -62,5 +65,11 @@ public class GuideCoachTripServiceImpl implements GuideCoachTripService {
 
     booking.setStatus(BookingStatus.NO_SHOW);
     coachBookingRepository.save(booking);
+  }
+
+  private void validateAssignedGuide(UUID guideId, CoachTrip trip) {
+    if (trip.getGuide() == null || !trip.getGuide().getId().equals(guideId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN);
+    }
   }
 }

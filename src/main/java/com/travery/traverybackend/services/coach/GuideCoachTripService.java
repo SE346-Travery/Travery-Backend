@@ -5,7 +5,8 @@ import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import java.util.UUID;
 
 public interface GuideCoachTripService {
-  CoachTripDetailResponse updateTripStatus(UUID tripId, UpdateCoachTripStatusRequest request);
+  CoachTripDetailResponse updateTripStatus(
+      UUID guideId, UUID tripId, UpdateCoachTripStatusRequest request);
 
-  void markPassengerNoShow(UUID tripId, UUID bookingId);
+  void markPassengerNoShow(UUID guideId, UUID tripId, UUID bookingId);
 }
