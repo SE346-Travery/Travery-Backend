@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -91,7 +90,7 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional(readOnly = true)
-  @Cacheable(value = "featuredTours", key = "'top10'")
+  // @Cacheable(value = "featuredTours", key = "'top10'")
   public List<TourSummaryResponse> getFeaturedTours() {
     log.info("Fetching featured tours from Database");
     List<Tour> topTours =

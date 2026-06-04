@@ -7,6 +7,7 @@ import com.travery.traverybackend.dtos.response.coach.CoachTripDetailResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachTripResponse;
 import com.travery.traverybackend.dtos.response.coach.DestinationWithStationsResponse;
 import com.travery.traverybackend.dtos.response.coach.DriverResponse;
+import com.travery.traverybackend.dtos.response.coach.GuideBookingResponse;
 import com.travery.traverybackend.dtos.response.coach.RouteResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutItemResponse;
 import com.travery.traverybackend.dtos.response.coach.SeatLayoutResponse;
@@ -25,6 +26,7 @@ import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -152,4 +154,20 @@ public abstract class CoachMapper {
   @Mapping(target = "gatewayTransactionId", source = "payment.transactionReference")
   public abstract CoachBookingDetailResponse toCoachBookingDetailResponse(
       CoachBooking booking, List<String> bookedSeatNames, PaymentTransaction payment);
+
+  @Mapping(target = "bookingId", source = "id")
+  @Mapping(target = "seatNames", ignore = true)
+  @Mapping(target = "seatCount", ignore = true)
+  public abstract GuideBookingResponse toGuideBookingResponse(CoachBooking booking);
+
+  @AfterMapping
+  protected void fillSeatNames(CoachBooking booking, @MappingTarget GuideBookingResponse response) {
+    List<String> seatNames =
+        booking.getBookedSeats().stream()
+            .map(seat -> seat.getSeatLayoutItem().getSeatName())
+            .sorted()
+            .collect(Collectors.toList());
+    response.setSeatNames(seatNames);
+    response.setSeatCount(seatNames.size());
+  }
 }
