@@ -11,7 +11,6 @@ import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
-import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.common.ReviewTargetType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
@@ -25,8 +24,6 @@ import com.travery.traverybackend.repositories.coach.RouteRepository;
 import com.travery.traverybackend.repositories.common.ReviewRepository;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
-import com.travery.traverybackend.repositories.user.ReceptionistRepository;
-import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.common.ReviewService;
 import java.util.List;
 import java.util.UUID;
@@ -51,8 +48,6 @@ public class ReviewServiceImpl implements ReviewService {
   private final CoachBookingRepository coachBookingRepository;
   private final RouteRepository routeRepository;
   private final ReviewMapper reviewMapper;
-  private final NotificationService notificationService;
-  private final ReceptionistRepository receptionistRepository;
 
   @Override
   @Transactional
@@ -153,21 +148,6 @@ public class ReviewServiceImpl implements ReviewService {
                 h.setAverageRating(finalNewAvg);
                 h.setReviewCount(h.getReviewCount() + 1);
                 hotelRepository.save(h);
-
-                // Notify Receptionists
-                receptionistRepository
-                    .findByHotelId(h.getId())
-                    .forEach(
-                        receptionist -> {
-                          notificationService.sendToUser(
-                              receptionist.getEmail(),
-                              NotificationType.NEW_REVIEW,
-                              "Đánh giá khách sạn mới",
-                              String.format(
-                                  "Người dùng %s đã gửi một đánh giá %d sao cho khách sạn %s.",
-                                  finalUser.getFullName(), request.getRating(), h.getName()),
-                              savedReview.getId().toString());
-                        });
               });
     } else if (targetType == ReviewTargetType.TOUR) {
       tourRepository
@@ -177,31 +157,6 @@ public class ReviewServiceImpl implements ReviewService {
                 t.setAverageRating(finalNewAvg);
                 t.setReviewCount(t.getReviewCount() + 1);
                 tourRepository.save(t);
-
-                // Notify Coordinator and Guide
-                if (bookingType == BookingType.TOUR_BOOKING) {
-                  TourBooking tourBooking = tourBookingRepository.findById(bookingId).orElse(null);
-                  if (tourBooking != null) {
-                    java.util.Set<String> staffEmails = new java.util.HashSet<>();
-                    if (tourBooking.getTourInstance().getGuide() != null) {
-                      staffEmails.add(tourBooking.getTourInstance().getGuide().getEmail());
-                    }
-                    if (tourBooking.getTourInstance().getCoordinator() != null) {
-                      staffEmails.add(tourBooking.getTourInstance().getCoordinator().getEmail());
-                    }
-
-                    if (!staffEmails.isEmpty()) {
-                      notificationService.sendToUsers(
-                          new java.util.ArrayList<>(staffEmails),
-                          NotificationType.NEW_REVIEW,
-                          "Đánh giá tour mới",
-                          String.format(
-                              "Người dùng %s đã gửi một đánh giá %d sao cho tour %s.",
-                              finalUser.getFullName(), request.getRating(), t.getName()),
-                          savedReview.getId().toString());
-                    }
-                  }
-                }
               });
     } else if (targetType == ReviewTargetType.ROUTE) {
       routeRepository

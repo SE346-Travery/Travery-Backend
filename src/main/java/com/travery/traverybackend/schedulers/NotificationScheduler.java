@@ -70,21 +70,6 @@ public class NotificationScheduler {
         .findByStartDateAndStatus(tomorrow, BookingStatus.PAID)
         .forEach(
             booking -> {
-              // We need hotel name, but we joined it in the query
-              // For simplicity, we assume we can get it from details if we fetched it.
-              // Our query: SELECT DISTINCT b FROM HotelBooking b JOIN FETCH b.user JOIN
-              // HotelBookingDetail d ON d.hotelBooking.id = b.id JOIN FETCH d.roomType rt JOIN
-              // FETCH rt.hotel h
-              // Wait, HotelBooking doesn't have a direct link to Hotel, but the query joined
-              // rt.hotel h.
-              // We can't access h directly from booking object unless we have a field.
-              // Actually, I can use a simpler query if I just want to notify.
-
-              // To get Hotel name safely, we should probably fetch the details.
-              // I'll update the notification to be generic if name is hard to get,
-              // or I'll just assume the first detail has the hotel.
-              // Since I'm using YOLO mode and want to be efficient:
-
               notificationService.sendToUser(
                   booking.getUser().getEmail(),
                   NotificationType.UPCOMING_HOTEL,
