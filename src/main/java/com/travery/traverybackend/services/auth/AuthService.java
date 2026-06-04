@@ -22,6 +22,7 @@ import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.common.FcmService;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
@@ -51,6 +52,7 @@ public class AuthService {
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
   private final HotelRepository hotelRepository;
+  private final FcmService fcmService;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -88,6 +90,9 @@ public class AuthService {
 
     // Save user with PENDING status
     userRepository.save(user);
+
+    // Sync FCM token if provided
+    fcmService.syncDeviceToken(user.getEmail(), request.getFcmToken());
 
     sendOtp(user.getEmail());
   }
@@ -156,6 +161,9 @@ public class AuthService {
     String refreshToken = jwtServiceImpl.generateRefreshToken(customUserDetails);
 
     refreshTokenService.save(refreshToken, customUserDetails.getUserId());
+
+    // Sync FCM token if provided
+    fcmService.syncDeviceToken(customUserDetails.getEmail(), request.getFcmToken());
 
     return LoginResponse.builder()
         .accessToken(accessToken)
@@ -247,6 +255,9 @@ public class AuthService {
     }
 
     refreshTokenService.revoke(refreshToken);
+
+    // Unregister FCM token if provided
+    fcmService.unregisterDeviceToken(refreshToken.getUser().getEmail(), request.getFcmToken());
   }
 
   public void requestReset(ForgotPasswordRequest request) {
