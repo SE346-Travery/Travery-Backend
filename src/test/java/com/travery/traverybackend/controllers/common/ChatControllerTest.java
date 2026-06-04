@@ -73,26 +73,23 @@ public class ChatControllerTest {
   @Test
   @WithUserDetails("user@example.com")
   public void initiateChat_ShouldReturnSuccess() throws Exception {
-    UUID tourId = UUID.randomUUID();
     ChatSessionResponse response =
         ChatSessionResponse.builder()
             .id(UUID.randomUUID())
             .cometchatGuid("guid123")
-            .tourId(tourId)
             .userId(TEST_USER_ID)
             .status(ChatSessionStatus.OPEN)
             .build();
 
-    when(chatSessionService.getOrCreateChatSession(any(UUID.class))).thenReturn(response);
+    when(chatSessionService.initiateCustomTourChat(any(UUID.class))).thenReturn(response);
 
     mockMvc
         .perform(
             post("/api/v1/chats/initiate")
-                .param("tourId", tourId.toString())
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.cometchatGuid").value("guid123"))
-        .andExpect(jsonPath("$.message").value("Chat session initiated successfully"));
+        .andExpect(jsonPath("$.message").value("Custom tour consultation initiated successfully"));
   }
 }
