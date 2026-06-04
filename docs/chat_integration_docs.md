@@ -31,8 +31,9 @@ Nhóm chat dành cho tất cả thành viên tham gia một chuyến đi cụ th
 
 ---
 
-## 2. Logic Tự động hóa Thành viên (Automation)
+## 2. Logic Tự động hóa & Đồng bộ dữ liệu
 
+### 2.1. Quản lý Thành viên (Automation)
 Hệ thống đảm bảo tính riêng tư và nhất quán của nhóm chat chuyến đi thông qua các trigger:
 
 | Sự kiện | Hành động | Mô tả |
@@ -41,12 +42,21 @@ Hệ thống đảm bảo tính riêng tư và nhất quán của nhóm chat chu
 | **Hủy đặt chỗ** | **Xóa khỏi nhóm** | Khách hàng bị tự động loại bỏ khỏi nhóm chat nếu yêu cầu hủy tour thành công. |
 | **Điểm danh vắng mặt** | **Xóa khỏi nhóm** | Nếu khách hàng được Hướng dẫn viên đánh dấu là `NO_SHOW`, tài khoản sẽ bị xóa khỏi nhóm chat của đoàn. |
 
+### 2.2. Đồng bộ hóa Hồ sơ (Profile Sync)
+Backend tự động đảm bảo dữ liệu trên CometChat luôn khớp với hệ thống chính:
+- **Ảnh đại diện (Avatar):** Khi người dùng cập nhật ảnh đại diện trên App hoặc Admin cập nhật cho Staff, Backend sẽ tự động gọi API CometChat để đồng bộ trường `avatar`.
+- **Khởi tạo Lazy:** Tài khoản CometChat được tạo ngay khi người dùng tham gia chat lần đầu, bao gồm cả `name` và `avatarUrl`.
+
+### 2.3. Thông báo đẩy tin nhắn (FCM Push Sync)
+- **Tự động đăng ký:** Mỗi khi người dùng Đăng nhập/Đăng ký, Backend sẽ tự động lấy FCM Token của thiết bị và đăng ký với CometChat (`Push Token Registration`).
+- **Kết quả:** Người dùng có thể nhận thông báo tin nhắn mới từ CometChat thông qua FCM ngay cả khi ứng dụng không hoạt động.
+
 ---
 
 ## 3. Quản lý Tài khoản (User Synchronization)
 
 - **Định danh (UID):** Sử dụng định dạng `user_{uuid}`.
-- **Lazy Initialization:** Tài khoản CometChat chỉ được khởi tạo (gọi API Create User) khi người dùng đó tham gia vào một hoạt động Chat lần đầu tiên.
+- **Đồng bộ hóa:** Dựa trên UUID của User trong hệ thống để quản lý.
 
 ---
 
