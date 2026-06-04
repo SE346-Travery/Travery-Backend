@@ -15,6 +15,7 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.AdminUserService;
 import com.travery.traverybackend.services.common.NotificationService;
@@ -37,6 +38,7 @@ public class AdminUserServiceImpl implements AdminUserService {
   private final UserMapper userMapper;
   private final MediaService mediaService;
   private final NotificationService notificationService;
+  private final CometChatService cometChatService;
 
   @Override
   @Transactional(readOnly = true)
@@ -140,6 +142,9 @@ public class AdminUserServiceImpl implements AdminUserService {
     user.setAvatarPublicId((String) uploadResult.get("public_id"));
 
     userRepository.save(user);
+
+    // Sync with CometChat
+    cometChatService.syncUserAvatar(user.getCometchatUID(), user.getAvatarUrl());
 
     if (oldAvatarPublicId != null) {
       mediaService.deleteImage(oldAvatarPublicId);

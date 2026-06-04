@@ -2,8 +2,11 @@ package com.travery.traverybackend.services.common.impl;
 
 import com.google.firebase.messaging.*;
 import com.travery.traverybackend.dtos.request.common.NotificationRequest;
+import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.entities.user.UserDeviceToken;
 import com.travery.traverybackend.repositories.user.UserDeviceTokenRepository;
+import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.common.FcmService;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class FcmServiceImpl implements FcmService {
 
   private final UserDeviceTokenRepository userDeviceTokenRepository;
+  private final UserRepository userRepository;
+  private final CometChatService cometChatService;
   private final FirebaseMessaging firebaseMessaging;
 
   @Override
@@ -42,6 +47,14 @@ public class FcmServiceImpl implements FcmService {
           UserDeviceToken.builder().email(email).fcmToken(fcmToken).build();
       userDeviceTokenRepository.save(newToken);
     }
+
+    // Register token with CometChat
+    userRepository
+        .findByEmail(email)
+        .ifPresent(
+            user -> {
+              cometChatService.registerPushToken(user.getCometchatUID(), fcmToken);
+            });
   }
 
   @Override

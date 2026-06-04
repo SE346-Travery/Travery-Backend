@@ -225,7 +225,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     if (user == null) return;
     if (user.getCometchatUID() == null) {
       String uid = "user_" + user.getId().toString();
-      cometChatService.createUser(uid, user.getFullName());
+      cometChatService.createUser(uid, user.getFullName(), user.getAvatarUrl());
       user.setCometchatUID(uid);
       userRepository.save(user);
     }
