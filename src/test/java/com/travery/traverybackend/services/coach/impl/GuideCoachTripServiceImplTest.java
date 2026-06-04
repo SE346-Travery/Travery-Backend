@@ -156,8 +156,7 @@ class GuideCoachTripServiceImplTest {
     when(coachBookingRepository.findByIdWithDetails(bookingId)).thenReturn(Optional.of(booking));
 
     assertThrows(
-        BaseAppException.class,
-        () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
+        BaseAppException.class, () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
   }
 
   @Test
@@ -169,8 +168,7 @@ class GuideCoachTripServiceImplTest {
     when(coachBookingRepository.findByIdWithDetails(bookingId)).thenReturn(Optional.of(booking));
 
     assertThrows(
-        BaseAppException.class,
-        () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
+        BaseAppException.class, () -> guideService.markPassengerNoShow(guideId, tripId, bookingId));
   }
 
   @Test
