@@ -63,8 +63,7 @@ public class GuideCoachTripController extends AbstractBaseController {
   @GetMapping("/{id}")
   public ResponseEntity<SingleResponse<CoachTripDetailResponse>> getTripDetail(
       @PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
-    CoachTripDetailResponse response =
-        guideService.getTripDetail(userDetails.getUserId(), id);
+    CoachTripDetailResponse response = guideService.getTripDetail(userDetails.getUserId(), id);
     return success(response, "Fetched trip detail successfully");
   }
 

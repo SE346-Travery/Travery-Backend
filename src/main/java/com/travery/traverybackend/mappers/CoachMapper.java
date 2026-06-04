@@ -161,8 +161,7 @@ public abstract class CoachMapper {
   public abstract GuideBookingResponse toGuideBookingResponse(CoachBooking booking);
 
   @AfterMapping
-  protected void fillSeatNames(
-      CoachBooking booking, @MappingTarget GuideBookingResponse response) {
+  protected void fillSeatNames(CoachBooking booking, @MappingTarget GuideBookingResponse response) {
     List<String> seatNames =
         booking.getBookedSeats().stream()
             .map(seat -> seat.getSeatLayoutItem().getSeatName())

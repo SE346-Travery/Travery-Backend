@@ -49,8 +49,7 @@ public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID
           + "WHERE cb.id = :id")
   Optional<CoachBooking> findByIdWithDetails(@Param("id") UUID id);
 
-  @Query(
-      "SELECT cb FROM CoachBooking cb WHERE cb.status = 'PENDING' AND cb.paymentDeadline < :now")
+  @Query("SELECT cb FROM CoachBooking cb WHERE cb.status = 'PENDING' AND cb.paymentDeadline < :now")
   List<CoachBooking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
 
   int countByCoachTrip_Id(UUID tripId);

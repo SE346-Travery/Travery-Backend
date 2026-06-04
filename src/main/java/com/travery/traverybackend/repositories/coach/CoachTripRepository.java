@@ -103,8 +103,7 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
         "driver",
         "guide"
       })
-  Page<CoachTrip> findByGuide_IdAndStatus(
-      UUID guideId, CoachTripStatus status, Pageable pageable);
+  Page<CoachTrip> findByGuide_IdAndStatus(UUID guideId, CoachTripStatus status, Pageable pageable);
 
   @Query(
       "SELECT ct FROM CoachTrip ct "
