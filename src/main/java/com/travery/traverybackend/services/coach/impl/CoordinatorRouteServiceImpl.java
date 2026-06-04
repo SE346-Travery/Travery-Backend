@@ -33,7 +33,8 @@ public class CoordinatorRouteServiceImpl implements CoordinatorRouteService {
   @Override
   @Transactional
   public RouteResponse createRoute(CreateRouteRequest request) {
-    validateDifferentDestinations(request.getOriginDestinationId(), request.getDestinationDestinationId());
+    validateDifferentDestinations(
+        request.getOriginDestinationId(), request.getDestinationDestinationId());
 
     Destination origin = getDestinationById(request.getOriginDestinationId());
     Destination destination = getDestinationById(request.getDestinationDestinationId());
@@ -120,8 +121,7 @@ public class CoordinatorRouteServiceImpl implements CoordinatorRouteService {
   private Destination getDestinationById(UUID destinationId) {
     return destinationRepository
         .findById(destinationId)
-        .orElseThrow(
-            () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
+        .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
   }
 
   private RefundPolicy getCoachRefundPolicyById(UUID refundPolicyId) {

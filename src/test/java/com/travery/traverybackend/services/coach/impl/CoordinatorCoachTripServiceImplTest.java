@@ -135,7 +135,8 @@ class CoordinatorCoachTripServiceImplTest {
     when(userRepository.findById(coordinatorId)).thenReturn(Optional.of(coordinator));
     when(routeRepository.findByIdAndIsDeletedFalse(routeId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
     verify(coachTripRepository, never()).save(any(CoachTrip.class));
   }
 
@@ -155,7 +156,8 @@ class CoordinatorCoachTripServiceImplTest {
     when(coachRepository.findByIdAndIsDeletedFalse(coachId)).thenReturn(Optional.of(coach));
     when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.createTrip(request, coordinatorId));
     verify(coachTripRepository, never()).save(any(CoachTrip.class));
   }
 
@@ -234,7 +236,8 @@ class CoordinatorCoachTripServiceImplTest {
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
     when(coachRepository.findByIdAndIsDeletedFalse(newCoachId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> coordinatorService.reassignCoach(tripId, newCoachId));
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.reassignCoach(tripId, newCoachId));
     verify(coachTripRepository, never()).save(any(CoachTrip.class));
   }
 
@@ -244,7 +247,8 @@ class CoordinatorCoachTripServiceImplTest {
     Driver newDriver = Driver.builder().id(newDriverId).fullName("Jane Doe").build();
 
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
-    when(driverRepository.findByIdAndIsDeletedFalse(newDriverId)).thenReturn(Optional.of(newDriver));
+    when(driverRepository.findByIdAndIsDeletedFalse(newDriverId))
+        .thenReturn(Optional.of(newDriver));
     when(coachTripRepository.save(any(CoachTrip.class))).thenReturn(trip);
     when(coachMapper.toCoachTripDetailResponse(any())).thenReturn(new CoachTripDetailResponse());
 
@@ -261,7 +265,8 @@ class CoordinatorCoachTripServiceImplTest {
     when(coachTripRepository.findById(tripId)).thenReturn(Optional.of(trip));
     when(driverRepository.findByIdAndIsDeletedFalse(newDriverId)).thenReturn(Optional.empty());
 
-    assertThrows(BaseAppException.class, () -> coordinatorService.reassignDriver(tripId, newDriverId));
+    assertThrows(
+        BaseAppException.class, () -> coordinatorService.reassignDriver(tripId, newDriverId));
     verify(coachTripRepository, never()).save(any(CoachTrip.class));
   }
 

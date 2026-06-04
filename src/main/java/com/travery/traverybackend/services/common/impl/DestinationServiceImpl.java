@@ -68,7 +68,8 @@ public class DestinationServiceImpl implements DestinationService {
 
     Map<UUID, DestinationWithStationsResponse> responsesById =
         responses.stream()
-            .collect(Collectors.toMap(DestinationWithStationsResponse::getId, response -> response));
+            .collect(
+                Collectors.toMap(DestinationWithStationsResponse::getId, response -> response));
 
     List<UUID> destinationIds =
         responses.stream().map(DestinationWithStationsResponse::getId).toList();

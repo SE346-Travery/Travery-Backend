@@ -79,5 +79,4 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
         "guide"
       })
   Page<CoachTrip> findByStatus(CoachTripStatus status, Pageable pageable);
-
 }

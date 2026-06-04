@@ -317,7 +317,8 @@ public class CoordinatorTourInstanceServiceTest {
   void updateInstance_withDeletedCoach_throwsException() {
     UUID id = UUID.randomUUID();
     UUID coachId = UUID.randomUUID();
-    TourInstanceUpdateRequest request = TourInstanceUpdateRequest.builder().coachId(coachId).build();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().coachId(coachId).build();
 
     Coach oldCoach = new Coach();
     oldCoach.setId(UUID.randomUUID());

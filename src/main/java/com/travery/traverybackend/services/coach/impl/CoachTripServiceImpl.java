@@ -201,8 +201,8 @@ public class CoachTripServiceImpl implements CoachTripService {
             .flatMap(
                 trip ->
                     List.of(
-                            trip.getRoute().getOriginDestination().getId(),
-                            trip.getRoute().getDestinationDestination().getId())
+                        trip.getRoute().getOriginDestination().getId(),
+                        trip.getRoute().getDestinationDestination().getId())
                         .stream())
             .distinct()
             .toList();

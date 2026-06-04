@@ -35,13 +35,9 @@ import org.springframework.context.annotation.Lazy;
 @Mapper(componentModel = "spring")
 public abstract class CoachMapper {
 
-  @Lazy
-  @Autowired
-  protected CoachBookingRepository coachBookingRepository;
+  @Lazy @Autowired protected CoachBookingRepository coachBookingRepository;
 
-  @Lazy
-  @Autowired
-  protected CoachBookingSeatRepository coachBookingSeatRepository;
+  @Lazy @Autowired protected CoachBookingSeatRepository coachBookingSeatRepository;
 
   public abstract SeatLayoutItemResponse toSeatLayoutItemResponse(SeatLayoutItem seatLayoutItem);
 

@@ -338,7 +338,11 @@ class AdminCoachServiceTest {
   void updateCoach_withPartialRequest_updatesOnlyProvidedFields() {
     UUID newLayoutId = UUID.randomUUID();
     SeatLayout newLayout =
-        SeatLayout.builder().name("Sleeper 40 Seat").coachType(CoachType.BED).totalSeats(40).build();
+        SeatLayout.builder()
+            .name("Sleeper 40 Seat")
+            .coachType(CoachType.BED)
+            .totalSeats(40)
+            .build();
     newLayout.setId(newLayoutId);
 
     UpdateCoachRequest request =
@@ -404,10 +408,7 @@ class AdminCoachServiceTest {
   @Test
   void updateDriver_withPartialRequest_updatesOnlyProvidedFields() {
     UpdateDriverRequest request =
-        UpdateDriverRequest.builder()
-            .fullName("Jane Driver")
-            .status(DriverStatus.ON_LEAVE)
-            .build();
+        UpdateDriverRequest.builder().fullName("Jane Driver").status(DriverStatus.ON_LEAVE).build();
 
     when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.of(driver));
     when(driverRepository.save(driver)).thenReturn(driver);

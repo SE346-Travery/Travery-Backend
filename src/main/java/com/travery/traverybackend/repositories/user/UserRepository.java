@@ -17,15 +17,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
-    Optional<User> findByEmail(String email);
+  Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:status IS NULL OR u.status = :status)")
-    Page<User> findUsersWithFilters(
-            @Param("role") UserRoles role, @Param("status") UserStatus status, Pageable pageable);
+  @Query(
+      "SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) AND (:status IS NULL OR u.status = :status)")
+  Page<User> findUsersWithFilters(
+      @Param("role") UserRoles role, @Param("status") UserStatus status, Pageable pageable);
 
-    @Query("SELECT g FROM Guide g WHERE g.status = :status")
-    List<Guide> findAllGuidesByStatus(@Param("status") UserStatus status);
+  @Query("SELECT g FROM Guide g WHERE g.status = :status")
+  List<Guide> findAllGuidesByStatus(@Param("status") UserStatus status);
 
-    @Query("SELECT g FROM Guide g WHERE g.id = :id AND g.status = com.travery.traverybackend.enums.user.UserStatus.ACTIVE")
-    Optional<Guide> findActiveGuideById(@Param("id") UUID id);
+  @Query(
+      "SELECT g FROM Guide g WHERE g.id = :id AND g.status = com.travery.traverybackend.enums.user.UserStatus.ACTIVE")
+  Optional<Guide> findActiveGuideById(@Param("id") UUID id);
 }
