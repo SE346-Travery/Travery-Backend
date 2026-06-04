@@ -4,6 +4,7 @@ import com.travery.traverybackend.dtos.request.cometchat.CometChatGroupRequest;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.SystemErrorCode;
 import com.travery.traverybackend.services.common.CometChatService;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,10 +108,16 @@ public class CometChatServiceImpl implements CometChatService {
     }
   }
 
-  public void createUser(String uid, String name) {
+  @Override
+  public void createUser(String uid, String name, String avatarUrl) {
     String url = getBaseUrl() + "/users";
 
-    Map<String, String> request = Map.of("uid", uid, "name", name);
+    Map<String, String> request = new HashMap<>();
+    request.put("uid", uid);
+    request.put("name", name);
+    if (avatarUrl != null) {
+      request.put("avatar", avatarUrl);
+    }
 
     HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, getHeaders());
 
@@ -121,6 +128,40 @@ public class CometChatServiceImpl implements CometChatService {
       log.error("Error creating CometChat user: {}", uid, e);
       throw new BaseAppException(
           SystemErrorCode.INTERNAL_SERVER_ERROR, "Failed to create chat user");
+    }
+  }
+
+  @Override
+  public void registerPushToken(String uid, String fcmToken) {
+    String url = getBaseUrl() + "/users/" + uid + "/push-tokens";
+
+    Map<String, String> request = Map.of("fcm", fcmToken);
+
+    HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, getHeaders());
+
+    try {
+      restTemplate.postForEntity(url, entity, Map.class);
+      log.info("Successfully registered FCM token for CometChat user: {}", uid);
+    } catch (Exception e) {
+      log.error("Error registering FCM token for CometChat user: {}", uid, e);
+      // We don't throw exception here to avoid breaking the main auth flow
+    }
+  }
+
+  @Override
+  public void syncUserAvatar(String uid, String avatarUrl) {
+    String url = getBaseUrl() + "/users/" + uid;
+
+    Map<String, String> request = new HashMap<>();
+    request.put("avatar", avatarUrl != null ? avatarUrl : "");
+
+    HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, getHeaders());
+
+    try {
+      restTemplate.exchange(url, HttpMethod.PUT, entity, Map.class);
+      log.info("Successfully synced avatar for CometChat user: {}", uid);
+    } catch (Exception e) {
+      log.error("Error syncing avatar for CometChat user: {}", uid, e);
     }
   }
 }
