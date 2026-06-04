@@ -19,6 +19,8 @@ import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.utils.VnPayUtil;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -37,6 +39,7 @@ public class PaymentServiceImpl implements PaymentService {
   private final CoachBookingRepository coachBookingRepository;
   private final PaymentTransactionRepository paymentTransactionRepository;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
   private final VnPayConfig vnPayConfig;
 
   @Override
@@ -293,6 +296,17 @@ public class PaymentServiceImpl implements PaymentService {
           booking.setStatus(BookingStatus.PAID);
           tourBookingRepository.save(booking);
 
+          // Trigger Notification
+          notificationService.sendToUser(
+              booking.getUser().getEmail(),
+              NotificationType.BOOKING_CONFIRMED,
+              "Đặt tour thành công",
+              String.format(
+                  "Đơn hàng #%s cho tour %s đã được xác nhận thành công.",
+                  booking.getId().toString().substring(0, 8),
+                  booking.getTourInstance().getTour().getName()),
+              booking.getId().toString());
+
           // Add user to tour chat group
           try {
             chatSessionService.addUserToChat(
@@ -307,6 +321,16 @@ public class PaymentServiceImpl implements PaymentService {
         if (booking != null) {
           booking.setStatus(BookingStatus.PAID);
           coachBookingRepository.save(booking);
+
+          // Trigger Notification
+          notificationService.sendToUser(
+              booking.getUser().getEmail(),
+              NotificationType.BOOKING_CONFIRMED,
+              "Đặt vé xe thành công",
+              String.format(
+                  "Đơn hàng #%s cho chuyến xe của bạn đã được xác nhận thành công.",
+                  booking.getId().toString().substring(0, 8)),
+              booking.getId().toString());
         }
       }
 

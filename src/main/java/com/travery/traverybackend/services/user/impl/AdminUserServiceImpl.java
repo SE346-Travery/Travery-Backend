@@ -17,6 +17,8 @@ import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.AdminUserService;
+import com.travery.traverybackend.services.common.NotificationService;
+import com.travery.traverybackend.enums.common.NotificationType;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class AdminUserServiceImpl implements AdminUserService {
   private final HotelRepository hotelRepository;
   private final UserMapper userMapper;
   private final MediaService mediaService;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional(readOnly = true)
@@ -82,6 +85,16 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     user.setStatus(newStatus);
     userRepository.save(user);
+
+    // Trigger Notification
+    String title = newStatus == UserStatus.BANNED ? "Tài khoản bị khóa" : "Tài khoản đã mở khóa";
+    String content =
+        newStatus == UserStatus.BANNED
+            ? "Tài khoản của bạn đã bị khóa bởi quản trị viên hệ thống."
+            : "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập lại ngay bây giờ.";
+
+    notificationService.sendToUser(
+        user.getEmail(), NotificationType.SYSTEM_ALERT, title, content, null);
 
     return userMapper.toResponse(user);
   }
