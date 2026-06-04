@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -22,13 +24,19 @@ import lombok.Setter;
 public class CreateHotelBookingRequest {
   private UUID tourInstanceId; // Optional, if booked as part of a tour
 
-  @NotEmpty @Valid private List<HotelBookingRequestDetail> rooms;
+  @NotEmpty
+  @Valid
+  private List<HotelBookingRequestDetail> rooms;
 
-  @NotNull private java.time.LocalDate startDate;
+  @NotNull
+  private LocalDate startDate;
 
-  @NotNull private java.time.LocalDate endDate;
+  @NotNull
+  private LocalDate endDate;
 
-  @NotEmpty @Valid private List<BookingMemberRequest> members;
+  @NotEmpty
+  @Valid
+  private List<BookingMemberRequest> members;
 
   @NotBlank(message = "Contact name is required")
   private String contactName;

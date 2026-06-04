@@ -13,6 +13,7 @@ import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailRespon
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelServiceResponse;
 import com.travery.traverybackend.entities.booking.AddOnOrder;
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.HotelBooking;
@@ -431,6 +432,32 @@ public class HotelBookingServiceImpl implements HotelBookingService {
     }
 
     order.setStatus(AddOnOrderStatus.CANCELLED);
+  }
+
+  @Override
+  public List<HotelServiceResponse> getAvailableServices(UUID bookingId, UUID userId) {
+    HotelBooking booking =
+        hotelBookingRepository
+            .findById(bookingId)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Booking not found"));
+
+    if (!booking.getUser().getId().equals(userId)) {
+      throw new BaseAppException(WebErrorCode.FORBIDDEN, "Access denied");
+    }
+
+    List<HotelBookingDetail> details =
+        hotelBookingDetailRepository.findAllWithRoomTypeAndHotelByHotelBooking_Id(bookingId);
+
+    if (details.isEmpty()) {
+      throw new BaseAppException(WebErrorCode.NOT_FOUND, "Booking details not found");
+    }
+
+    Hotel hotel = details.get(0).getRoomType().getHotel();
+
+    List<HotelService> services =
+        hotelServiceRepository.findAllByHotel_IdAndIsActiveTrueAndIsDeletedFalse(hotel.getId());
+
+    return services.stream().map(hotelBookingMapper::toHotelServiceResponse).toList();
   }
 
   /**

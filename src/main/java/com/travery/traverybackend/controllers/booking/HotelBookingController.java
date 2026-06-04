@@ -13,6 +13,7 @@ import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailRespon
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelServiceResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.security.user.CustomUserDetails;
@@ -22,6 +23,7 @@ import com.travery.traverybackend.utils.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -135,5 +137,14 @@ public class HotelBookingController extends AbstractBaseController {
       @PathVariable UUID orderId, @AuthenticationPrincipal CustomUserDetails currentUser) {
     hotelBookingService.cancelAddOnOrder(orderId, currentUser.getUserId());
     return success(null, "Add-on order cancelled successfully");
+  }
+
+  @GetMapping("/{bookingId}/available-services")
+  @PreAuthorize("hasRole('TOURIST')")
+  public ResponseEntity<SingleResponse<List<HotelServiceResponse>>> getAvailableServices(
+      @PathVariable UUID bookingId, @AuthenticationPrincipal CustomUserDetails currentUser) {
+    List<HotelServiceResponse> services =
+        hotelBookingService.getAvailableServices(bookingId, currentUser.getUserId());
+    return success(services, "Available hotel services retrieved successfully");
   }
 }
