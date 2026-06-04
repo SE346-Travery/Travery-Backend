@@ -51,6 +51,11 @@ Backend tự động đảm bảo dữ liệu trên CometChat luôn khớp với
 - **Tự động đăng ký:** Mỗi khi người dùng Đăng nhập/Đăng ký, Backend sẽ tự động lấy FCM Token của thiết bị và đăng ký với CometChat (`Push Token Registration`).
 - **Kết quả:** Người dùng có thể nhận thông báo tin nhắn mới từ CometChat thông qua FCM ngay cả khi ứng dụng không hoạt động.
 
+### 2.4. Trình kích hoạt Thông báo (Notification Triggers)
+Backend tự động gửi thông báo hệ thống khi có sự kiện chat quan trọng:
+- **`CUSTOM_TOUR_CHAT_ASSIGNED`**: Gửi cho Coordinator ngay khi thuật toán Round Robin phân công họ vào một phiên tư vấn mới.
+- **`GROUP_CHAT_CREATED`**: Gửi cho tất cả thành viên (HDV, Điều phối viên, Khách đã thanh toán) ngay khi nhóm chat của đoàn tour được khởi tạo lần đầu.
+
 ---
 
 ## 3. Quản lý Tài khoản (User Synchronization)
