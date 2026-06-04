@@ -23,6 +23,8 @@ import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.common.FcmService;
+import com.travery.traverybackend.services.common.NotificationService;
+import com.travery.traverybackend.enums.common.NotificationType;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
@@ -53,6 +55,7 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final HotelRepository hotelRepository;
   private final FcmService fcmService;
+  private final NotificationService notificationService;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -297,6 +300,14 @@ public class AuthService {
     user.setPasswordHashed(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
+    // Send Security Alert Notification
+    notificationService.sendToUser(
+        user.getEmail(),
+        NotificationType.SECURITY_ALERT,
+        "Thay đổi mật khẩu thành công",
+        "Mật khẩu của bạn vừa được thay đổi. Nếu bạn không thực hiện việc này, vui lòng liên hệ CSKH ngay lập tức.",
+        null);
+
     // Revoke all refresh tokens — force to log in again in all devices
     refreshTokenService.revokeAll(user.getId());
   }
@@ -326,6 +337,14 @@ public class AuthService {
     // 4. Save new password hash
     user.setPasswordHashed(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
+
+    // Send Security Alert Notification
+    notificationService.sendToUser(
+        user.getEmail(),
+        NotificationType.SECURITY_ALERT,
+        "Thay đổi mật khẩu thành công",
+        "Mật khẩu của bạn vừa được thay đổi. Nếu bạn không thực hiện việc này, vui lòng liên hệ CSKH ngay lập tức.",
+        null);
 
     // 5. Revoke all refresh tokens — forces re-login on other devices
     // The current access token remains valid until it expires (short TTL).

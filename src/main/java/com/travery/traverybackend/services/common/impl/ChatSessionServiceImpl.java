@@ -10,13 +10,18 @@ import com.travery.traverybackend.enums.common.ChatSessionStatus;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.common.ChatSessionRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
 import com.travery.traverybackend.services.common.CometChatService;
+import com.travery.traverybackend.services.common.NotificationService;
+import com.travery.traverybackend.enums.common.NotificationType;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,7 +38,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
   private final ChatSessionRepository chatSessionRepository;
   private final TourInstanceRepository tourInstanceRepository;
   private final UserRepository userRepository;
+  private final TourBookingRepository tourBookingRepository;
   private final CometChatService cometChatService;
+  private final NotificationService notificationService;
 
   private static final AtomicInteger coordinatorIndex = new AtomicInteger(0);
 
@@ -76,6 +83,17 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             .build();
 
     chatSession = chatSessionRepository.save(chatSession);
+
+    // Notify Coordinator
+    notificationService.sendToUser(
+        coordinator.getEmail(),
+        NotificationType.CUSTOM_TOUR_CHAT_ASSIGNED,
+        "Yêu cầu tư vấn thiết kế Tour mới",
+        String.format(
+            "Khách hàng %s vừa yêu cầu tư vấn. Hãy vào nhóm chat để hỗ trợ ngay nhé!",
+            tourist.getFullName()),
+        chatSession.getId().toString());
+
     return toResponse(chatSession);
   }
 
@@ -129,7 +147,28 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             .status(ChatSessionStatus.OPEN)
             .build();
 
-    return chatSessionRepository.save(chatSession);
+    chatSession = chatSessionRepository.save(chatSession);
+
+    // Notify All Members (Guide, Coordinator, Paid Tourists)
+    List<String> memberEmails = new ArrayList<>();
+    if (guide != null) memberEmails.add(guide.getEmail());
+    if (coordinator != null) memberEmails.add(coordinator.getEmail());
+
+    tourBookingRepository.findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+        .forEach(booking -> memberEmails.add(booking.getUser().getEmail()));
+
+    if (!memberEmails.isEmpty()) {
+      notificationService.sendToUsers(
+          memberEmails,
+          NotificationType.GROUP_CHAT_CREATED,
+          "Nhóm chat đoàn đã mở!",
+          String.format(
+              "Nhóm chat cho chuyến đi %s đã sẵn sàng. Hãy vào làm quen với mọi người nhé!",
+              instance.getTour().getName()),
+          instance.getId().toString());
+    }
+
+    return chatSession;
   }
 
   @Override

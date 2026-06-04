@@ -16,6 +16,7 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
 import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
@@ -23,6 +24,9 @@ import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
+import com.travery.traverybackend.enums.common.NotificationType;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +51,8 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
+  private final TourBookingRepository tourBookingRepository;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional(readOnly = true)
@@ -245,6 +251,9 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     if (request.getStatus() != null) {
       validateStatusTransition(tourInstance, request.getStatus());
       tourInstance.setStatus(request.getStatus());
+      if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+        triggerFeedbackNotifications(tourInstance);
+      }
     }
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
@@ -263,6 +272,10 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     validateStatusTransition(tourInstance, request.getStatus());
     tourInstance.setStatus(request.getStatus());
 
+    if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+      triggerFeedbackNotifications(tourInstance);
+    }
+
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
     return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(savedInstance);
   }
@@ -276,6 +289,22 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     return tourIncidentRepository.findByTourInstanceId(instanceId).stream()
         .map(tourIncidentMapper::toResponse)
         .collect(Collectors.toList());
+  }
+
+  private void triggerFeedbackNotifications(TourInstance instance) {
+    tourBookingRepository
+        .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+        .forEach(
+            booking -> {
+              notificationService.sendToUser(
+                  booking.getUser().getEmail(),
+                  NotificationType.POST_TOUR_REVIEW,
+                  "Chuyến đi kết thúc",
+                  String.format(
+                      "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+                      instance.getTour().getName()),
+                  instance.getId().toString());
+            });
   }
 
   private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {

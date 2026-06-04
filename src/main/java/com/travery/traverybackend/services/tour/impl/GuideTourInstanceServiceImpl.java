@@ -27,7 +27,10 @@ import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
+import com.travery.traverybackend.enums.common.NotificationType;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final TourInstanceMapper tourInstanceMapper;
   private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional(readOnly = true)
@@ -219,6 +223,11 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
 
     tourInstance.setStatus(request.getStatus());
     tourInstanceRepository.save(tourInstance);
+
+    if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+      triggerFeedbackNotifications(tourInstance);
+    }
+
     return getInstanceDetail(guideId, instanceId);
   }
 
@@ -270,5 +279,21 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
       throw new BaseAppException(
           WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
     }
+  }
+
+  private void triggerFeedbackNotifications(TourInstance instance) {
+    tourBookingRepository
+        .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+        .forEach(
+            booking -> {
+              notificationService.sendToUser(
+                  booking.getUser().getEmail(),
+                  NotificationType.POST_TOUR_REVIEW,
+                  "Chuyến đi kết thúc",
+                  String.format(
+                      "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+                      instance.getTour().getName()),
+                  instance.getId().toString());
+            });
   }
 }
