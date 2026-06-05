@@ -9,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 @Table(
     name = "user_device_tokens",
     indexes = {
-      @Index(name = "idx_user_device_tokens_phone_number", columnList = "phone_number"),
       @Index(name = "idx_user_device_tokens_fcm_token", columnList = "fcm_token")
     })
 @Getter
