@@ -42,10 +42,6 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
   private SearchPredicate buildPredicate(SearchPredicateFactory f, HotelSearchRequest request) {
     var bool = f.bool();
 
-    if (!bool.hasClause()) {
-      return f.matchAll().toPredicate();
-    }
-
     // 1. Text Search (Keyword)
     if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
       bool.must(
@@ -104,7 +100,9 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
               .field("roomTypes.basePrice")
               .between(request.getMinPrice(), request.getMaxPrice()));
     } else if (request.getMinPrice() != null) {
-      bool.must(f.range().field("roomTypes.basePrice").atLeast(request.getMinPrice()));
+      // mustNot(lessThan) = "no room is cheaper than minPrice"
+      // = hotel's cheapest room >= minPrice (correct UX: filter out budget hotels)
+      bool.mustNot(f.range().field("roomTypes.basePrice").lessThan(request.getMinPrice()));
     } else if (request.getMaxPrice() != null) {
       bool.must(f.range().field("roomTypes.basePrice").atMost(request.getMaxPrice()));
     }
@@ -125,6 +123,10 @@ public class HotelSearchCustomRepositoryImpl implements HotelSearchCustomReposit
         return f.matchNone().toPredicate();
       }
       bool.must(f.terms().field("id").matchingAny(request.getAvailableHotelIds()));
+    }
+
+    if (!bool.hasClause()) {
+      return f.matchAll().toPredicate();
     }
 
     return bool.toPredicate();

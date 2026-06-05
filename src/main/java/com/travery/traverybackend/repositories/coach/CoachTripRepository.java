@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,6 +27,8 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
           + "JOIN FETCH ct.coach c "
           + "JOIN FETCH c.seatLayout "
           + "WHERE ct.route.id = :routeId "
+          + "AND r.isDeleted = false "
+          + "AND c.isDeleted = false "
           + "AND ct.departureTime >= :startOfDay "
           + "AND ct.departureTime < :endOfDay "
           + "AND ct.status = 'OPEN'")
@@ -41,6 +44,8 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
           + "JOIN FETCH c.seatLayout "
           + "WHERE os.id = :originId "
           + "AND ds.id = :destinationId "
+          + "AND r.isDeleted = false "
+          + "AND c.isDeleted = false "
           + "AND ct.departureTime >= :startOfDay "
           + "AND ct.departureTime < :endOfDay "
           + "AND ct.status = 'OPEN'")
@@ -51,6 +56,7 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
   @Query("SELECT ct FROM CoachTrip ct WHERE ct.id = :id")
   Optional<CoachTrip> findByIdForUpdate(UUID id);
 
+  @Override
   @EntityGraph(
       attributePaths = {
         "coach",
@@ -58,9 +64,10 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
         "route",
         "route.originDestination",
         "route.destinationDestination",
-        "driver"
+        "driver",
+        "guide"
       })
-  Page<CoachTrip> findByCoordinator_Id(UUID coordinatorId, Pageable pageable);
+  Page<CoachTrip> findAll(Pageable pageable);
 
   @EntityGraph(
       attributePaths = {
@@ -69,8 +76,44 @@ public interface CoachTripRepository extends JpaRepository<CoachTrip, UUID> {
         "route",
         "route.originDestination",
         "route.destinationDestination",
-        "driver"
+        "driver",
+        "guide"
       })
-  Page<CoachTrip> findByCoordinator_IdAndStatus(
-      UUID coordinatorId, CoachTripStatus status, Pageable pageable);
+  Page<CoachTrip> findByStatus(CoachTripStatus status, Pageable pageable);
+
+  @EntityGraph(
+      attributePaths = {
+        "coach",
+        "coach.seatLayout",
+        "route",
+        "route.originDestination",
+        "route.destinationDestination",
+        "driver",
+        "guide"
+      })
+  Page<CoachTrip> findByGuide_Id(UUID guideId, Pageable pageable);
+
+  @EntityGraph(
+      attributePaths = {
+        "coach",
+        "coach.seatLayout",
+        "route",
+        "route.originDestination",
+        "route.destinationDestination",
+        "driver",
+        "guide"
+      })
+  Page<CoachTrip> findByGuide_IdAndStatus(UUID guideId, CoachTripStatus status, Pageable pageable);
+
+  @Query(
+      "SELECT ct FROM CoachTrip ct "
+          + "JOIN FETCH ct.route r "
+          + "JOIN FETCH r.originDestination "
+          + "JOIN FETCH r.destinationDestination "
+          + "JOIN FETCH ct.coach c "
+          + "JOIN FETCH c.seatLayout "
+          + "JOIN FETCH ct.driver "
+          + "LEFT JOIN FETCH ct.guide "
+          + "WHERE ct.id = :id")
+  Optional<CoachTrip> findByIdWithDetails(@Param("id") UUID id);
 }

@@ -37,7 +37,8 @@ public class CometChatServiceImpl implements CometChatService {
 
   private String getBaseUrl() {
     if (appId == null || appId.isBlank() || region == null || region.isBlank()) {
-      log.error("CometChat configuration is missing or invalid: appId={}, region={}", appId, region);
+      log.error(
+          "CometChat configuration is missing or invalid: appId={}, region={}", appId, region);
     }
     return String.format("https://%s.api-%s.cometchat.io/v3", appId, region);
   }
@@ -52,6 +53,7 @@ public class CometChatServiceImpl implements CometChatService {
     headers.set("accept", "application/json");
     return headers;
   }
+
   public void createGroup(String guid, String name) {
     String url = getBaseUrl() + "/groups";
 

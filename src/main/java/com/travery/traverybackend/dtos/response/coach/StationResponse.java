@@ -1,5 +1,6 @@
 package com.travery.traverybackend.dtos.response.coach;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,4 +19,6 @@ public class StationResponse {
   private String address;
   private UUID destinationId;
   private String destinationName;
+  private BigDecimal latitude;
+  private BigDecimal longitude;
 }

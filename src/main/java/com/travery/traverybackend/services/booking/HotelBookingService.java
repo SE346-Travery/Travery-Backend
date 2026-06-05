@@ -9,7 +9,9 @@ import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelServiceResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,4 +31,6 @@ public interface HotelBookingService {
   AddOnBillResponse getAddOnBill(UUID bookingId, UUID userId);
 
   void cancelAddOnOrder(UUID orderId, UUID userId);
+
+  List<HotelServiceResponse> getAvailableServices(UUID bookingId, UUID userId);
 }

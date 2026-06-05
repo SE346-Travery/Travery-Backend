@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HotelServiceRepository extends JpaRepository<HotelService, UUID> {
   List<HotelService> findAllByHotel_Id(UUID hotelId);
+
+  List<HotelService> findAllByHotel_IdAndIsActiveTrueAndIsDeletedFalse(UUID hotelId);
 }

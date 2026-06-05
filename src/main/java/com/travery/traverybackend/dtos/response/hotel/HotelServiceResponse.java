@@ -21,5 +21,5 @@ public class HotelServiceResponse {
   private BigDecimal price;
   private String unit;
   private String description;
-  private boolean isActive;
+  private Boolean isActive;
 }

@@ -45,8 +45,13 @@ public interface TourInstanceMapper {
   @Mapping(source = "driver.phoneNumber", target = "driverPhone")
   TourInstanceDetailResponse toCoordinatorTourInstanceDetailResponse(TourInstance tourInstance);
 
+  @Mapping(source = "tourInstance.tour.name", target = "tourName")
+  @Mapping(source = "tourInstance.tour.destination.name", target = "destinationName")
+  @Mapping(source = "tourInstance.tour.pickupLocation", target = "pickupLocation")
+  @Mapping(source = "tourInstance.coach.id", target = "coachId")
   @Mapping(source = "tourInstance.coach.licensePlate", target = "coachLicensePlate")
   @Mapping(source = "tourInstance.coach.coachType", target = "coachType")
+  @Mapping(source = "tourInstance.driver.id", target = "driverId")
   @Mapping(source = "tourInstance.driver.fullName", target = "driverName")
   @Mapping(source = "tourInstance.driver.phoneNumber", target = "driverPhone")
   GuideTourInstanceDetailResponse toGuideTourInstanceDetailResponse(

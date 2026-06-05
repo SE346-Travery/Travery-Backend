@@ -23,6 +23,9 @@ public class CreateCoachTripRequest {
   @NotNull(message = "Driver ID is required")
   private UUID driverId;
 
+  @NotNull(message = "Guide ID is required")
+  private UUID guideId;
+
   @NotNull(message = "Departure time is required")
   @Future(message = "Departure time must be in the future")
   private LocalDateTime departureTime;
