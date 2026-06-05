@@ -61,6 +61,10 @@ services:
       
       # Backend IP
       BACKEND_IP: ${BACKEND_IP}
+      
+      # Firebase (credentials via JSON string, no file needed)
+      FIREBASE_CONFIG_JSON: ${FIREBASE_CONFIG_JSON}
+      FIREBASE_APP_NAME: ${FIREBASE_APP_NAME:-Travery-Backend}
     
     volumes:
       - travery_lucene_prod:/app/lucene-indexes

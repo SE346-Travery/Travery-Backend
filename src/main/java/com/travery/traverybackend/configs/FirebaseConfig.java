@@ -4,9 +4,11 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,10 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class FirebaseConfig {
 
-  @Value("${app.firebase.config-path}")
+  @Value("${app.firebase.config-json:}")
+  private String configJson;
+
+  @Value("${app.firebase.config-path:}")
   private String configPath;
 
   @Value("${app.firebase.app-name}")
@@ -36,18 +41,9 @@ public class FirebaseConfig {
       }
     }
 
-    if (configPath == null || configPath.isBlank()) {
-      log.error("Firebase config path is missing. Please set app.firebase.config-path");
-      throw new IllegalStateException("Firebase config path must be provided");
-    }
+    InputStream serviceAccount = resolveCredentials();
 
-    if (!Files.exists(Paths.get(configPath))) {
-      log.error("Firebase config file not found at: {}", configPath);
-      throw new IOException("Firebase config file not found at: " + configPath);
-    }
-
-    log.info("Loading Firebase configuration from: {}", configPath);
-    try (InputStream serviceAccount = new FileInputStream(configPath)) {
+    try (serviceAccount) {
       FirebaseOptions options =
           FirebaseOptions.builder()
               .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -65,5 +61,33 @@ public class FirebaseConfig {
   @Bean
   public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
     return FirebaseMessaging.getInstance(firebaseApp);
+  }
+
+  /**
+   * Resolves Firebase credentials from either: 1. Environment variable FIREBASE_CONFIG_JSON
+   * (preferred for production/CI) 2. File path FIREBASE_CONFIG_PATH (fallback for local
+   * development)
+   */
+  private InputStream resolveCredentials() throws IOException {
+    // Priority 1: JSON content from environment variable
+    if (configJson != null && !configJson.isBlank()) {
+      log.info("Loading Firebase credentials from environment variable (FIREBASE_CONFIG_JSON)");
+      return new ByteArrayInputStream(configJson.getBytes(StandardCharsets.UTF_8));
+    }
+
+    // Priority 2: File path
+    if (configPath != null && !configPath.isBlank()) {
+      if (!Files.exists(Paths.get(configPath))) {
+        log.error("Firebase config file not found at: {}", configPath);
+        throw new IOException("Firebase config file not found at: " + configPath);
+      }
+      log.info("Loading Firebase credentials from file: {}", configPath);
+      return new FileInputStream(configPath);
+    }
+
+    throw new IllegalStateException(
+        "Firebase credentials not configured. "
+            + "Set either FIREBASE_CONFIG_JSON (env var with JSON content) "
+            + "or FIREBASE_CONFIG_PATH (path to JSON file).");
   }
 }

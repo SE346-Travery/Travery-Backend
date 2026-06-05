@@ -15,5 +15,6 @@ server:
 
 app:
   firebase:
-    config-path: ${FIREBASE_CONFIG_PATH}
+    config-json: ${FIREBASE_CONFIG_JSON:}
+    config-path: ${FIREBASE_CONFIG_PATH:}
     app-name: ${FIREBASE_APP_NAME:travery-backend}
