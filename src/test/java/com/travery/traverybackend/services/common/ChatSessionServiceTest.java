@@ -7,16 +7,14 @@ import static org.mockito.Mockito.*;
 
 import com.travery.traverybackend.dtos.response.common.ChatSessionResponse;
 import com.travery.traverybackend.entities.common.ChatSession;
-import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.User;
-import com.travery.traverybackend.enums.common.ChatSessionStatus;
-import com.travery.traverybackend.exception.BaseAppException;
-import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.common.ChatSessionRepository;
-import com.travery.traverybackend.repositories.tour.TourRepository;
+import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.impl.ChatSessionServiceImpl;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,89 +28,48 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ChatSessionServiceTest {
 
   @Mock private ChatSessionRepository chatSessionRepository;
-  @Mock private TourRepository tourRepository;
+  @Mock private TourInstanceRepository tourInstanceRepository;
+  @Mock private TourBookingRepository tourBookingRepository;
   @Mock private UserRepository userRepository;
   @Mock private CometChatService cometChatService;
+  @Mock private NotificationService notificationService;
 
   @InjectMocks private ChatSessionServiceImpl chatSessionService;
 
-  private UUID tourId;
-  private Tour tour;
-  private Coordinator coordinator;
+  private UUID userId;
   private User tourist;
+  private Coordinator coordinator;
 
   @BeforeEach
   void setUp() {
-    tourId = UUID.randomUUID();
+    userId = UUID.randomUUID();
+    tourist = User.builder().id(userId).fullName("Tourist").cometchatUID("user_" + userId).build();
     coordinator =
         Coordinator.builder()
             .id(UUID.randomUUID())
             .fullName("Coord")
+            .email("coord@test.com")
             .cometchatUID("coord_uid")
             .build();
-    tourist =
-        User.builder()
-            .id(UUID.randomUUID())
-            .fullName("Tourist")
-            .cometchatUID("tourist_uid")
-            .build();
-    tour =
-        Tour.builder()
-            .id(tourId)
-            .name("Cool Tour")
-            .coordinator(coordinator)
-            .isCustom(false)
-            .build();
   }
 
   @Test
-  void getOrCreateChatSession_Existing_ReturnsExisting() {
-    ChatSession existing =
-        ChatSession.builder()
-            .id(UUID.randomUUID())
-            .tour(tour)
-            .user(tourist)
-            .cometchatGuid("guid123")
-            .status(ChatSessionStatus.OPEN)
-            .build();
-
-    when(chatSessionRepository.findByTourId(tourId)).thenReturn(Optional.of(existing));
-
-    ChatSessionResponse response = chatSessionService.getOrCreateChatSession(tourId);
-
-    assertNotNull(response);
-    assertEquals("guid123", response.getCometchatGuid());
-    verify(chatSessionRepository, never()).save(any());
-  }
-
-  @Test
-  void getOrCreateChatSession_NewRegularTour_ThrowsException() {
-    when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
-
-    BaseAppException exception =
-        assertThrows(
-            BaseAppException.class, () -> chatSessionService.getOrCreateChatSession(tourId));
-
-    assertEquals(WebErrorCode.BAD_REQUEST, exception.getErrorCode());
-    assertEquals(
-        "Direct tour chat only available for custom tours. Use instance chat for regular tours.",
-        exception.getMessage());
-  }
-
-  @Test
-  void getOrCreateChatSession_NewCustomTour_CreatesGroup() {
-    tour.setCustom(true);
-    tour.setRequestedByUser(tourist);
-
-    when(chatSessionRepository.findByTourId(tourId)).thenReturn(Optional.empty());
-    when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
+  void initiateCustomTourChat_Valid_AssignsCoordinatorAndNotifies() {
+    when(userRepository.findById(userId)).thenReturn(Optional.of(tourist));
+    when(userRepository.findAllActiveCoordinators()).thenReturn(List.of(coordinator));
     when(chatSessionRepository.save(any(ChatSession.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
+        .thenAnswer(
+            invocation -> {
+              ChatSession session = invocation.getArgument(0);
+              session.setId(UUID.randomUUID());
+              return session;
+            });
 
-    ChatSessionResponse response = chatSessionService.getOrCreateChatSession(tourId);
+    ChatSessionResponse response = chatSessionService.initiateCustomTourChat(userId);
 
     assertNotNull(response);
-    assertTrue(response.getCometchatGuid().startsWith("custom_tour_"));
     verify(cometChatService).createGroup(anyString(), anyString());
+    verify(notificationService)
+        .sendToUser(eq(coordinator.getEmail()), any(), anyString(), anyString(), any());
   }
 }

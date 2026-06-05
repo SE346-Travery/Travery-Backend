@@ -9,5 +9,9 @@ public interface CometChatService {
 
   void removeMemberFromGroup(String guid, String uid);
 
-  void createUser(String uid, String name);
+  void createUser(String uid, String name, String avatarUrl);
+
+  void registerPushToken(String uid, String fcmToken);
+
+  void syncUserAvatar(String uid, String avatarUrl);
 }

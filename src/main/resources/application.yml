@@ -12,3 +12,8 @@ spring:
 
 server:
   address: 0.0.0.0
+
+app:
+  firebase:
+    config-path: ${FIREBASE_CONFIG_PATH}
+    app-name: ${FIREBASE_APP_NAME:travery-backend}

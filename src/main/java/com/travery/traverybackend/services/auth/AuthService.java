@@ -11,6 +11,7 @@ import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.auth.AuthProvider;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.user.UserRoles;
 import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
@@ -22,6 +23,9 @@ import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.security.jwt.JwtService;
 import com.travery.traverybackend.security.user.CustomUserDetails;
+import com.travery.traverybackend.services.common.CometChatService;
+import com.travery.traverybackend.services.common.FcmService;
+import com.travery.traverybackend.services.common.NotificationService;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
@@ -51,6 +55,9 @@ public class AuthService {
   private final JwtService jwtServiceImpl;
   private final AuthenticationManager authenticationManager;
   private final HotelRepository hotelRepository;
+  private final FcmService fcmService;
+  private final NotificationService notificationService;
+  private final CometChatService cometChatService;
 
   public void register(RegisterRequest request) {
     Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
@@ -89,9 +96,13 @@ public class AuthService {
     // Save user with PENDING status
     userRepository.save(user);
 
+    // Sync FCM token if provided
+    fcmService.syncDeviceToken(user.getEmail(), request.getFcmToken());
+
     sendOtp(user.getEmail());
   }
 
+  @Transactional
   public void verifyOtp(VerifyOtpRequest request) {
     User user =
         userRepository
@@ -110,6 +121,7 @@ public class AuthService {
     }
 
     user.setStatus(UserStatus.ACTIVE);
+    ensureCometChatUser(user);
     userRepository.save(user);
   }
 
@@ -156,6 +168,9 @@ public class AuthService {
     String refreshToken = jwtServiceImpl.generateRefreshToken(customUserDetails);
 
     refreshTokenService.save(refreshToken, customUserDetails.getUserId());
+
+    // Sync FCM token if provided
+    fcmService.syncDeviceToken(customUserDetails.getEmail(), request.getFcmToken());
 
     return LoginResponse.builder()
         .accessToken(accessToken)
@@ -247,6 +262,9 @@ public class AuthService {
     }
 
     refreshTokenService.revoke(refreshToken);
+
+    // Unregister FCM token if provided
+    fcmService.unregisterDeviceToken(refreshToken.getUser().getEmail(), request.getFcmToken());
   }
 
   public void requestReset(ForgotPasswordRequest request) {
@@ -286,6 +304,14 @@ public class AuthService {
     user.setPasswordHashed(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
 
+    // Send Security Alert Notification
+    notificationService.sendToUser(
+        user.getEmail(),
+        NotificationType.SECURITY_ALERT,
+        "Thay đổi mật khẩu thành công",
+        "Mật khẩu của bạn vừa được thay đổi. Nếu bạn không thực hiện việc này, vui lòng liên hệ CSKH ngay lập tức.",
+        null);
+
     // Revoke all refresh tokens — force to log in again in all devices
     refreshTokenService.revokeAll(user.getId());
   }
@@ -315,6 +341,14 @@ public class AuthService {
     // 4. Save new password hash
     user.setPasswordHashed(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
+
+    // Send Security Alert Notification
+    notificationService.sendToUser(
+        user.getEmail(),
+        NotificationType.SECURITY_ALERT,
+        "Thay đổi mật khẩu thành công",
+        "Mật khẩu của bạn vừa được thay đổi. Nếu bạn không thực hiện việc này, vui lòng liên hệ CSKH ngay lập tức.",
+        null);
 
     // 5. Revoke all refresh tokens — forces re-login on other devices
     // The current access token remains valid until it expires (short TTL).
@@ -401,7 +435,9 @@ public class AuthService {
     user.setStatus(UserStatus.ACTIVE);
     user.setAuthProvider(AuthProvider.LOCAL);
 
-    userRepository.save(user);
+    userRepository.save(user); // Save to get the ID
+    ensureCometChatUser(user);
+    userRepository.save(user); // Save again with cometchatUID
   }
 
   private void sendOtp(String email) {
@@ -409,5 +445,22 @@ public class AuthService {
     otpService.saveRegisterOtp(email, otp);
     emailService.sendOtp(email, otp);
     otpService.markResend(email);
+  }
+
+  private void ensureCometChatUser(User user) {
+    if (user == null || user.getId() == null) return;
+
+    // Only Tourist, Guide, and Coordinator roles are created on CometChat
+    if (user.getRole() != UserRoles.TOURIST
+        && user.getRole() != UserRoles.GUIDE
+        && user.getRole() != UserRoles.COORDINATOR) {
+      return;
+    }
+
+    if (user.getCometchatUID() == null) {
+      String uid = user.getId().toString();
+      cometChatService.createUser(uid, user.getFullName(), user.getAvatarUrl());
+      user.setCometchatUID(uid);
+    }
   }
 }

@@ -2,14 +2,14 @@ package com.travery.traverybackend.controllers.booking;
 
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.booking.CancelBookingRequest;
+import com.travery.traverybackend.dtos.request.booking.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
-import com.travery.traverybackend.dtos.request.coach.CreateCoachBookingRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.booking.CancelBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingDetailResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingDetailResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingResponse;
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.booking.CoachBookingService;

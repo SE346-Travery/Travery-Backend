@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 public interface CoordinatorCoachTripService {
   CoachTripDetailResponse createTrip(CreateCoachTripRequest request, UUID coordinatorId);
 
-  Page<CoachTripResponse> getTrips(UUID coordinatorId, CoachTripStatus status, Pageable pageable);
+  Page<CoachTripResponse> getTrips(CoachTripStatus status, Pageable pageable);
 
   CoachTripDetailResponse getTripDetail(UUID tripId);
 

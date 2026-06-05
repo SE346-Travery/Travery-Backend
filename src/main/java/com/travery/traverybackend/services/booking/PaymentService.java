@@ -2,6 +2,7 @@ package com.travery.traverybackend.services.booking;
 
 import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.enums.booking.BookingType;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public interface PaymentService {
    * PaymentTransaction. Returns a VNPAY payment URL.
    */
   PaymentInitiationResponse initiatePayment(
-      UUID bookingId, InitiatePaymentRequest request, UUID userId);
+      UUID bookingId, InitiatePaymentRequest request, UUID userId, BookingType bookingType);
 
   /**
    * Initiate VNPAY payment for a PENDING coach booking. Validates ownership, deadline, and creates

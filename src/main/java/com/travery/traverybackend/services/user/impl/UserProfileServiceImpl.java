@@ -12,6 +12,7 @@ import com.travery.traverybackend.exception.error.UserErrorCode;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.UserProfileService;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final MediaService mediaService;
+  private final CometChatService cometChatService;
 
   @Override
   @Transactional(readOnly = true)
@@ -119,6 +121,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     user.setAvatarPublicId((String) uploadResult.get("public_id"));
 
     userRepository.save(user);
+
+    // Sync with CometChat
+    cometChatService.syncUserAvatar(user.getCometchatUID(), user.getAvatarUrl());
 
     // Delete old avatar only after successful upload and save
     if (oldAvatarPublicId != null) {

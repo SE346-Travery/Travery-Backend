@@ -7,6 +7,7 @@ import com.travery.traverybackend.dtos.response.profile.BaseUserProfileResponse;
 import com.travery.traverybackend.entities.hotel.Hotel;
 import com.travery.traverybackend.entities.user.*;
 import com.travery.traverybackend.enums.common.CloudinaryFolder;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.user.UserRoles;
 import com.travery.traverybackend.enums.user.UserStatus;
 import com.travery.traverybackend.exception.BaseAppException;
@@ -15,6 +16,8 @@ import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.hotel.HotelRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.CometChatService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.AdminUserService;
 import java.util.Map;
@@ -34,6 +37,8 @@ public class AdminUserServiceImpl implements AdminUserService {
   private final HotelRepository hotelRepository;
   private final UserMapper userMapper;
   private final MediaService mediaService;
+  private final NotificationService notificationService;
+  private final CometChatService cometChatService;
 
   @Override
   @Transactional(readOnly = true)
@@ -83,6 +88,16 @@ public class AdminUserServiceImpl implements AdminUserService {
     user.setStatus(newStatus);
     userRepository.save(user);
 
+    // Trigger Notification
+    String title = newStatus == UserStatus.BANNED ? "Tài khoản bị khóa" : "Tài khoản đã mở khóa";
+    String content =
+        newStatus == UserStatus.BANNED
+            ? "Tài khoản của bạn đã bị khóa bởi quản trị viên hệ thống."
+            : "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập lại ngay bây giờ.";
+
+    notificationService.sendToUser(
+        user.getEmail(), NotificationType.SYSTEM_ALERT, title, content, null);
+
     return userMapper.toResponse(user);
   }
 
@@ -127,6 +142,9 @@ public class AdminUserServiceImpl implements AdminUserService {
     user.setAvatarPublicId((String) uploadResult.get("public_id"));
 
     userRepository.save(user);
+
+    // Sync with CometChat
+    cometChatService.syncUserAvatar(user.getCometchatUID(), user.getAvatarUrl());
 
     if (oldAvatarPublicId != null) {
       mediaService.deleteImage(oldAvatarPublicId);

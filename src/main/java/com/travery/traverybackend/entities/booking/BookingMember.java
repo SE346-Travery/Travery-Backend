@@ -13,6 +13,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 @Entity
 @Table(name = "booking_members")
@@ -21,19 +24,25 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@Indexed
 public class BookingMember extends AbstractBaseEntity {
 
   @Column(name = "booking_id", nullable = false)
+  @KeywordField
   private UUID bookingId;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "booking_type", nullable = false, length = 50)
+  @KeywordField
   private BookingType bookingType;
 
   @Column(name = "full_name", nullable = false, length = 100)
+  @FullTextField
   private String fullName;
 
   @Column(name = "identity_number", nullable = false, length = 50)
+  @FullTextField
+  @KeywordField(name = "identityNumber_keyword")
   private String identityNumber;
 
   @Column(name = "date_of_birth")

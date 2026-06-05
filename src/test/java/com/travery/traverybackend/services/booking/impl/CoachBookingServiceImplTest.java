@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.travery.traverybackend.dtos.response.coach.CoachBookingSummaryResponse;
+import com.travery.traverybackend.dtos.response.booking.CoachBookingSummaryResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.mappers.CoachMapper;

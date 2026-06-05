@@ -5,7 +5,6 @@ import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,11 +76,11 @@ public class CoordinatorTourInstanceController extends AbstractBaseController {
     return success(response, "Updated tour instance status successfully");
   }
 
-  @GetMapping("/{id}/incidents")
+  @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<List<TourIncidentResponse>>> getIncidents(
-      @PathVariable UUID id) {
-    List<TourIncidentResponse> response = coordinatorTourInstanceService.getIncidents(id);
-    return success(response, "Fetched tour incidents successfully");
+  public ResponseEntity<SingleResponse<Void>> deleteInstance(
+      @PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    coordinatorTourInstanceService.deleteInstance(id, userDetails.getUserId());
+    return success(null, "Tour instance deleted successfully");
   }
 }

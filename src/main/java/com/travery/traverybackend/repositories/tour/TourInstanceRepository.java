@@ -24,22 +24,36 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
       "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour JOIN FETCH ti.coach JOIN FETCH ti.driver WHERE ti.id = :id")
   Optional<TourInstance> findByIdWithDetails(@Param("id") UUID id);
 
-  List<TourInstance> findByStatus(TourInstanceStatus status);
+  @Query("SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.status = :status")
+  List<TourInstance> findByStatus(@Param("status") TourInstanceStatus status);
 
   @Query(
-      "SELECT ti FROM TourInstance ti WHERE ti.currentParticipants >= 10 AND ti.currentParticipants <= 30 AND ti.status NOT IN :excludedStatuses")
+      "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.currentParticipants >= 10 AND ti.currentParticipants <= 30 AND ti.status NOT IN :excludedStatuses")
   List<TourInstance> findWaitingConfirmation(
       @Param("excludedStatuses") List<TourInstanceStatus> excludedStatuses);
 
   @Query(
-      "SELECT ti FROM TourInstance ti WHERE ti.currentParticipants < ti.tour.minParticipants AND ti.status NOT IN :excludedStatuses")
+      "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.currentParticipants < ti.tour.minParticipants AND ti.status NOT IN :excludedStatuses")
   List<TourInstance> findLowOccupancy(
       @Param("excludedStatuses") List<TourInstanceStatus> excludedStatuses);
 
+  @Query(
+      "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.tour.id = :tourId AND ti.status IN :statuses AND ti.startDate >= :currentDate ORDER BY ti.startDate ASC")
   List<TourInstance> findByTourIdAndStatusInAndStartDateGreaterThanEqualOrderByStartDateAsc(
-      UUID tourId, List<TourInstanceStatus> statuses, LocalDate currentDate);
+      @Param("tourId") UUID tourId,
+      @Param("statuses") List<TourInstanceStatus> statuses,
+      @Param("currentDate") LocalDate currentDate);
 
-  List<TourInstance> findByGuideId(UUID guideId);
+  @Query("SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId")
+  List<TourInstance> findByGuideId(@Param("guideId") UUID guideId);
 
-  List<TourInstance> findByGuideIdAndStatus(UUID guideId, TourInstanceStatus status);
+  List<TourInstance> findByStartDateAndStatusIn(
+      LocalDate startDate, List<TourInstanceStatus> statuses);
+
+  @Query(
+      "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId AND ti.status = :status")
+  List<TourInstance> findByGuideIdAndStatus(
+      @Param("guideId") UUID guideId, @Param("status") TourInstanceStatus status);
+
+  boolean existsByTourId(UUID tourId);
 }

@@ -146,7 +146,7 @@ class CoachTripServiceTest {
 
   @Test
   void getStations_returnsList() {
-    when(stationRepository.findAll()).thenReturn(List.of(station1, station2));
+    when(stationRepository.findAllByIsDeletedFalse()).thenReturn(List.of(station1, station2));
 
     StationResponse resp1 =
         StationResponse.builder().id(station1.getId()).name("Station 1").build();
@@ -157,7 +157,42 @@ class CoachTripServiceTest {
 
     List<StationResponse> result = coachTripService.getStations();
     assertEquals(2, result.size());
-    verify(stationRepository).findAll();
+    verify(stationRepository).findAllByIsDeletedFalse();
+  }
+
+  @Test
+  void searchTrips_filtersDeletedCoaches() {
+    Coach deletedCoach =
+        Coach.builder().id(UUID.randomUUID()).coachType(CoachType.SEAT).seatLayout(layout).build();
+    deletedCoach.setDeleted(true);
+    CoachTrip deletedCoachTrip =
+        CoachTrip.builder()
+            .id(UUID.randomUUID())
+            .route(route)
+            .coach(deletedCoach)
+            .departureTime(LocalDateTime.now().withHour(10))
+            .status(CoachTripStatus.OPEN)
+            .build();
+
+    SearchCoachTripRequest request =
+        SearchCoachTripRequest.builder()
+            .originId(dest1.getId())
+            .destinationId(dest2.getId())
+            .departureDate(LocalDate.now())
+            .build();
+
+    LocalDateTime startOfDay = request.getDepartureDate().atStartOfDay();
+    LocalDateTime endOfDay = request.getDepartureDate().atTime(LocalTime.MAX);
+
+    when(coachTripRepository.searchTrips(dest1.getId(), dest2.getId(), startOfDay, endOfDay))
+        .thenReturn(List.of(trip1, deletedCoachTrip));
+    when(coachBookingSeatRepository.countBookedSeatsForTrips(anyList(), anyList()))
+        .thenReturn(List.of());
+
+    List<CoachTripResponse> result = coachTripService.searchTrips(request);
+
+    assertEquals(1, result.size());
+    assertEquals(trip1.getId(), result.get(0).getId());
   }
 
   @Test

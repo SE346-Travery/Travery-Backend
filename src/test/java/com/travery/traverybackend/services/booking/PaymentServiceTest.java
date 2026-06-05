@@ -8,15 +8,18 @@ import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.finance.PaymentTransaction;
+import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Tourist;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.finance.PaymentStatus;
+import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.impl.PaymentServiceImpl;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.utils.VnPayUtil;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,11 +41,15 @@ public class PaymentServiceTest {
 
   @Mock private TourBookingRepository tourBookingRepository;
 
+  @Mock private HotelBookingRepository hotelBookingRepository;
+
   @Mock private PaymentTransactionRepository paymentTransactionRepository;
 
   @Mock private VnPayConfig vnPayConfig;
 
   @Mock private ChatSessionService chatSessionService;
+
+  @Mock private NotificationService notificationService;
 
   @InjectMocks private PaymentServiceImpl paymentService;
 
@@ -58,9 +65,14 @@ public class PaymentServiceTest {
 
     Tourist mockUser = new Tourist();
     mockUser.setId(userId);
+    mockUser.setEmail("tourist@example.com");
+
+    Tour mockTour = new Tour();
+    mockTour.setName("Test Tour");
 
     TourInstance mockTourInstance = new TourInstance();
     mockTourInstance.setId(UUID.randomUUID());
+    mockTourInstance.setTour(mockTour);
 
     booking =
         TourBooking.builder()
@@ -126,7 +138,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);
@@ -180,7 +193,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);
@@ -246,7 +260,8 @@ public class PaymentServiceTest {
 
       // Act
       PaymentInitiationResponse response =
-          paymentService.initiatePayment(bookingId, initiateRequest, userId);
+          paymentService.initiatePayment(
+              bookingId, initiateRequest, userId, BookingType.TOUR_BOOKING);
 
       // Assert
       assertNotNull(response);

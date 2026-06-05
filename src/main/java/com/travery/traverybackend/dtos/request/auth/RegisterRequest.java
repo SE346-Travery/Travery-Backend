@@ -27,4 +27,6 @@ public class RegisterRequest {
 
   @NotBlank(message = "FullName is required")
   private String fullName;
+
+  private String fcmToken;
 }

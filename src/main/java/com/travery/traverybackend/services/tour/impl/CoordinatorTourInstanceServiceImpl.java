@@ -3,28 +3,34 @@ package com.travery.traverybackend.services.tour.impl;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
+import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
+import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.common.ImageType;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
-import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
-import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
+import com.travery.traverybackend.repositories.common.ImageRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.tour.CoordinatorTourInstanceService;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +49,11 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final CoachRepository coachRepository;
   private final DriverRepository driverRepository;
   private final HotelBookingRepository hotelBookingRepository;
-  private final TourIncidentRepository tourIncidentRepository;
+  private final TourBookingRepository tourBookingRepository;
+  private final ImageRepository imageRepository;
   private final TourInstanceMapper tourInstanceMapper;
-  private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional(readOnly = true)
@@ -82,14 +89,21 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
                     TourInstanceStatus.CANCELLED,
                     TourInstanceStatus.PLANNING));
         break;
-      case "all":
       default:
         instances = tourInstanceRepository.findAll();
         break;
     }
 
+    List<UUID> tourIds = instances.stream().map(ti -> ti.getTour().getId()).distinct().toList();
+    Map<UUID, String> thumbnails = getThumbnailsForTours(tourIds);
+
     return instances.stream()
-        .map(tourInstanceMapper::toTourInstanceResponse)
+        .map(
+            ti -> {
+              TourInstanceResponse response = tourInstanceMapper.toTourInstanceResponse(ti);
+              response.setThumbnailUrl(thumbnails.get(ti.getTour().getId()));
+              return response;
+            })
         .collect(Collectors.toList());
   }
 
@@ -101,7 +115,31 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
             .findByIdWithDetails(id)
             .orElseThrow(
                 () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
-    return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance);
+    TourInstanceDetailResponse response =
+        tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance);
+
+    List<TourBookingResponse> bookings =
+        tourBookingRepository.findByTourInstanceId(id).stream()
+            .map(tourInstanceMapper::toTourBookingResponse)
+            .collect(Collectors.toList());
+    response.setBookings(bookings);
+
+    imageRepository
+        .findFirstByEntityIdAndEntityTypeAndIsThumbnailTrue(
+            tourInstance.getTour().getId(), ImageType.TOUR)
+        .ifPresent(img -> response.setThumbnailUrl(img.getUrl()));
+
+    return response;
+  }
+
+  private Map<UUID, String> getThumbnailsForTours(List<UUID> tourIds) {
+    if (tourIds.isEmpty()) return Map.of();
+    return imageRepository
+        .findByEntityIdInAndEntityTypeAndIsThumbnailTrue(tourIds, ImageType.TOUR)
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Image::getEntityId, Image::getUrl, (existing, replacement) -> existing));
   }
 
   @Override
@@ -210,14 +248,14 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     if (request.getCoachId() != null) {
       tourInstance.setCoach(
           coachRepository
-              .findById(request.getCoachId())
+              .findByIdAndIsDeletedFalse(request.getCoachId())
               .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Coach not found")));
     }
 
     if (request.getDriverId() != null) {
       tourInstance.setDriver(
           driverRepository
-              .findById(request.getDriverId())
+              .findByIdAndIsDeletedFalse(request.getDriverId())
               .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Driver not found")));
     }
 
@@ -245,6 +283,9 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     if (request.getStatus() != null) {
       validateStatusTransition(tourInstance, request.getStatus());
       tourInstance.setStatus(request.getStatus());
+      if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+        triggerFeedbackNotifications(tourInstance);
+      }
     }
 
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
@@ -263,19 +304,59 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     validateStatusTransition(tourInstance, request.getStatus());
     tourInstance.setStatus(request.getStatus());
 
+    if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+      triggerFeedbackNotifications(tourInstance);
+    }
+
     TourInstance savedInstance = tourInstanceRepository.save(tourInstance);
     return tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(savedInstance);
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public List<TourIncidentResponse> getIncidents(UUID instanceId) {
-    if (!tourInstanceRepository.existsById(instanceId)) {
-      throw new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found");
+  @Transactional
+  public void deleteInstance(UUID id, UUID coordinatorId) {
+    TourInstance tourInstance =
+        tourInstanceRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour instance not found"));
+
+    if (!tourInstance.getCoordinator().getId().equals(coordinatorId)) {
+      throw new BaseAppException(
+          WebErrorCode.FORBIDDEN, "You are not authorized to delete this tour instance");
     }
-    return tourIncidentRepository.findByTourInstanceId(instanceId).stream()
-        .map(tourIncidentMapper::toResponse)
-        .collect(Collectors.toList());
+
+    if (tourInstance.getStatus() != TourInstanceStatus.PLANNING) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Only instances in PLANNING status can be deleted");
+    }
+
+    if (tourBookingRepository.existsByTourInstanceId(id)) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot delete instance with existing bookings");
+    }
+
+    tourInstanceRepository.delete(tourInstance);
+  }
+
+  private void triggerFeedbackNotifications(TourInstance instance) {
+    List<String> emails =
+        tourBookingRepository
+            .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+            .stream()
+            .map(booking -> booking.getUser().getEmail())
+            .toList();
+
+    if (!emails.isEmpty()) {
+      notificationService.sendToUsers(
+          emails,
+          NotificationType.POST_TOUR_REVIEW,
+          "Chuyến đi kết thúc",
+          String.format(
+              "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+              instance.getTour().getName()),
+          instance.getId().toString());
+    }
   }
 
   private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {

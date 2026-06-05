@@ -35,6 +35,11 @@ public class CoachTripDetailResponse {
   private String driverName;
   private String driverPhone;
 
+  // Guide info
+  private UUID guideId;
+  private String guideName;
+  private String guidePhone;
+
   // Booking statistics
   private int totalSeats;
   private int availableSeats;

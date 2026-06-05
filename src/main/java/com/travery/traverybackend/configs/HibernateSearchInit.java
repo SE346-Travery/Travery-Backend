@@ -33,6 +33,11 @@ public class HibernateSearchInit implements ApplicationListener<ApplicationReady
     try {
       SearchSession searchSession = Search.session(entityManager);
 
+      // Check DB count
+      long hotelCount =
+          (long) entityManager.createQuery("SELECT count(h) FROM Hotel h").getSingleResult();
+      log.info("Found {} hotels in database to index.", hotelCount);
+
       // Tự động tính toán số luồng dựa trên số nhân CPU của Server
       int cpuCores = Runtime.getRuntime().availableProcessors();
       int threadsToUse = Math.max(cpuCores * 2, 4); // Tối thiểu 4 luồng

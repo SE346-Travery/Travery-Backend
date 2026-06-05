@@ -1,14 +1,14 @@
 -- =============================================
 -- Travery Backend - Seed Refund Policies (V3)
--- Seed standard refund policies based on Wiki
 -- =============================================
 
 -- 1. TOUR Standard Policy
-INSERT INTO refund_policies (id, name, service_type, created_at, updated_at)
+INSERT INTO refund_policies (id, name, service_type, is_deleted, created_at, updated_at)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'Standard Tour Policy',
     'TOUR',
+    FALSE,
     NOW(), NOW()
 );
 
@@ -19,11 +19,12 @@ VALUES
     ('11000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 0, 'DAYS', 0.00, NOW(), NOW());
 
 -- 2. HOTEL Standard Policy
-INSERT INTO refund_policies (id, name, service_type, created_at, updated_at)
+INSERT INTO refund_policies (id, name, service_type, is_deleted, created_at, updated_at)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
     'Standard Hotel Policy',
     'HOTEL',
+    FALSE,
     NOW(), NOW()
 );
 
@@ -34,11 +35,12 @@ VALUES
     ('11000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-000000000002', 0, 'DAYS', 0.00, NOW(), NOW());
 
 -- 3. COACH Standard Policy
-INSERT INTO refund_policies (id, name, service_type, created_at, updated_at)
+INSERT INTO refund_policies (id, name, service_type, is_deleted, created_at, updated_at)
 VALUES (
     '00000000-0000-0000-0000-000000000003',
     'Standard Coach Policy',
     'COACH',
+    FALSE,
     NOW(), NOW()
 );
 

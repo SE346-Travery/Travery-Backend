@@ -10,6 +10,7 @@ import com.travery.traverybackend.dtos.request.tour.TourInstanceCreateRequest;
 import com.travery.traverybackend.dtos.request.tour.TourInstanceUpdateRequest;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.coach.Coach;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
@@ -19,8 +20,10 @@ import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
+import com.travery.traverybackend.repositories.common.ImageRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -50,6 +53,8 @@ public class CoordinatorTourInstanceServiceTest {
   @Mock private CoachRepository coachRepository;
   @Mock private DriverRepository driverRepository;
   @Mock private HotelBookingRepository hotelBookingRepository;
+  @Mock private TourBookingRepository tourBookingRepository;
+  @Mock private ImageRepository imageRepository;
   @Mock private ChatSessionService chatSessionService;
 
   @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
@@ -60,7 +65,11 @@ public class CoordinatorTourInstanceServiceTest {
 
   @BeforeEach
   void setUp() {
+    Tour tour = new Tour();
+    tour.setId(UUID.randomUUID());
+
     tourInstance = new TourInstance();
+    tourInstance.setTour(tour);
     tourInstance.setStartDate(LocalDate.now().plusDays(10));
     tourInstance.setEndDate(LocalDate.now().plusDays(15));
     tourInstanceResponse = new TourInstanceResponse();
@@ -310,5 +319,38 @@ public class CoordinatorTourInstanceServiceTest {
     assertEquals(newStart, tourInstance.getStartDate());
     verify(chatSessionService).removeUserFromChat(id, oldCoordinatorId);
     verify(chatSessionService).addUserToChat(id, coordinatorId);
+  }
+
+  @Test
+  void updateInstance_withDeletedCoach_throwsException() {
+    UUID id = UUID.randomUUID();
+    UUID coachId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().coachId(coachId).build();
+
+    Coach oldCoach = new Coach();
+    oldCoach.setId(UUID.randomUUID());
+    tourInstance.setCoach(oldCoach);
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(coachRepository.findByIdAndIsDeletedFalse(coachId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
+  }
+
+  @Test
+  void updateInstance_withDeletedDriver_throwsException() {
+    UUID id = UUID.randomUUID();
+    UUID driverId = UUID.randomUUID();
+    TourInstanceUpdateRequest request =
+        TourInstanceUpdateRequest.builder().driverId(driverId).build();
+
+    tourInstance.setStatus(TourInstanceStatus.PLANNING);
+    when(tourInstanceRepository.findById(id)).thenReturn(Optional.of(tourInstance));
+    when(driverRepository.findByIdAndIsDeletedFalse(driverId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        BaseAppException.class, () -> coordinatorTourInstanceService.updateInstance(id, request));
   }
 }

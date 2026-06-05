@@ -45,8 +45,9 @@ hs_err_pid*.log
 run_output.txt
 travery-lucene-indexes/
 
-####
-docs/
-
 ### VSCode
 .vscode
+
+### Firebase ###
+**/firebase/*.json
+*-firebase-adminsdk-*.json

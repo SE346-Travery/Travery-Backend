@@ -8,7 +8,9 @@ import com.travery.traverybackend.entities.coach.CoachTrip;
 import com.travery.traverybackend.entities.coach.Driver;
 import com.travery.traverybackend.entities.coach.Route;
 import com.travery.traverybackend.entities.user.Coordinator;
+import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.booking.BookingStatus;
+import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachTripStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.CoachErrorCode;
@@ -55,24 +57,34 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
 
     Route route =
         routeRepository
-            .findById(request.getRouteId())
+            .findByIdAndIsDeletedFalse(request.getRouteId())
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.ROUTE_NOT_FOUND));
 
     Coach coach =
         coachRepository
-            .findById(request.getCoachId())
+            .findByIdAndIsDeletedFalse(request.getCoachId())
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_NOT_FOUND));
+
+    if (coach.getStatus() == CoachStatus.INACTIVE) {
+      throw new BaseAppException(CoachErrorCode.COACH_NOT_FOUND);
+    }
 
     Driver driver =
         driverRepository
-            .findById(request.getDriverId())
+            .findByIdAndIsDeletedFalse(request.getDriverId())
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.DRIVER_NOT_FOUND));
+
+    Guide guide =
+        userRepository
+            .findActiveGuideById(request.getGuideId())
+            .orElseThrow(() -> new BaseAppException(UserErrorCode.USER_NOT_FOUND));
 
     CoachTrip trip =
         CoachTrip.builder()
             .route(route)
             .coach(coach)
             .driver(driver)
+            .guide(guide)
             .coordinator(coordinator)
             .departureTime(request.getDepartureTime())
             .status(CoachTripStatus.OPEN)
@@ -84,13 +96,12 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
 
   @Override
   @Transactional(readOnly = true)
-  public Page<CoachTripResponse> getTrips(
-      UUID coordinatorId, CoachTripStatus status, Pageable pageable) {
+  public Page<CoachTripResponse> getTrips(CoachTripStatus status, Pageable pageable) {
     Page<CoachTrip> tripPage;
     if (status != null) {
-      tripPage = coachTripRepository.findByCoordinator_IdAndStatus(coordinatorId, status, pageable);
+      tripPage = coachTripRepository.findByStatus(status, pageable);
     } else {
-      tripPage = coachTripRepository.findByCoordinator_Id(coordinatorId, pageable);
+      tripPage = coachTripRepository.findAll(pageable);
     }
 
     List<UUID> tripIds =
@@ -138,8 +149,12 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
 
     Coach newCoach =
         coachRepository
-            .findById(newCoachId)
+            .findByIdAndIsDeletedFalse(newCoachId)
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.COACH_NOT_FOUND));
+
+    if (newCoach.getStatus() == CoachStatus.INACTIVE) {
+      throw new BaseAppException(CoachErrorCode.COACH_NOT_FOUND);
+    }
 
     trip.setCoach(newCoach);
     trip = coachTripRepository.save(trip);
@@ -156,7 +171,7 @@ public class CoordinatorCoachTripServiceImpl implements CoordinatorCoachTripServ
 
     Driver newDriver =
         driverRepository
-            .findById(newDriverId)
+            .findByIdAndIsDeletedFalse(newDriverId)
             .orElseThrow(() -> new BaseAppException(CoachErrorCode.DRIVER_NOT_FOUND));
 
     trip.setDriver(newDriver);

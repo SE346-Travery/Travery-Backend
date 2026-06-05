@@ -2,31 +2,27 @@ package com.travery.traverybackend.services.tour.impl;
 
 import com.travery.traverybackend.dtos.request.tour.GuideAttendanceRequest;
 import com.travery.traverybackend.dtos.request.tour.MemberAttendance;
-import com.travery.traverybackend.dtos.request.tour.TourIncidentReportRequest;
 import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.booking.BookingMemberResponse;
 import com.travery.traverybackend.dtos.response.tour.GuideTourInstanceDetailResponse;
-import com.travery.traverybackend.dtos.response.tour.TourIncidentResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.TourBooking;
-import com.travery.traverybackend.entities.tour.TourIncident;
 import com.travery.traverybackend.entities.tour.TourInstance;
-import com.travery.traverybackend.entities.user.User;
 import com.travery.traverybackend.enums.booking.AttendanceStatus;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
-import com.travery.traverybackend.enums.tour.IncidentStatus;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
-import com.travery.traverybackend.mappers.TourIncidentMapper;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.BookingMemberRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
-import com.travery.traverybackend.repositories.tour.TourIncidentRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +31,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,11 +44,11 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final TourInstanceRepository tourInstanceRepository;
   private final TourBookingRepository tourBookingRepository;
   private final BookingMemberRepository bookingMemberRepository;
-  private final TourIncidentRepository tourIncidentRepository;
   private final UserRepository userRepository;
   private final TourInstanceMapper tourInstanceMapper;
-  private final TourIncidentMapper tourIncidentMapper;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
+  private final jakarta.persistence.EntityManager entityManager;
 
   @Override
   @Transactional(readOnly = true)
@@ -192,7 +190,36 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   public List<BookingMemberResponse> searchPassengers(UUID guideId, UUID instanceId, String query) {
     TourInstance tourInstance = getTourInstanceById(instanceId);
     validateGuideOwnership(guideId, tourInstance);
-    return bookingMemberRepository.searchInTourInstance(instanceId, query).stream()
+
+    List<TourBooking> bookings = tourBookingRepository.findByTourInstanceId(instanceId);
+    if (bookings.isEmpty()) {
+      return List.of();
+    }
+
+    List<UUID> bookingIds = bookings.stream().map(TourBooking::getId).collect(Collectors.toList());
+
+    if (query == null || query.isBlank()) {
+      return bookingMemberRepository
+          .findByBookingIdInAndBookingType(bookingIds, BookingType.TOUR_BOOKING)
+          .stream()
+          .map(tourInstanceMapper::toBookingMemberResponse)
+          .collect(Collectors.toList());
+    }
+
+    SearchSession searchSession = Search.session(entityManager);
+    return searchSession
+        .search(BookingMember.class)
+        .where(
+            f ->
+                f.bool()
+                    .must(f.match().field("bookingType").matching(BookingType.TOUR_BOOKING))
+                    .must(f.terms().field("bookingId").matchingAny(bookingIds))
+                    .must(
+                        f.bool()
+                            .should(f.match().field("fullName").matching(query).fuzzy(1))
+                            .should(f.match().field("identityNumber").matching(query).fuzzy(1))))
+        .fetchHits(100)
+        .stream()
         .map(tourInstanceMapper::toBookingMemberResponse)
         .collect(Collectors.toList());
   }
@@ -219,44 +246,12 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
 
     tourInstance.setStatus(request.getStatus());
     tourInstanceRepository.save(tourInstance);
+
+    if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+      triggerFeedbackNotifications(tourInstance);
+    }
+
     return getInstanceDetail(guideId, instanceId);
-  }
-
-  @Override
-  @Transactional
-  public TourIncidentResponse reportIncident(
-      UUID guideId, UUID instanceId, TourIncidentReportRequest request) {
-    TourInstance tourInstance = getTourInstanceById(instanceId);
-    validateGuideOwnership(guideId, tourInstance);
-
-    User reporter =
-        userRepository
-            .findById(guideId)
-            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "User not found"));
-
-    TourIncident incident =
-        TourIncident.builder()
-            .tourInstance(tourInstance)
-            .reporter(reporter)
-            .title(request.getTitle())
-            .description(request.getDescription())
-            .severity(request.getSeverity())
-            .status(IncidentStatus.PENDING)
-            .build();
-
-    incident = tourIncidentRepository.save(incident);
-    return tourIncidentMapper.toResponse(incident);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<TourIncidentResponse> getIncidents(UUID guideId, UUID instanceId) {
-    TourInstance tourInstance = getTourInstanceById(instanceId);
-    validateGuideOwnership(guideId, tourInstance);
-
-    return tourIncidentRepository.findByTourInstanceId(instanceId).stream()
-        .map(tourIncidentMapper::toResponse)
-        .collect(Collectors.toList());
   }
 
   private TourInstance getTourInstanceById(UUID instanceId) {
@@ -269,6 +264,26 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
       throw new BaseAppException(
           WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
+    }
+  }
+
+  private void triggerFeedbackNotifications(TourInstance instance) {
+    List<String> emails =
+        tourBookingRepository
+            .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+            .stream()
+            .map(booking -> booking.getUser().getEmail())
+            .toList();
+
+    if (!emails.isEmpty()) {
+      notificationService.sendToUsers(
+          emails,
+          NotificationType.POST_TOUR_REVIEW,
+          "Chuyến đi kết thúc",
+          String.format(
+              "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+              instance.getTour().getName()),
+          instance.getId().toString());
     }
   }
 }

@@ -6,6 +6,7 @@ import com.travery.traverybackend.enums.common.ReviewTargetType;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
   boolean existsByBookingIdAndBookingType(UUID bookingId, BookingType bookingType);
 
+  @EntityGraph(attributePaths = "user")
   Page<Review> findByTargetIdAndTargetType(
       UUID targetId, ReviewTargetType targetType, Pageable pageable);
 
