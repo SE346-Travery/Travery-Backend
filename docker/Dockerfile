@@ -27,7 +27,8 @@ COPY --from=builder /app/spring-boot-loader/ ./
 COPY --from=builder /app/snapshot-dependencies/ ./
 COPY --from=builder /app/application/ ./
 
-RUN chown -R appuser:appgroup /app
+RUN mkdir -p /app/lucene-indexes && \
+    chown -R appuser:appgroup /app
 USER appuser
 
 EXPOSE 8080
