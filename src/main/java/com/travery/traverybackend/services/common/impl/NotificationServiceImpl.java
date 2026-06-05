@@ -48,19 +48,22 @@ public class NotificationServiceImpl implements NotificationService {
     fcmService.sendMulticastNotification(emails, pushRequest);
 
     // 2. Save History for all in bulk
-    List<Notification> notifications = userRepository.findByEmailIn(emails).stream()
-        .map(user -> {
-            Notification notification = Notification.builder()
-                .user(user)
-                .type(type)
-                .title(title)
-                .content(content)
-                .dataId(dataId)
-                .isRead(false)
-                .build();
-            return notification;
-        })
-        .toList();
+    List<Notification> notifications =
+        userRepository.findByEmailIn(emails).stream()
+            .map(
+                user -> {
+                  Notification notification =
+                      Notification.builder()
+                          .user(user)
+                          .type(type)
+                          .title(title)
+                          .content(content)
+                          .dataId(dataId)
+                          .isRead(false)
+                          .build();
+                  return notification;
+                })
+            .toList();
     notificationRepository.saveAll(notifications);
   }
 

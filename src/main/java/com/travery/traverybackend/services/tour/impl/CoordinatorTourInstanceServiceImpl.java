@@ -292,19 +292,23 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   }
 
   private void triggerFeedbackNotifications(TourInstance instance) {
-    tourBookingRepository
-        .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
-        .forEach(
-            booking -> {
-              notificationService.sendToUser(
-                  booking.getUser().getEmail(),
-                  NotificationType.POST_TOUR_REVIEW,
-                  "Chuyến đi kết thúc",
-                  String.format(
-                      "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
-                      instance.getTour().getName()),
-                  instance.getId().toString());
-            });
+    List<String> emails =
+        tourBookingRepository
+            .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+            .stream()
+            .map(booking -> booking.getUser().getEmail())
+            .toList();
+
+    if (!emails.isEmpty()) {
+      notificationService.sendToUsers(
+          emails,
+          NotificationType.POST_TOUR_REVIEW,
+          "Chuyến đi kết thúc",
+          String.format(
+              "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+              instance.getTour().getName()),
+          instance.getId().toString());
+    }
   }
 
   private void validateStatusTransition(TourInstance tourInstance, TourInstanceStatus newStatus) {

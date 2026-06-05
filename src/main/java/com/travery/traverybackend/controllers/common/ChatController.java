@@ -24,7 +24,8 @@ public class ChatController extends AbstractBaseController {
   @PreAuthorize("hasRole('TOURIST')")
   public ResponseEntity<SingleResponse<ChatSessionResponse>> initiateChat(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-    ChatSessionResponse response = chatSessionService.initiateCustomTourChat(userDetails.getUserId());
+    ChatSessionResponse response =
+        chatSessionService.initiateCustomTourChat(userDetails.getUserId());
     return success(response, "Custom tour consultation initiated successfully");
   }
 

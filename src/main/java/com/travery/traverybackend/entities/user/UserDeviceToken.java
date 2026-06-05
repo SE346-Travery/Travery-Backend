@@ -8,9 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @Table(
     name = "user_device_tokens",
-    indexes = {
-      @Index(name = "idx_user_device_tokens_fcm_token", columnList = "fcm_token")
-    })
+    indexes = {@Index(name = "idx_user_device_tokens_fcm_token", columnList = "fcm_token")})
 @Getter
 @Setter
 @SuperBuilder
