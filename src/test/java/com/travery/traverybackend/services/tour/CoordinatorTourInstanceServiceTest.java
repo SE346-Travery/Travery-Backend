@@ -20,8 +20,10 @@ import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
+import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachRepository;
 import com.travery.traverybackend.repositories.coach.DriverRepository;
+import com.travery.traverybackend.repositories.common.ImageRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.tour.TourRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
@@ -51,6 +53,8 @@ public class CoordinatorTourInstanceServiceTest {
   @Mock private CoachRepository coachRepository;
   @Mock private DriverRepository driverRepository;
   @Mock private HotelBookingRepository hotelBookingRepository;
+  @Mock private TourBookingRepository tourBookingRepository;
+  @Mock private ImageRepository imageRepository;
   @Mock private ChatSessionService chatSessionService;
 
   @InjectMocks private CoordinatorTourInstanceServiceImpl coordinatorTourInstanceService;
@@ -61,7 +65,11 @@ public class CoordinatorTourInstanceServiceTest {
 
   @BeforeEach
   void setUp() {
+    Tour tour = new Tour();
+    tour.setId(UUID.randomUUID());
+
     tourInstance = new TourInstance();
+    tourInstance.setTour(tour);
     tourInstance.setStartDate(LocalDate.now().plusDays(10));
     tourInstance.setEndDate(LocalDate.now().plusDays(15));
     tourInstanceResponse = new TourInstanceResponse();
