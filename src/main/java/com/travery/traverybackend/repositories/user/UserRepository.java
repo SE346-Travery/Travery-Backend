@@ -19,6 +19,8 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
   Optional<User> findByEmail(String email);
 
+  List<User> findByEmailIn(List<String> emails);
+
   Optional<User> findByCometchatUID(String cometchatUID);
 
   @Query(
