@@ -34,16 +34,30 @@ public interface HotelBookingRepository extends JpaRepository<HotelBooking, UUID
       @Param("date") LocalDate date, @Param("status") BookingStatus status);
 
   @Query(
-      "SELECT DISTINCT b FROM HotelBooking b JOIN HotelBookingDetail d ON d.hotelBooking.id = b.id "
-          + "WHERE d.roomType.hotel.id = :hotelId "
-          + "AND (:date IS NULL OR b.startDate = :date OR b.endDate = :date) "
-          + "AND (:guestName IS NULL OR LOWER(b.user.fullName) LIKE LOWER(CONCAT('%', :guestName, '%'))) "
-          + "AND (:status IS NULL OR b.status = :status)")
+      value =
+          "SELECT DISTINCT hb.* FROM hotel_bookings hb "
+              + "JOIN hotel_booking_details hbd ON hbd.hotel_booking_id = hb.id "
+              + "JOIN room_types rt ON rt.id = hbd.room_type_id "
+              + "JOIN users u ON u.id = hb.user_id "
+              + "WHERE rt.hotel_id = :hotelId "
+              + "AND (:date IS NULL OR hb.start_date = :date OR hb.end_date = :date) "
+              + "AND (:guestName IS NULL OR lower(u.full_name) LIKE lower(CONCAT('%', CAST(:guestName AS text), '%'))) "
+              + "AND (:status IS NULL OR hb.status = CAST(:status AS text))",
+      countQuery =
+          "SELECT COUNT(DISTINCT hb.id) FROM hotel_bookings hb "
+              + "JOIN hotel_booking_details hbd ON hbd.hotel_booking_id = hb.id "
+              + "JOIN room_types rt ON rt.id = hbd.room_type_id "
+              + "JOIN users u ON u.id = hb.user_id "
+              + "WHERE rt.hotel_id = :hotelId "
+              + "AND (:date IS NULL OR hb.start_date = :date OR hb.end_date = :date) "
+              + "AND (:guestName IS NULL OR lower(u.full_name) LIKE lower(CONCAT('%', CAST(:guestName AS text), '%'))) "
+              + "AND (:status IS NULL OR hb.status = CAST(:status AS text))",
+      nativeQuery = true)
   Page<HotelBooking> findReceptionistQueue(
       @Param("hotelId") UUID hotelId,
       @Param("date") LocalDate date,
       @Param("guestName") String guestName,
-      @Param("status") BookingStatus status,
+      @Param("status") String status,
       Pageable pageable);
 
   @Query(

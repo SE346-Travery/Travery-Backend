@@ -6,11 +6,13 @@ import com.travery.traverybackend.dtos.response.booking.HotelBookingDetailRespon
 import com.travery.traverybackend.dtos.response.booking.HotelBookingResponse;
 import com.travery.traverybackend.dtos.response.booking.HotelBookingSummaryResponse;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
+import com.travery.traverybackend.dtos.response.hotel.HotelServiceResponse;
 import com.travery.traverybackend.entities.booking.AddOnOrder;
 import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.HotelBooking;
 import com.travery.traverybackend.entities.booking.HotelBookingDetail;
 import com.travery.traverybackend.entities.finance.PaymentTransaction;
+import com.travery.traverybackend.entities.hotel.HotelService;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -59,4 +61,6 @@ public interface HotelBookingMapper {
   @Mapping(source = "hotelService.category", target = "category")
   @Mapping(source = "hotelService.price", target = "unitPrice")
   AddOnOrderResponse toAddOnOrderResponse(AddOnOrder order);
+
+  HotelServiceResponse toHotelServiceResponse(HotelService service);
 }

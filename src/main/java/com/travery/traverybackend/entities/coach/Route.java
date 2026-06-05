@@ -38,6 +38,10 @@ public class Route extends AbstractBaseEntity {
   @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
   private BigDecimal basePrice;
 
+  @Column(name = "is_deleted", nullable = false)
+  @Builder.Default
+  private boolean isDeleted = false;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "refund_policy_id")
   private RefundPolicy refundPolicy;

@@ -2,6 +2,7 @@ package com.travery.traverybackend.mappers;
 
 import com.travery.traverybackend.dtos.response.profile.*;
 import com.travery.traverybackend.entities.user.*;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -32,6 +33,8 @@ public interface UserMapper {
   TouristProfileResponse toTouristResponse(Tourist tourist);
 
   GuideProfileResponse toGuideResponse(Guide guide);
+
+  List<GuideProfileResponse> toGuideResponseList(List<Guide> guides);
 
   CoordinatorProfileResponse toCoordinatorResponse(Coordinator coordinator);
 

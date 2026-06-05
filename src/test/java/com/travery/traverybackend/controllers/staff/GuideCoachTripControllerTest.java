@@ -83,7 +83,8 @@ class GuideCoachTripControllerTest {
         new UpdateCoachTripStatusRequest(CoachTripStatus.IN_PROGRESS);
     CoachTripDetailResponse responseDto = new CoachTripDetailResponse();
 
-    when(guideService.updateTripStatus(eq(tripId), any(UpdateCoachTripStatusRequest.class)))
+    when(guideService.updateTripStatus(
+            eq(guideId), eq(tripId), any(UpdateCoachTripStatusRequest.class)))
         .thenReturn(responseDto);
 
     SingleResponse<CoachTripDetailResponse> singleResponse = new SingleResponse<>();
