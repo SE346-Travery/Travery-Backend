@@ -33,16 +33,9 @@ public interface TourService {
       UUID id,
       TourTemplateRequest request,
       List<MultipartFile> tourImages,
-      List<MultipartFile> itineraryImages,
-      UUID coordinatorId);
+      List<MultipartFile> itineraryImages);
 
-  void deleteTemplate(UUID id, UUID coordinatorId);
-
-  List<ImageResponse> addTourImages(UUID tourId, List<MultipartFile> images, UUID coordinatorId);
-
-  void setTourThumbnail(UUID tourId, UUID imageId, UUID coordinatorId);
-
-  void deleteTourImage(UUID tourId, UUID imageId, UUID coordinatorId);
+  void deleteTemplate(UUID id);
 
   // Images
   List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files);

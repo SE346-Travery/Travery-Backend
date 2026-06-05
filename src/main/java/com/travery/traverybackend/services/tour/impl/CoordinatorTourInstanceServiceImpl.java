@@ -6,13 +6,13 @@ import com.travery.traverybackend.dtos.request.tour.TourProgressUpdateRequest;
 import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceDetailResponse;
 import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
+import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.tour.Tour;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
-import com.travery.traverybackend.enums.tour.TourInstanceStatus;
-import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.enums.common.ImageType;
+import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
 import com.travery.traverybackend.mappers.TourInstanceMapper;
@@ -114,9 +114,10 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
     TourInstanceDetailResponse response =
         tourInstanceMapper.toCoordinatorTourInstanceDetailResponse(tourInstance);
 
-    List<TourBookingResponse> bookings = tourBookingRepository.findByTourInstanceId(id).stream()
-        .map(tourInstanceMapper::toTourBookingResponse)
-        .collect(Collectors.toList());
+    List<TourBookingResponse> bookings =
+        tourBookingRepository.findByTourInstanceId(id).stream()
+            .map(tourInstanceMapper::toTourBookingResponse)
+            .collect(Collectors.toList());
     response.setBookings(bookings);
 
     imageRepository

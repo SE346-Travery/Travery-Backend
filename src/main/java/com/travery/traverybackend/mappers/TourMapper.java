@@ -3,11 +3,13 @@ package com.travery.traverybackend.mappers;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
 import com.travery.traverybackend.dtos.response.tour.ImageResponse;
 import com.travery.traverybackend.dtos.response.tour.TourDetailResponse;
+import com.travery.traverybackend.dtos.response.tour.TourInstanceResponse;
 import com.travery.traverybackend.dtos.response.tour.TourItineraryResponse;
 import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
 import com.travery.traverybackend.entities.common.Image;
 import com.travery.traverybackend.entities.tour.Tour;
+import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.tour.TourItinerary;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,9 +31,6 @@ public abstract class TourMapper {
   @Mapping(target = "itineraryList", source = "itineraries")
   public abstract TourDetailResponse toTourDetailResponse(Tour tour);
 
-  @Mapping(
-      target = "availableSlots",
-      ignore = true) // Cần logic tính availableSlots nếu chưa có sẵn trong DB
   public abstract TourInstanceResponse toTourInstanceResponse(TourInstance instance);
 
   @Mapping(

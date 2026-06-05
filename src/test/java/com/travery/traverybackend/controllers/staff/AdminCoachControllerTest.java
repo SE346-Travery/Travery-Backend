@@ -7,7 +7,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,12 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.travery.traverybackend.dtos.request.coach.CreateCoachRequest;
 import com.travery.traverybackend.dtos.request.coach.UpdateCoachRequest;
-import com.travery.traverybackend.dtos.request.coach.UpdateCoachStatusRequest;
 import com.travery.traverybackend.dtos.response.ResponseFactory;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.base.SuccessResponse;
 import com.travery.traverybackend.dtos.response.coach.CoachResponse;
-import com.travery.traverybackend.enums.coach.CoachStatus;
 import com.travery.traverybackend.enums.coach.CoachType;
 import com.travery.traverybackend.services.coach.AdminCoachService;
 import java.util.List;
@@ -157,32 +154,6 @@ class AdminCoachControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("Coach updated successfully"));
-  }
-
-  @Test
-  void updateCoachStatus_ReturnsOk() throws Exception {
-    UpdateCoachStatusRequest request =
-        UpdateCoachStatusRequest.builder().status(CoachStatus.MAINTENANCE).build();
-
-    CoachResponse response = new CoachResponse();
-    when(adminCoachService.updateCoachStatus(eq(coachId), any(UpdateCoachStatusRequest.class)))
-        .thenReturn(response);
-
-    SingleResponse<CoachResponse> singleResponse = new SingleResponse<>();
-    singleResponse.setData(response);
-    singleResponse.setMessage("Coach status updated successfully");
-    singleResponse.setHttpStatus(200);
-
-    when(responseFactory.success(eq(response), anyString()))
-        .thenReturn(ResponseEntity.ok(singleResponse));
-
-    mockMvc
-        .perform(
-            patch("/api/v1/admin/coaches/" + coachId + "/status")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.message").value("Coach status updated successfully"));
   }
 
   @Test

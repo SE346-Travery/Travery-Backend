@@ -27,6 +27,7 @@ public class DestinationServiceImpl implements DestinationService {
   private final DestinationRepository destinationRepository;
   private final StationRepository stationRepository;
   private final CoachMapper coachMapper;
+  private final com.travery.traverybackend.mappers.DestinationMapper destinationMapper;
 
   @PersistenceContext private EntityManager entityManager;
 
@@ -87,5 +88,14 @@ public class DestinationServiceImpl implements DestinationService {
             response.setStations(stationsByDestinationId.getOrDefault(destinationId, List.of())));
 
     return responses;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<com.travery.traverybackend.dtos.response.tour.DestinationResponse>
+      getAllDestinations() {
+    return destinationRepository.findAll().stream()
+        .map(destinationMapper::toResponse)
+        .collect(Collectors.toList());
   }
 }

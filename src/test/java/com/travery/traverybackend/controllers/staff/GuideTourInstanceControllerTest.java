@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -171,8 +170,7 @@ public class GuideTourInstanceControllerTest {
     BookingMemberResponse passenger = new BookingMemberResponse();
     List<BookingMemberResponse> passengers = List.of(passenger);
 
-    when(guideTourInstanceService.searchPassengers(any(), eq(id), eq(null)))
-        .thenReturn(passengers);
+    when(guideTourInstanceService.searchPassengers(any(), eq(id), eq(null))).thenReturn(passengers);
 
     SingleResponse<List<BookingMemberResponse>> singleResponse = new SingleResponse<>();
     singleResponse.setData(passengers);

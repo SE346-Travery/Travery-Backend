@@ -1,0 +1,287 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.travery:Travery-Backend >---------------------
+[INFO] Building Travery-Backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.4:run (default-cli) > test-compile @ Travery-Backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Travery-Backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 16 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ Travery-Backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 348 source files with javac [debug parameters release 25] to target/classes
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[WARNING] /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/src/main/java/com/travery/traverybackend/entities/common/Destination.java:[37,22] @SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/src/main/java/com/travery/traverybackend/entities/common/Destination.java:[41,25] @SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Travery-Backend ---
+[INFO] skip non existing resourceDirectory /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ Travery-Backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 22 source files with javac [debug parameters release 25] to target/test-classes
+[INFO] 
+[INFO] <<< spring-boot:4.0.4:run (default-cli) < test-compile @ Travery-Backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.4:run (default-cli) @ Travery-Backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.4)
+
+2026-06-01T16:31:59.944+07:00  INFO 347847 --- [travery] [  restartedMain] c.t.t.TraveryBackendApplication          : Starting TraveryBackendApplication using Java 26.0.1 with PID 347847 (/home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/target/classes started by tuan in /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend)
+2026-06-01T16:31:59.946+07:00 DEBUG 347847 --- [travery] [  restartedMain] c.t.t.TraveryBackendApplication          : Running with Spring Boot v4.0.4, Spring v7.0.6
+2026-06-01T16:31:59.946+07:00  INFO 347847 --- [travery] [  restartedMain] c.t.t.TraveryBackendApplication          : The following 1 profile is active: "dev"
+2026-06-01T16:31:59.984+07:00  INFO 347847 --- [travery] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-06-01T16:31:59.984+07:00  INFO 347847 --- [travery] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-06-01T16:32:01.005+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-01T16:32:01.006+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-01T16:32:01.155+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 143 ms. Found 33 JPA repository interfaces.
+2026-06-01T16:32:01.189+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-01T16:32:01.190+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-06-01T16:32:01.213+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.auth.RefreshTokenRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.213+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.AddOnOrderRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.213+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.BookingMemberRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.213+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.HotelBookingDetailRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.213+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.HotelBookingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.214+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.RoomAssignmentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.214+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.booking.TourBookingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.214+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.CoachBookingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.214+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.CoachBookingSeatRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.CoachRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.CoachTripRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.DriverRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.RouteRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.SeatLayoutItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.SeatLayoutRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.coach.StationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.215+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.common.ChatSessionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.217+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.common.DestinationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.217+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.common.ImageRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.217+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.common.ReviewRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.217+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.finance.PaymentTransactionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.finance.RefundPolicyRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.finance.RefundRequestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.hotel.AmenityRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.hotel.HotelRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.hotel.HotelServiceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.hotel.RoomRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.hotel.RoomTypeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.tour.TourIncidentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.tour.TourInstanceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.218+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.tour.TourRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.219+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.user.ReceptionistRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.219+07:00  INFO 347847 --- [travery] [  restartedMain] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.travery.traverybackend.repositories.user.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-01T16:32:01.219+07:00  INFO 347847 --- [travery] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 0 Redis repository interfaces.
+2026-06-01T16:32:01.811+07:00  INFO 347847 --- [travery] [  restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-01T16:32:01.820+07:00  INFO 347847 --- [travery] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-01T16:32:01.820+07:00  INFO 347847 --- [travery] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-06-01T16:32:01.842+07:00  INFO 347847 --- [travery] [  restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1858 ms
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning for classpath resources at 'classpath:db/callback' ...
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Determining location urls for classpath:db/callback using ClassLoader TomcatEmbeddedWebappClassLoader
+  context: ROOT
+  delegate: true
+----------> Parent Classloader:
+org.springframework.boot.devtools.restart.classloader.RestartClassLoader@64e0828f
+ ...
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Unable to resolve location classpath:db/callback.
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning for classpath resources at 'classpath:db/migration' ...
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Determining location urls for classpath:db/migration using ClassLoader TomcatEmbeddedWebappClassLoader
+  context: ROOT
+  delegate: true
+----------> Parent Classloader:
+org.springframework.boot.devtools.restart.classloader.RestartClassLoader@64e0828f
+ ...
+2026-06-01T16:32:02.311+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning URL: file:/home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent%20Vibing%20Travery-Backend/Book%20Hotel/Travery-Backend/target/classes/db/migration
+2026-06-01T16:32:02.312+07:00 DEBUG 347847 --- [travery] [  restartedMain] i.s.c.FileSystemClassPathLocationScanner : Scanning starting at classpath root in filesystem: /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/target/classes/
+2026-06-01T16:32:02.312+07:00 DEBUG 347847 --- [travery] [  restartedMain] i.s.c.FileSystemClassPathLocationScanner : Scanning for resources in path: /home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent Vibing Travery-Backend/Book Hotel/Travery-Backend/target/classes/db/migration (db/migration)
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V10__seed_cometchat_uid.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V11__seed_images.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V15__seed_coach_booking_data.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V1__init_schema.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V2__seed_users.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V3__seed_refund_policies.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V4__seed_destinations.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V5__seed_coaches_drivers.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V6__seed_tours.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V7__seed_tour_instances.sql
+2026-06-01T16:32:02.313+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V8__seed_bookings.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning for classpath resources at 'classpath:db/migration' ...
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Determining location urls for classpath:db/migration using ClassLoader TomcatEmbeddedWebappClassLoader
+  context: ROOT
+  delegate: true
+----------> Parent Classloader:
+org.springframework.boot.devtools.restart.classloader.RestartClassLoader@64e0828f
+ ...
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning URL: file:/home/tuan/Documents/MobileDevelopment/Travery/Multi-Agent%20Vibing%20Travery-Backend/Book%20Hotel/Travery-Backend/target/classes/db/migration
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V10__seed_cometchat_uid.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V11__seed_images.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V15__seed_coach_booking_data.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V1__init_schema.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V2__seed_users.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V3__seed_refund_policies.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V4__seed_destinations.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V5__seed_coaches_drivers.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V6__seed_tours.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V7__seed_tour_instances.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Found resource: db/migration/V8__seed_bookings.sql
+2026-06-01T16:32:02.314+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.classpath.ClassPathScanner     : Scanning for classes at classpath:db/migration
+2026-06-01T16:32:02.315+07:00  INFO 347847 --- [travery] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-01T16:32:02.410+07:00  INFO 347847 --- [travery] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1569eb94
+2026-06-01T16:32:02.411+07:00  INFO 347847 --- [travery] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V7__seed_tour_instances.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V5__seed_coaches_drivers.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V8__seed_bookings.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V16__seed_hotel_data_and_fix_erd.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V6__seed_tours.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V1__init_schema.sql
+2026-06-01T16:32:02.425+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V2__seed_users.sql
+2026-06-01T16:32:02.426+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V3__seed_refund_policies.sql
+2026-06-01T16:32:02.426+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V10__seed_cometchat_uid.sql
+2026-06-01T16:32:02.426+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V15__seed_coach_booking_data.sql
+2026-06-01T16:32:02.426+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V4__seed_destinations.sql
+2026-06-01T16:32:02.426+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.resource.ResourceNameValidator   : Validating V11__seed_images.sql
+2026-06-01T16:32:02.429+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.database.DatabaseTypeRegister    : Multiple databases found that handle url 'jdbc:postgresql://localhost:5432/travery-db': CockroachDB,PostgreSQL
+2026-06-01T16:32:02.429+07:00  INFO 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/travery-db (PostgreSQL 17.10)
+2026-06-01T16:32:02.429+07:00 DEBUG 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : Database Type: PostgreSQL
+2026-06-01T16:32:02.429+07:00 DEBUG 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : Driver: PostgreSQL JDBC Driver 42.7.10
+2026-06-01T16:32:02.429+07:00 DEBUG 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : DDL Transactions Supported: true
+2026-06-01T16:32:02.430+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.SchemaHistoryFactory           : Schemas: 
+2026-06-01T16:32:02.430+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.s.SchemaHistoryFactory           : Default schema: null
+2026-06-01T16:32:02.437+07:00 DEBUG 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : Scanning for script callbacks ...
+2026-06-01T16:32:02.439+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.i.c.SqlScriptCallbackFactory       : Scanning for SQL callbacks ...
+2026-06-01T16:32:02.444+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.command.DbValidate     : Validating migrations ...
+2026-06-01T16:32:02.445+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.a.c.ClassicConfiguration           : CherryPickConfigurationExtension not found
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V7__seed_tour_instances.sql (filename: V7__seed_tour_instances.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V5__seed_coaches_drivers.sql (filename: V5__seed_coaches_drivers.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V8__seed_bookings.sql (filename: V8__seed_bookings.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql (filename: V16__seed_hotel_data_and_fix_erd.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V6__seed_tours.sql (filename: V6__seed_tours.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V1__init_schema.sql (filename: V1__init_schema.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V2__seed_users.sql (filename: V2__seed_users.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V3__seed_refund_policies.sql (filename: V3__seed_refund_policies.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V10__seed_cometchat_uid.sql (filename: V10__seed_cometchat_uid.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V15__seed_coach_booking_data.sql (filename: V15__seed_coach_booking_data.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V4__seed_destinations.sql (filename: V4__seed_destinations.sql)
+2026-06-01T16:32:02.474+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V11__seed_images.sql (filename: V11__seed_images.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V7__seed_tour_instances.sql (filename: V7__seed_tour_instances.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V5__seed_coaches_drivers.sql (filename: V5__seed_coaches_drivers.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V8__seed_bookings.sql (filename: V8__seed_bookings.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql (filename: V16__seed_hotel_data_and_fix_erd.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V6__seed_tours.sql (filename: V6__seed_tours.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V1__init_schema.sql (filename: V1__init_schema.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V2__seed_users.sql (filename: V2__seed_users.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V3__seed_refund_policies.sql (filename: V3__seed_refund_policies.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V10__seed_cometchat_uid.sql (filename: V10__seed_cometchat_uid.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V15__seed_coach_booking_data.sql (filename: V15__seed_coach_booking_data.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V4__seed_destinations.sql (filename: V4__seed_destinations.sql)
+2026-06-01T16:32:02.475+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V11__seed_images.sql (filename: V11__seed_images.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V7__seed_tour_instances.sql (filename: V7__seed_tour_instances.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V5__seed_coaches_drivers.sql (filename: V5__seed_coaches_drivers.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V8__seed_bookings.sql (filename: V8__seed_bookings.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql (filename: V16__seed_hotel_data_and_fix_erd.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V6__seed_tours.sql (filename: V6__seed_tours.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V1__init_schema.sql (filename: V1__init_schema.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V2__seed_users.sql (filename: V2__seed_users.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V3__seed_refund_policies.sql (filename: V3__seed_refund_policies.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V10__seed_cometchat_uid.sql (filename: V10__seed_cometchat_uid.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V15__seed_coach_booking_data.sql (filename: V15__seed_coach_booking_data.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V4__seed_destinations.sql (filename: V4__seed_destinations.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V11__seed_images.sql (filename: V11__seed_images.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V7__seed_tour_instances.sql (filename: V7__seed_tour_instances.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V5__seed_coaches_drivers.sql (filename: V5__seed_coaches_drivers.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V8__seed_bookings.sql (filename: V8__seed_bookings.sql)
+2026-06-01T16:32:02.476+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V16__seed_hotel_data_and_fix_erd.sql (filename: V16__seed_hotel_data_and_fix_erd.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V6__seed_tours.sql (filename: V6__seed_tours.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V1__init_schema.sql (filename: V1__init_schema.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V2__seed_users.sql (filename: V2__seed_users.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V3__seed_refund_policies.sql (filename: V3__seed_refund_policies.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V10__seed_cometchat_uid.sql (filename: V10__seed_cometchat_uid.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V15__seed_coach_booking_data.sql (filename: V15__seed_coach_booking_data.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V4__seed_destinations.sql (filename: V4__seed_destinations.sql)
+2026-06-01T16:32:02.477+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.scanner.Scanner        : Filtering out resource: db/migration/V11__seed_images.sql (filename: V11__seed_images.sql)
+2026-06-01T16:32:02.488+07:00  INFO 347847 --- [travery] [  restartedMain] o.f.core.internal.command.DbValidate     : Successfully validated 12 migrations (execution time 00:00.043s)
+2026-06-01T16:32:02.490+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.core.internal.command.DbSchemas      : Skipping creation of existing schema: "public"
+2026-06-01T16:32:02.511+07:00 DEBUG 347847 --- [travery] [  restartedMain] o.f.c.a.c.ClassicConfiguration           : CherryPickConfigurationExtension not found
+2026-06-01T16:32:02.513+07:00  INFO 347847 --- [travery] [  restartedMain] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 16
+2026-06-01T16:32:02.515+07:00  INFO 347847 --- [travery] [  restartedMain] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-06-01T16:32:02.520+07:00 DEBUG 347847 --- [travery] [  restartedMain] org.flywaydb.core.FlywayExecutor         : Memory usage: 147 of 270M
+2026-06-01T16:32:02.607+07:00  INFO 347847 --- [travery] [  restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-01T16:32:02.652+07:00  INFO 347847 --- [travery] [  restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-06-01T16:32:02.955+07:00  INFO 347847 --- [travery] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-01T16:32:03.011+07:00  INFO 347847 --- [travery] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/travery-db]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.10
+	Default catalog/schema: travery-db/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-01T16:32:03.254+07:00  INFO 347847 --- [travery] [  restartedMain] org.hibernate.search.version.orm         : HSEARCH000034: Hibernate Search version 8.2.2.Final
+2026-06-01T16:32:04.245+07:00  INFO 347847 --- [travery] [  restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-01T16:32:04.594+07:00  WARN 347847 --- [travery] [  restartedMain] o.a.l.i.v.VectorizationProvider          : You are running with Java 23 or later. To make full use of the Vector API, please update Apache Lucene.
+WARNING: A restricted method in java.lang.foreign.Linker has been called
+WARNING: java.lang.foreign.Linker::downcallHandle has been called by org.apache.lucene.store.PosixNativeAccess in an unnamed module (file:/home/tuan/.m2/repository/org/apache/lucene/lucene-core/9.12.3/lucene-core-9.12.3.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-06-01T16:32:04.647+07:00  INFO 347847 --- [travery] [  restartedMain] o.a.l.s.MemorySegmentIndexInputProvider  : Using MemorySegmentIndexInput and native madvise support with Java 21 or later; to disable start with -Dorg.apache.lucene.store.MMapDirectory.enableMemorySegments=false
+2026-06-01T16:32:04.729+07:00  INFO 347847 --- [travery] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-01T16:32:04.782+07:00  INFO 347847 --- [travery] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-01T16:32:05.418+07:00 DEBUG 347847 --- [travery] [  restartedMain] c.t.t.s.jwt.JwtAuthenticationFilter      : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-01T16:32:05.864+07:00  INFO 347847 --- [travery] [  restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+2026-06-01T16:32:07.945+07:00  INFO 347847 --- [travery] [  restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-06-01T16:32:08.028+07:00  WARN 347847 --- [travery] [  restartedMain] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-06-01T16:32:08.036+07:00  INFO 347847 --- [travery] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-01T16:32:08.045+07:00  INFO 347847 --- [travery] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-01T16:32:08.048+07:00  INFO 347847 --- [travery] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-01T16:32:08.065+07:00  INFO 347847 --- [travery] [  restartedMain] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-06-01T16:32:08.074+07:00 ERROR 347847 --- [travery] [  restartedMain] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.418 s
+[INFO] Finished at: 2026-06-01T16:32:09+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:4.0.4:run (default-cli) on project Travery-Backend: Process terminated with exit code: 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

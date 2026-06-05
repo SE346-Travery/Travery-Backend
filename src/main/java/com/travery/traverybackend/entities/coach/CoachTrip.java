@@ -42,10 +42,6 @@ public class CoachTrip extends AbstractBaseEntity {
   @JoinColumn(name = "coordinator_id", nullable = false)
   private Coordinator coordinator;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "guide_id")
-  private Guide guide;
-
   @Column(name = "departure_time", nullable = false)
   private LocalDateTime departureTime;
 

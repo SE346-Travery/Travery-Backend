@@ -106,8 +106,7 @@ public class TourController extends AbstractBaseController {
       @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
           String requestJson,
       @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
-      @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages,
-      @AuthenticationPrincipal CustomUserDetails userDetails)
+      @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages)
       throws Exception {
 
     TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
@@ -116,54 +115,20 @@ public class TourController extends AbstractBaseController {
       throw new ConstraintViolationException(violations);
     }
 
-    TourResponse response =
-        tourService.updateTemplate(
-            id, request, tourImages, itineraryImages, userDetails.getUserId());
+    TourResponse response = tourService.updateTemplate(id, request, tourImages, itineraryImages);
     return success(response, "Tour template updated successfully");
   }
 
   @DeleteMapping("/templates/{id}")
   @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<Void>> deleteTemplate(
-      @PathVariable UUID id, @AuthenticationPrincipal CustomUserDetails userDetails) {
-    tourService.deleteTemplate(id, userDetails.getUserId());
+  public ResponseEntity<SingleResponse<Void>> deleteTemplate(@PathVariable UUID id) {
+    tourService.deleteTemplate(id);
     return success(null, "Tour template deleted successfully");
-  }
-
-  @PostMapping(value = "/templates/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SingleResponse<List<ImageResponse>>> addTourImages(
-      @PathVariable UUID id,
-      @RequestPart("images") List<MultipartFile> images,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    List<ImageResponse> response =
-        tourService.addTourImages(id, images, userDetails.getUserId());
-    return success(response, "Tour images added successfully");
-  }
-
-  @PatchMapping("/templates/{id}/images/{imageId}/thumbnail")
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SuccessResponse> setTourThumbnail(
-      @PathVariable UUID id,
-      @PathVariable UUID imageId,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    tourService.setTourThumbnail(id, imageId, userDetails.getUserId());
-    return success("Tour thumbnail set successfully");
-  }
-
-  @DeleteMapping("/templates/{id}/images/{imageId}")
-  @PreAuthorize("hasRole('COORDINATOR')")
-  public ResponseEntity<SuccessResponse> deleteTourImage(
-      @PathVariable UUID id,
-      @PathVariable UUID imageId,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    tourService.deleteTourImage(id, imageId, userDetails.getUserId());
-    return success("Tour image deleted successfully");
   }
 
   // --- Tour Images ---
   @PostMapping("/{tourId}/images")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<List<ImageResponse>>> uploadTourImages(
       @PathVariable UUID tourId, @RequestParam("files") List<MultipartFile> files) {
     List<ImageResponse> response = tourService.uploadTourImages(tourId, files);
@@ -171,7 +136,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @DeleteMapping("/{tourId}/images/{imageId}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> deleteTourImage(
       @PathVariable UUID tourId, @PathVariable UUID imageId) {
     tourService.deleteTourImage(tourId, imageId);
@@ -179,7 +144,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @PutMapping("/{tourId}/images/{imageId}/thumbnail")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> setTourThumbnail(
       @PathVariable UUID tourId, @PathVariable UUID imageId) {
     tourService.setTourThumbnail(tourId, imageId);
@@ -188,7 +153,7 @@ public class TourController extends AbstractBaseController {
 
   // --- Itinerary Images ---
   @PostMapping("/itineraries/{itineraryId}/image")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<ImageResponse>> uploadItineraryImage(
       @PathVariable UUID itineraryId, @RequestParam("file") MultipartFile file) {
     ImageResponse response = tourService.uploadItineraryImage(itineraryId, file);
@@ -196,7 +161,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @DeleteMapping("/itineraries/{itineraryId}/images/{imageId}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> deleteItineraryImage(
       @PathVariable UUID itineraryId, @PathVariable UUID imageId) {
     tourService.deleteItineraryImage(itineraryId, imageId);
