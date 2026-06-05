@@ -22,4 +22,10 @@ public interface ImageRepository extends JpaRepository<Image, UUID> {
 
   List<Image> findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
       UUID entityId, ImageType entityType);
+
+  int countByEntityIdAndEntityType(UUID entityId, ImageType entityType);
+
+  List<Image> findByEntityIdAndEntityType(UUID entityId, ImageType entityType);
+
+  List<Image> findByEntityIdInAndEntityType(List<UUID> entityIds, ImageType entityType);
 }

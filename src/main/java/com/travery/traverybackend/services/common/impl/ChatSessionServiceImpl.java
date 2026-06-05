@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -166,7 +167,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
   }
 
   @Override
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void addUserToChat(UUID tourInstanceId, UUID userId) {
     ChatSession chatSession =
         chatSessionRepository
@@ -183,13 +184,13 @@ public class ChatSessionServiceImpl implements ChatSessionService {
   }
 
   @Override
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void removeUserFromChat(UUID tourInstanceId, UUID userId) {
     removeUsersFromChat(tourInstanceId, List.of(userId));
   }
 
   @Override
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void removeUsersFromChat(UUID tourInstanceId, List<UUID> userIds) {
     chatSessionRepository
         .findByTourInstanceId(tourInstanceId)

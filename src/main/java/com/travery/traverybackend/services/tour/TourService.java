@@ -29,6 +29,14 @@ public interface TourService {
       List<MultipartFile> itineraryImages,
       UUID coordinatorId);
 
+  TourResponse updateTemplate(
+      UUID id,
+      TourTemplateRequest request,
+      List<MultipartFile> tourImages,
+      List<MultipartFile> itineraryImages);
+
+  void deleteTemplate(UUID id);
+
   // Images
   List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files);
 

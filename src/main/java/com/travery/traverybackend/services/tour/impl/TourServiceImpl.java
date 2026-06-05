@@ -23,6 +23,7 @@ import com.travery.traverybackend.enums.finance.RefundServiceType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
+import com.travery.traverybackend.mappers.TourInstanceMapper;
 import com.travery.traverybackend.mappers.TourMapper;
 import com.travery.traverybackend.repositories.common.DestinationRepository;
 import com.travery.traverybackend.repositories.common.ImageRepository;
@@ -43,7 +44,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,6 +59,7 @@ public class TourServiceImpl implements TourService {
   private final TourInstanceRepository tourInstanceRepository;
   private final TourItineraryRepository tourItineraryRepository;
   private final TourMapper tourMapper;
+  private final TourInstanceMapper tourInstanceMapper;
   private final ImageRepository imageRepository;
   private final DestinationRepository destinationRepository;
   private final HotelRepository hotelRepository;
@@ -169,13 +170,7 @@ public class TourServiceImpl implements TourService {
                 tourId, statuses, LocalDate.now());
 
     return instances.stream()
-        .map(
-            instance -> {
-              TourInstanceResponse response = tourMapper.toTourInstanceResponse(instance);
-              response.setAvailableSlots(
-                  Math.max(0, tour.getMaxParticipants() - instance.getCurrentParticipants()));
-              return response;
-            })
+        .map(tourInstanceMapper::toTourInstanceResponse)
         .collect(Collectors.toList());
   }
 
@@ -235,6 +230,14 @@ public class TourServiceImpl implements TourService {
       tour.setHotel(hotel);
       tour.setRefundPolicy(refundPolicy);
       tour.setRequestedByUser(requestedByUser);
+
+      if (request.getMinParticipants() != null) {
+        tour.setMinParticipants(request.getMinParticipants());
+      }
+      if (request.getMaxParticipants() != null) {
+        tour.setMaxParticipants(request.getMaxParticipants());
+      }
+      tour.setDurationDays(request.getItineraries().size());
 
       List<TourItinerary> itineraries =
           request.getItineraries().stream()
@@ -334,7 +337,179 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional
-  @CacheEvict(value = "featuredTours", allEntries = true)
+  public TourResponse updateTemplate(
+      UUID id,
+      TourTemplateRequest request,
+      List<MultipartFile> tourImages,
+      List<MultipartFile> itineraryImages) {
+    Tour tour =
+        tourRepository
+            .findById(id)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    // Update basic fields
+    tour.setName(request.getName());
+    tour.setDescription(request.getDescription());
+    tour.setPickupLocation(request.getPickupLocation());
+    tour.setPricePerAdult(request.getPricePerAdult());
+    tour.setPricePerChild(request.getPricePerChild());
+    if (request.getIsCustom() != null) {
+      tour.setCustom(request.getIsCustom());
+    }
+    if (request.getMinParticipants() != null) {
+      tour.setMinParticipants(request.getMinParticipants());
+    }
+    if (request.getMaxParticipants() != null) {
+      tour.setMaxParticipants(request.getMaxParticipants());
+    }
+
+    // Update Destination
+    if (!tour.getDestination().getId().equals(request.getDestinationId())) {
+      Destination destination =
+          destinationRepository
+              .findById(request.getDestinationId())
+              .orElseThrow(
+                  () -> new BaseAppException(WebErrorCode.NOT_FOUND, "Destination not found"));
+      tour.setDestination(destination);
+    }
+
+    // Update Hotel
+    if (request.getHotelId() != null) {
+      if (tour.getHotel() == null || !tour.getHotel().getId().equals(request.getHotelId())) {
+        Hotel hotel =
+            hotelRepository
+                .findById(request.getHotelId())
+                .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Hotel not found"));
+        tour.setHotel(hotel);
+      }
+    } else {
+      tour.setHotel(null);
+    }
+
+    // Update Itineraries (simple approach: clear and re-add)
+    List<UUID> oldItineraryIds =
+        tour.getItineraries().stream().map(TourItinerary::getId).collect(Collectors.toList());
+    if (!oldItineraryIds.isEmpty()) {
+      List<Image> oldImages =
+          imageRepository.findByEntityIdInAndEntityType(oldItineraryIds, ImageType.TOUR_ITINERARY);
+      for (Image image : oldImages) {
+        mediaService.deleteImage(image.getPublicId());
+        imageRepository.delete(image);
+      }
+    }
+
+    tour.getItineraries().clear();
+    List<TourItinerary> newItineraries =
+        request.getItineraries().stream()
+            .map(
+                itineraryRequest ->
+                    TourItinerary.builder()
+                        .tour(tour)
+                        .dayNumber(itineraryRequest.getDayNumber())
+                        .title(itineraryRequest.getTitle())
+                        .description(itineraryRequest.getDescription())
+                        .build())
+            .collect(Collectors.toList());
+    tour.getItineraries().addAll(newItineraries);
+    tour.setDurationDays(newItineraries.size());
+
+    Tour savedTour = tourRepository.save(tour);
+
+    List<String> uploadedPublicIds = new ArrayList<>();
+    try {
+      if (tourImages != null && !tourImages.isEmpty()) {
+        int order = imageRepository.countByEntityIdAndEntityType(savedTour.getId(), ImageType.TOUR);
+        for (MultipartFile file : tourImages) {
+          if (file.isEmpty()) continue;
+          Map<String, Object> uploadResult = mediaService.uploadImage(file, CloudinaryFolder.TOURS);
+          String publicId = (String) uploadResult.get("public_id");
+          uploadedPublicIds.add(publicId);
+
+          Image image =
+              Image.builder()
+                  .entityId(savedTour.getId())
+                  .entityType(ImageType.TOUR)
+                  .url((String) uploadResult.get("secure_url"))
+                  .publicId(publicId)
+                  .isThumbnail(order == 0)
+                  .displayOrder(order++)
+                  .build();
+          imageRepository.save(image);
+        }
+      }
+
+      if (request.getItineraries() != null && itineraryImages != null) {
+        for (int i = 0;
+            i < Math.min(request.getItineraries().size(), itineraryImages.size());
+            i++) {
+          MultipartFile file = itineraryImages.get(i);
+          if (file != null && !file.isEmpty()) {
+            Map<String, Object> uploadResult =
+                mediaService.uploadImage(file, CloudinaryFolder.ITINERARIES);
+            String publicId = (String) uploadResult.get("public_id");
+            uploadedPublicIds.add(publicId);
+
+            TourItinerary savedItinerary = savedTour.getItineraries().get(i);
+            Image image =
+                Image.builder()
+                    .entityId(savedItinerary.getId())
+                    .entityType(ImageType.TOUR_ITINERARY)
+                    .url((String) uploadResult.get("secure_url"))
+                    .publicId(publicId)
+                    .isThumbnail(true)
+                    .displayOrder(0)
+                    .build();
+            imageRepository.save(image);
+          }
+        }
+      }
+    } catch (Exception e) {
+      for (String publicId : uploadedPublicIds) {
+        mediaService.deleteImage(publicId);
+      }
+      throw e;
+    }
+
+    return tourMapper.toTourResponse(savedTour);
+  }
+
+  @Override
+  @Transactional
+  public void deleteTemplate(UUID id) {
+    Tour tour =
+        tourRepository
+            .findById(id)
+            .orElseThrow(() -> new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found"));
+
+    // Check if there are any instances of this tour
+    if (tourInstanceRepository.existsByTourId(id)) {
+      throw new BaseAppException(
+          WebErrorCode.BAD_REQUEST, "Cannot delete tour template with existing instances");
+    }
+
+    // Delete associated images from Cloudinary
+    List<Image> images = imageRepository.findByEntityIdAndEntityType(id, ImageType.TOUR);
+    for (Image image : images) {
+      mediaService.deleteImage(image.getPublicId());
+    }
+
+    List<UUID> itineraryIds =
+        tour.getItineraries().stream().map(TourItinerary::getId).collect(Collectors.toList());
+    if (!itineraryIds.isEmpty()) {
+      List<Image> itineraryImages =
+          imageRepository.findByEntityIdInAndEntityType(itineraryIds, ImageType.TOUR_ITINERARY);
+      for (Image image : itineraryImages) {
+        mediaService.deleteImage(image.getPublicId());
+      }
+    }
+
+    tourRepository.delete(tour);
+  }
+
+  // --- Image Endpoints ---
+
+  @Override
+  @Transactional
   public List<ImageResponse> uploadTourImages(UUID tourId, List<MultipartFile> files) {
     if (!tourRepository.existsById(tourId)) {
       throw new BaseAppException(WebErrorCode.NOT_FOUND, "Tour not found");
@@ -342,7 +517,6 @@ public class TourServiceImpl implements TourService {
 
     List<Image> newImages = new ArrayList<>();
 
-    // Get max display order
     int maxOrder =
         imageRepository
             .findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(tourId, ImageType.TOUR)
@@ -364,19 +538,17 @@ public class TourServiceImpl implements TourService {
               .url(url)
               .publicId(publicId)
               .displayOrder(++maxOrder)
-              .isThumbnail(maxOrder == 0) // First image is thumbnail by default
+              .isThumbnail(maxOrder == 0)
               .build();
       newImages.add(image);
     }
 
     newImages = imageRepository.saveAll(newImages);
-
     return newImages.stream().map(tourMapper::toImageResponse).toList();
   }
 
   @Override
   @Transactional
-  @CacheEvict(value = "featuredTours", allEntries = true)
   public void deleteTourImage(UUID tourId, UUID imageId) {
     Image image =
         imageRepository
@@ -392,7 +564,6 @@ public class TourServiceImpl implements TourService {
     }
     imageRepository.delete(image);
 
-    // If it was thumbnail, set first remaining image as thumbnail
     if (image.isThumbnail()) {
       List<Image> remaining =
           imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(tourId, ImageType.TOUR);
@@ -406,7 +577,6 @@ public class TourServiceImpl implements TourService {
 
   @Override
   @Transactional
-  @CacheEvict(value = "featuredTours", allEntries = true)
   public void setTourThumbnail(UUID tourId, UUID imageId) {
     Image newThumbnail =
         imageRepository
@@ -418,7 +588,6 @@ public class TourServiceImpl implements TourService {
       throw new BaseAppException(WebErrorCode.BAD_REQUEST, "Image does not belong to this tour");
     }
 
-    // Unset current thumbnail
     imageRepository
         .findFirstByEntityIdAndEntityTypeAndIsThumbnailTrue(tourId, ImageType.TOUR)
         .ifPresent(
@@ -427,7 +596,6 @@ public class TourServiceImpl implements TourService {
               imageRepository.save(img);
             });
 
-    // Set new thumbnail
     newThumbnail.setThumbnail(true);
     imageRepository.save(newThumbnail);
   }
@@ -443,7 +611,6 @@ public class TourServiceImpl implements TourService {
       throw new BaseAppException(WebErrorCode.BAD_REQUEST, "File is required");
     }
 
-    // Delete existing images for this itinerary if any
     List<Image> existingImages =
         imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(
             itineraryId, ImageType.TOUR_ITINERARY);
@@ -467,11 +634,10 @@ public class TourServiceImpl implements TourService {
             .url(url)
             .publicId(publicId)
             .displayOrder(0)
-            .isThumbnail(true) // Always thumbnail as it's the only image
+            .isThumbnail(true)
             .build();
 
     image = imageRepository.save(image);
-
     return tourMapper.toImageResponse(image);
   }
 
@@ -494,7 +660,6 @@ public class TourServiceImpl implements TourService {
     }
     imageRepository.delete(image);
 
-    // If it was thumbnail, set first remaining image as thumbnail
     if (image.isThumbnail()) {
       List<Image> remaining =
           imageRepository.findByEntityIdAndEntityTypeOrderByDisplayOrderAsc(

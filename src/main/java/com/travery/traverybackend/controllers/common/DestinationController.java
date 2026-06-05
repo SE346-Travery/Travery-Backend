@@ -3,6 +3,7 @@ package com.travery.traverybackend.controllers.common;
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.response.base.SingleResponse;
 import com.travery.traverybackend.dtos.response.coach.DestinationWithStationsResponse;
+import com.travery.traverybackend.dtos.response.tour.DestinationResponse;
 import com.travery.traverybackend.services.common.DestinationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,5 +25,11 @@ public class DestinationController extends AbstractBaseController {
       @RequestParam String keyword) {
     List<DestinationWithStationsResponse> response = destinationService.searchDestinations(keyword);
     return success(response, "Destinations fetched successfully");
+  }
+
+  @GetMapping
+  public ResponseEntity<SingleResponse<List<DestinationResponse>>> getAllDestinations() {
+    List<DestinationResponse> destinations = destinationService.getAllDestinations();
+    return success(destinations, "Fetched destinations successfully");
   }
 }
