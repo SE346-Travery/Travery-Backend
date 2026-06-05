@@ -1,6 +1,5 @@
 package com.travery.traverybackend.controllers.tour;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travery.traverybackend.controllers.AbstractBaseController;
 import com.travery.traverybackend.dtos.request.tour.TourSearchRequest;
 import com.travery.traverybackend.dtos.request.tour.TourTemplateRequest;
@@ -13,14 +12,8 @@ import com.travery.traverybackend.dtos.response.tour.TourResponse;
 import com.travery.traverybackend.dtos.response.tour.TourSummaryResponse;
 import com.travery.traverybackend.security.user.CustomUserDetails;
 import com.travery.traverybackend.services.tour.TourService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
-import jakarta.validation.Validator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,8 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class TourController extends AbstractBaseController {
 
   private final TourService tourService;
-  private final ObjectMapper objectMapper;
-  private final Validator validator;
 
   @GetMapping
   public ResponseEntity<SingleResponse<Page<TourSummaryResponse>>> getTours(
@@ -81,18 +72,10 @@ public class TourController extends AbstractBaseController {
   @PostMapping(value = "/templates", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<TourResponse>> createTemplate(
-      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
-          String requestJson,
+      @RequestPart("data") @Valid TourTemplateRequest request,
       @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
       @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages,
-      @AuthenticationPrincipal CustomUserDetails userDetails)
-      throws Exception {
-
-    TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
-    Set<ConstraintViolation<TourTemplateRequest>> violations = validator.validate(request);
-    if (!violations.isEmpty()) {
-      throw new ConstraintViolationException(violations);
-    }
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
     TourResponse response =
         tourService.createTemplate(request, tourImages, itineraryImages, userDetails.getUserId());
@@ -103,17 +86,10 @@ public class TourController extends AbstractBaseController {
   @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<TourResponse>> updateTemplate(
       @PathVariable UUID id,
-      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
-          String requestJson,
+      @RequestPart("data") @Valid TourTemplateRequest request,
       @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
-      @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages)
-      throws Exception {
-
-    TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
-    Set<ConstraintViolation<TourTemplateRequest>> violations = validator.validate(request);
-    if (!violations.isEmpty()) {
-      throw new ConstraintViolationException(violations);
-    }
+      @RequestPart(value = "itineraryImages", required = false)
+          List<MultipartFile> itineraryImages) {
 
     TourResponse response = tourService.updateTemplate(id, request, tourImages, itineraryImages);
     return success(response, "Tour template updated successfully");
