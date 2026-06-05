@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,9 @@ public class ChatController extends AbstractBaseController {
 
   @PostMapping("/initiate")
   @PreAuthorize("hasRole('TOURIST')")
-  public ResponseEntity<SingleResponse<ChatSessionResponse>> initiateChat() {
-    ChatSessionResponse response = chatSessionService.initiateCustomTourChat(getCurrentUserId());
+  public ResponseEntity<SingleResponse<ChatSessionResponse>> initiateChat(
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    ChatSessionResponse response = chatSessionService.initiateCustomTourChat(userDetails.getUserId());
     return success(response, "Custom tour consultation initiated successfully");
   }
 
