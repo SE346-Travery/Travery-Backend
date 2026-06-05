@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -98,9 +99,36 @@ public class TourController extends AbstractBaseController {
     return created(response, "Tour template created successfully");
   }
 
+  @PatchMapping(value = "/templates/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<TourResponse>> updateTemplate(
+      @PathVariable UUID id,
+      @Parameter(schema = @Schema(type = "string", format = "json")) @RequestPart("data")
+          String requestJson,
+      @RequestPart(value = "tourImages", required = false) List<MultipartFile> tourImages,
+      @RequestPart(value = "itineraryImages", required = false) List<MultipartFile> itineraryImages)
+      throws Exception {
+
+    TourTemplateRequest request = objectMapper.readValue(requestJson, TourTemplateRequest.class);
+    Set<ConstraintViolation<TourTemplateRequest>> violations = validator.validate(request);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+
+    TourResponse response = tourService.updateTemplate(id, request, tourImages, itineraryImages);
+    return success(response, "Tour template updated successfully");
+  }
+
+  @DeleteMapping("/templates/{id}")
+  @PreAuthorize("hasRole('COORDINATOR')")
+  public ResponseEntity<SingleResponse<Void>> deleteTemplate(@PathVariable UUID id) {
+    tourService.deleteTemplate(id);
+    return success(null, "Tour template deleted successfully");
+  }
+
   // --- Tour Images ---
   @PostMapping("/{tourId}/images")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<List<ImageResponse>>> uploadTourImages(
       @PathVariable UUID tourId, @RequestParam("files") List<MultipartFile> files) {
     List<ImageResponse> response = tourService.uploadTourImages(tourId, files);
@@ -108,7 +136,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @DeleteMapping("/{tourId}/images/{imageId}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> deleteTourImage(
       @PathVariable UUID tourId, @PathVariable UUID imageId) {
     tourService.deleteTourImage(tourId, imageId);
@@ -116,7 +144,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @PutMapping("/{tourId}/images/{imageId}/thumbnail")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> setTourThumbnail(
       @PathVariable UUID tourId, @PathVariable UUID imageId) {
     tourService.setTourThumbnail(tourId, imageId);
@@ -125,7 +153,7 @@ public class TourController extends AbstractBaseController {
 
   // --- Itinerary Images ---
   @PostMapping("/itineraries/{itineraryId}/image")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SingleResponse<ImageResponse>> uploadItineraryImage(
       @PathVariable UUID itineraryId, @RequestParam("file") MultipartFile file) {
     ImageResponse response = tourService.uploadItineraryImage(itineraryId, file);
@@ -133,7 +161,7 @@ public class TourController extends AbstractBaseController {
   }
 
   @DeleteMapping("/itineraries/{itineraryId}/images/{imageId}")
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('COORDINATOR')")
   public ResponseEntity<SuccessResponse> deleteItineraryImage(
       @PathVariable UUID itineraryId, @PathVariable UUID imageId) {
     tourService.deleteItineraryImage(itineraryId, imageId);

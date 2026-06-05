@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -136,7 +137,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     return chatSession;
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void addUserToChat(UUID tourInstanceId, UUID userId) {
     ChatSession chatSession =
         chatSessionRepository
@@ -153,12 +154,12 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     cometChatService.addMemberToGroup(chatSession.getCometchatGuid(), user.getCometchatUID(), role);
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void removeUserFromChat(UUID tourInstanceId, UUID userId) {
     removeUsersFromChat(tourInstanceId, List.of(userId));
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void removeUsersFromChat(UUID tourInstanceId, List<UUID> userIds) {
     chatSessionRepository
         .findByTourInstanceId(tourInstanceId)

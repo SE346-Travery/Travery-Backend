@@ -23,4 +23,6 @@ public class TourResponse {
   private BigDecimal pricePerAdult;
   private BigDecimal pricePerChild;
   private boolean isCustom;
+  private int minParticipants;
+  private int maxParticipants;
 }

@@ -1,7 +1,10 @@
 package com.travery.traverybackend.dtos.response.tour;
 
+import com.travery.traverybackend.dtos.response.booking.TourBookingResponse;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +28,13 @@ public class TourInstanceDetailResponse {
   private int maxParticipants;
   private int currentParticipants;
   private TourInstanceStatus status;
+  private String thumbnailUrl;
+  private BigDecimal pricePerAdult;
+  private BigDecimal pricePerChild;
+  private Integer durationDays;
+
+  private String hotelName;
+  private String hotelAddress;
 
   private UUID guideId;
   private String guideName;
@@ -37,4 +47,7 @@ public class TourInstanceDetailResponse {
   private UUID driverId;
   private String driverName;
   private String driverPhone;
+
+  private List<TourItineraryResponse> itineraries;
+  private List<TourBookingResponse> bookings;
 }

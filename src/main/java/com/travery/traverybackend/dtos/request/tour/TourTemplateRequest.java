@@ -2,6 +2,7 @@ package com.travery.traverybackend.dtos.request.tour;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -41,11 +42,15 @@ public class TourTemplateRequest {
   @DecimalMin(value = "0.0", inclusive = true, message = "Price per child must be positive")
   private BigDecimal pricePerChild;
 
-  private UUID refundPolicyId;
-
   private UUID requestedByUserId;
 
   private Boolean isCustom;
+
+  @Min(value = 1, message = "Minimum participants must be at least 1")
+  private Integer minParticipants;
+
+  @Min(value = 1, message = "Maximum participants must be at least 1")
+  private Integer maxParticipants;
 
   @NotEmpty(message = "Tour itineraries are required")
   @Valid
