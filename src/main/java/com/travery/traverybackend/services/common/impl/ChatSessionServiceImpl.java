@@ -57,7 +57,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
       throw new BaseAppException(WebErrorCode.NOT_FOUND, "No active coordinators available");
     }
 
-    int index = coordinatorIndex.getAndIncrement() % activeCoordinators.size();
+    int index = (coordinatorIndex.getAndIncrement() & Integer.MAX_VALUE) % activeCoordinators.size();
     Coordinator coordinator = (Coordinator) activeCoordinators.get(index);
 
     // 2. Setup CometChat
