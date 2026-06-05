@@ -30,9 +30,21 @@ public class NotificationScheduler {
   /** Runs daily at 08:00 AM to send reminders for bookings starting tomorrow. */
   @Scheduled(cron = "0 0 8 * * ?")
   public void sendUpcomingReminders() {
-    sendUpcomingTourReminders();
-    sendUpcomingHotelReminders();
-    sendUpcomingCoachReminders();
+    try {
+      sendUpcomingTourReminders();
+    } catch (Exception e) {
+      log.error("Failed to send upcoming tour reminders", e);
+    }
+    try {
+      sendUpcomingHotelReminders();
+    } catch (Exception e) {
+      log.error("Failed to send upcoming hotel reminders", e);
+    }
+    try {
+      sendUpcomingCoachReminders();
+    } catch (Exception e) {
+      log.error("Failed to send upcoming coach reminders", e);
+    }
   }
 
   private void sendUpcomingTourReminders() {
