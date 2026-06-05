@@ -29,6 +29,11 @@ public interface HotelBookingRepository extends JpaRepository<HotelBooking, UUID
   List<HotelBooking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
 
   @Query(
+      "SELECT b FROM HotelBooking b JOIN FETCH b.user WHERE b.startDate = :date AND b.status = :status")
+  List<HotelBooking> findByStartDateAndStatus(
+      @Param("date") LocalDate date, @Param("status") BookingStatus status);
+
+  @Query(
       value =
           "SELECT DISTINCT hb.* FROM hotel_bookings hb "
               + "JOIN hotel_booking_details hbd ON hbd.hotel_booking_id = hb.id "

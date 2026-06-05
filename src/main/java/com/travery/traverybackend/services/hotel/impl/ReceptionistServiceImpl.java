@@ -9,6 +9,7 @@ import com.travery.traverybackend.entities.user.Receptionist;
 import com.travery.traverybackend.enums.booking.AddOnOrderStatus;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.hotel.RoomStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
@@ -16,6 +17,7 @@ import com.travery.traverybackend.mappers.ReceptionistMapper;
 import com.travery.traverybackend.repositories.booking.*;
 import com.travery.traverybackend.repositories.hotel.*;
 import com.travery.traverybackend.repositories.user.ReceptionistRepository;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.hotel.ReceptionistService;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -46,6 +48,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
   private final RoomAssignmentRepository roomAssignmentRepository;
   private final BookingMemberRepository bookingMemberRepository;
   private final AddOnOrderRepository addOnOrderRepository;
+  private final NotificationService notificationService;
   private final ReceptionistMapper receptionistMapper;
 
   @Override
@@ -359,6 +362,14 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     // Update booking status
     booking.setStatus(BookingStatus.CHECKED_OUT);
     booking.setActualCheckOutTime(LocalDateTime.now());
+
+    // Notify Tourist to review
+    notificationService.sendToUser(
+        booking.getUser().getEmail(),
+        NotificationType.POST_TOUR_REVIEW,
+        "Cảm ơn bạn đã lưu trú!",
+        "Chúng tôi hy vọng bạn đã có một kỳ nghỉ tuyệt vời. Hãy để lại đánh giá cho khách sạn nhé!",
+        booking.getId().toString());
   }
 
   @Override

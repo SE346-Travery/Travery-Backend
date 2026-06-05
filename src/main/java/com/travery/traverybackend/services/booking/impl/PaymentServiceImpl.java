@@ -5,25 +5,30 @@ import com.travery.traverybackend.dtos.request.booking.InitiatePaymentRequest;
 import com.travery.traverybackend.dtos.response.booking.PaymentInitiationResponse;
 import com.travery.traverybackend.entities.booking.CoachBooking;
 import com.travery.traverybackend.entities.booking.HotelBooking;
+import com.travery.traverybackend.entities.booking.HotelBookingDetail;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.finance.PaymentTransaction;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.finance.PaymentMethod;
 import com.travery.traverybackend.enums.finance.PaymentStatus;
 import com.travery.traverybackend.enums.finance.TransactionType;
 import com.travery.traverybackend.enums.finance.VnPayResponseCode;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.BookingErrorCode;
+import com.travery.traverybackend.repositories.booking.HotelBookingDetailRepository;
 import com.travery.traverybackend.repositories.booking.HotelBookingRepository;
 import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.coach.CoachBookingRepository;
 import com.travery.traverybackend.repositories.finance.PaymentTransactionRepository;
 import com.travery.traverybackend.services.booking.PaymentService;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.utils.VnPayUtil;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +43,11 @@ public class PaymentServiceImpl implements PaymentService {
 
   private final TourBookingRepository tourBookingRepository;
   private final HotelBookingRepository hotelBookingRepository;
+  private final HotelBookingDetailRepository hotelBookingDetailRepository;
   private final CoachBookingRepository coachBookingRepository;
   private final PaymentTransactionRepository paymentTransactionRepository;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
   private final VnPayConfig vnPayConfig;
 
   @Override
@@ -318,6 +325,19 @@ public class PaymentServiceImpl implements PaymentService {
       if (tourBooking != null) {
         tourBooking.setStatus(BookingStatus.PAID);
         tourBookingRepository.save(tourBooking);
+
+        // Trigger Notification
+        notificationService.sendToUser(
+            tourBooking.getUser().getEmail(),
+            NotificationType.BOOKING_CONFIRMED,
+            "Đặt tour thành công",
+            String.format(
+                "Đơn hàng #%s cho tour %s đã được xác nhận thành công.",
+                tourBooking.getId().toString().substring(0, 8),
+                tourBooking.getTourInstance().getTour().getName()),
+            tourBooking.getId().toString());
+
+        // Add user to tour chat group
         try {
           chatSessionService.addUserToChat(
               tourBooking.getTourInstance().getId(), tourBooking.getUser().getId());
@@ -327,9 +347,38 @@ public class PaymentServiceImpl implements PaymentService {
       } else if (hotelBooking != null) {
         hotelBooking.setStatus(BookingStatus.PAID);
         hotelBookingRepository.save(hotelBooking);
+
+        // Fetch hotel name from details
+        String hotelName = "khách sạn";
+        List<HotelBookingDetail> details =
+            hotelBookingDetailRepository.findAllWithRoomTypeAndHotelByHotelBooking_Id(
+                hotelBooking.getId());
+        if (!details.isEmpty()) {
+          hotelName = details.get(0).getRoomType().getHotel().getName();
+        }
+
+        // Trigger Notification
+        notificationService.sendToUser(
+            hotelBooking.getUser().getEmail(),
+            NotificationType.BOOKING_CONFIRMED,
+            "Đặt khách sạn thành công",
+            String.format(
+                "Đơn hàng #%s cho khách sạn %s đã được xác nhận thành công.",
+                hotelBooking.getId().toString().substring(0, 8), hotelName),
+            hotelBooking.getId().toString());
       } else if (coachBooking != null) {
         coachBooking.setStatus(BookingStatus.PAID);
         coachBookingRepository.save(coachBooking);
+
+        // Trigger Notification
+        notificationService.sendToUser(
+            coachBooking.getUser().getEmail(),
+            NotificationType.BOOKING_CONFIRMED,
+            "Đặt vé xe thành công",
+            String.format(
+                "Đơn hàng #%s cho chuyến xe của bạn đã được xác nhận thành công.",
+                coachBooking.getId().toString().substring(0, 8)),
+            coachBooking.getId().toString());
       }
 
       log.info(

@@ -47,6 +47,9 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
   @Query("SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId")
   List<TourInstance> findByGuideId(@Param("guideId") UUID guideId);
 
+  List<TourInstance> findByStartDateAndStatusIn(
+      LocalDate startDate, List<TourInstanceStatus> statuses);
+
   @Query(
       "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId AND ti.status = :status")
   List<TourInstance> findByGuideIdAndStatus(

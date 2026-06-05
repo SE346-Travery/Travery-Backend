@@ -10,7 +10,9 @@ import com.travery.traverybackend.entities.booking.BookingMember;
 import com.travery.traverybackend.entities.booking.TourBooking;
 import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.enums.booking.AttendanceStatus;
+import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
@@ -20,6 +22,7 @@ import com.travery.traverybackend.repositories.booking.TourBookingRepository;
 import com.travery.traverybackend.repositories.tour.TourInstanceRepository;
 import com.travery.traverybackend.repositories.user.UserRepository;
 import com.travery.traverybackend.services.common.ChatSessionService;
+import com.travery.traverybackend.services.common.NotificationService;
 import com.travery.traverybackend.services.tour.GuideTourInstanceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +47,7 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
   private final UserRepository userRepository;
   private final TourInstanceMapper tourInstanceMapper;
   private final ChatSessionService chatSessionService;
+  private final NotificationService notificationService;
   private final jakarta.persistence.EntityManager entityManager;
 
   @Override
@@ -242,6 +246,11 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
 
     tourInstance.setStatus(request.getStatus());
     tourInstanceRepository.save(tourInstance);
+
+    if (request.getStatus() == TourInstanceStatus.COMPLETED) {
+      triggerFeedbackNotifications(tourInstance);
+    }
+
     return getInstanceDetail(guideId, instanceId);
   }
 
@@ -255,6 +264,26 @@ public class GuideTourInstanceServiceImpl implements GuideTourInstanceService {
     if (tourInstance.getGuide() == null || !tourInstance.getGuide().getId().equals(guideId)) {
       throw new BaseAppException(
           WebErrorCode.FORBIDDEN, "You are not assigned to this tour instance");
+    }
+  }
+
+  private void triggerFeedbackNotifications(TourInstance instance) {
+    List<String> emails =
+        tourBookingRepository
+            .findByTourInstanceIdAndStatus(instance.getId(), BookingStatus.PAID)
+            .stream()
+            .map(booking -> booking.getUser().getEmail())
+            .toList();
+
+    if (!emails.isEmpty()) {
+      notificationService.sendToUsers(
+          emails,
+          NotificationType.POST_TOUR_REVIEW,
+          "Chuyến đi kết thúc",
+          String.format(
+              "Hy vọng bạn đã có trải nghiệm tuyệt vời với %s. Hãy để lại đánh giá của bạn nhé!",
+              instance.getTour().getName()),
+          instance.getId().toString());
     }
   }
 }

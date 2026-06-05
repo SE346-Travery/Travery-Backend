@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChatSessionService {
-  ChatSessionResponse getOrCreateChatSession(UUID tourId);
+  ChatSessionResponse initiateCustomTourChat(UUID userId);
 
   ChatSessionResponse getOrCreateInstanceChatSession(UUID tourInstanceId);
 
@@ -14,4 +14,8 @@ public interface ChatSessionService {
   void removeUserFromChat(UUID tourInstanceId, UUID userId);
 
   void removeUsersFromChat(UUID tourInstanceId, List<UUID> userIds);
+
+  void requestCloseConsultation(UUID sessionId, UUID coordinatorId);
+
+  void closeInstanceChat(UUID instanceId, UUID coordinatorId);
 }

@@ -130,6 +130,10 @@ app:
   backend:
     ip: ${BACKEND_IP}
 
+  firebase:
+    config-path: ${FIREBASE_CONFIG_PATH}
+    app-name: ${FIREBASE_APP_NAME}
+
 logging:
   level:
     root: INFO

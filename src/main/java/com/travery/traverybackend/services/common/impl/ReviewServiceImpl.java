@@ -132,16 +132,20 @@ public class ReviewServiceImpl implements ReviewService {
             .averageRating(request.getRating())
             .content(request.getContent())
             .build();
-    review = reviewRepository.save(review);
+    final Review savedReview = reviewRepository.save(review);
+
+    final User finalUser = user;
 
     // Update target's average rating
     double newAvg = reviewRepository.getAverageRating(targetId, targetType);
+    final double finalNewAvg = newAvg;
+
     if (targetType == ReviewTargetType.HOTEL) {
       hotelRepository
           .findById(targetId)
           .ifPresent(
               h -> {
-                h.setAverageRating(newAvg);
+                h.setAverageRating(finalNewAvg);
                 h.setReviewCount(h.getReviewCount() + 1);
                 hotelRepository.save(h);
               });
@@ -150,7 +154,7 @@ public class ReviewServiceImpl implements ReviewService {
           .findById(targetId)
           .ifPresent(
               t -> {
-                t.setAverageRating(newAvg);
+                t.setAverageRating(finalNewAvg);
                 t.setReviewCount(t.getReviewCount() + 1);
                 tourRepository.save(t);
               });
@@ -167,7 +171,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     log.info("Review created for {} booking {} on target {}", bookingType, bookingId, targetId);
 
-    return reviewMapper.toReviewResponse(review);
+    return reviewMapper.toReviewResponse(savedReview);
   }
 
   @Override

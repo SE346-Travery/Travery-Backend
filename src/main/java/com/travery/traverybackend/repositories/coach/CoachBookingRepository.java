@@ -52,6 +52,15 @@ public interface CoachBookingRepository extends JpaRepository<CoachBooking, UUID
   @Query("SELECT cb FROM CoachBooking cb WHERE cb.status = 'PENDING' AND cb.paymentDeadline < :now")
   List<CoachBooking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
 
+  @Query(
+      "SELECT cb FROM CoachBooking cb JOIN FETCH cb.user JOIN FETCH cb.coachTrip ct JOIN FETCH ct.route r JOIN FETCH r.originDestination JOIN FETCH r.destinationDestination WHERE ct.departureTime BETWEEN :start AND :end AND cb.status = :status")
+  List<CoachBooking> findByDepartureTimeBetweenAndStatus(
+      @Param("start") LocalDateTime start,
+      @Param("end") LocalDateTime end,
+      @Param("status") BookingStatus status);
+
+  List<CoachBooking> findByCoachTrip_IdAndStatus(UUID tripId, BookingStatus status);
+
   int countByCoachTrip_Id(UUID tripId);
 
   /**

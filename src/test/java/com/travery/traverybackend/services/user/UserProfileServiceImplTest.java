@@ -15,6 +15,7 @@ import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.UserErrorCode;
 import com.travery.traverybackend.mappers.UserMapper;
 import com.travery.traverybackend.repositories.user.UserRepository;
+import com.travery.traverybackend.services.common.CometChatService;
 import com.travery.traverybackend.services.media.MediaService;
 import com.travery.traverybackend.services.user.impl.UserProfileServiceImpl;
 import java.time.LocalDate;
@@ -39,6 +40,8 @@ class UserProfileServiceImplTest {
 
   @Mock private MediaService mediaService;
 
+  @Mock private CometChatService cometChatService;
+
   @InjectMocks private UserProfileServiceImpl userProfileService;
 
   private Tourist tourist;
@@ -50,7 +53,12 @@ class UserProfileServiceImplTest {
     userId = UUID.randomUUID();
 
     tourist =
-        Tourist.builder().id(userId).fullName("John Tourist").email("tourist@test.com").build();
+        Tourist.builder()
+            .id(userId)
+            .fullName("John Tourist")
+            .email("tourist@test.com")
+            .cometchatUID("user_" + userId)
+            .build();
 
     admin = Admin.builder().id(userId).fullName("Jane Admin").email("admin@test.com").build();
   }
@@ -129,6 +137,7 @@ class UserProfileServiceImplTest {
     verify(mediaService).deleteImage("old-public-id");
     assertThat(tourist.getAvatarUrl()).isEqualTo("new-url.jpg");
     assertThat(tourist.getAvatarPublicId()).isEqualTo("new-public-id");
+    verify(cometChatService).syncUserAvatar(anyString(), anyString());
     verify(userRepository).save(tourist);
   }
 }
