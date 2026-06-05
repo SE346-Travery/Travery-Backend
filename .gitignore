@@ -50,5 +50,4 @@ travery-lucene-indexes/
 
 ### Firebase ###
 **/firebase/*.json
-*.json
 firebase-adminsdk-*.json
