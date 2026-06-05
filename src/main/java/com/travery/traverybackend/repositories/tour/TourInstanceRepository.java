@@ -49,7 +49,7 @@ public interface TourInstanceRepository extends JpaRepository<TourInstance, UUID
 
   List<TourInstance> findByStartDateAndStatusIn(
       LocalDate startDate, List<TourInstanceStatus> statuses);
-  
+
   @Query(
       "SELECT ti FROM TourInstance ti JOIN FETCH ti.tour WHERE ti.guide.id = :guideId AND ti.status = :status")
   List<TourInstance> findByGuideIdAndStatus(

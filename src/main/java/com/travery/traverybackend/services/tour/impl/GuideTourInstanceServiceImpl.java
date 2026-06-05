@@ -13,8 +13,6 @@ import com.travery.traverybackend.enums.booking.AttendanceStatus;
 import com.travery.traverybackend.enums.booking.BookingStatus;
 import com.travery.traverybackend.enums.booking.BookingType;
 import com.travery.traverybackend.enums.common.NotificationType;
-import com.travery.traverybackend.enums.tour.IncidentStatus;
-
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;

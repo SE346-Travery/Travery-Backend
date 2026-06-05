@@ -12,8 +12,8 @@ import com.travery.traverybackend.entities.tour.TourInstance;
 import com.travery.traverybackend.entities.user.Coordinator;
 import com.travery.traverybackend.entities.user.Guide;
 import com.travery.traverybackend.enums.booking.BookingStatus;
-import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.common.ImageType;
+import com.travery.traverybackend.enums.common.NotificationType;
 import com.travery.traverybackend.enums.tour.TourInstanceStatus;
 import com.travery.traverybackend.exception.BaseAppException;
 import com.travery.traverybackend.exception.error.WebErrorCode;
@@ -53,7 +53,6 @@ public class CoordinatorTourInstanceServiceImpl implements CoordinatorTourInstan
   private final ImageRepository imageRepository;
   private final TourInstanceMapper tourInstanceMapper;
   private final ChatSessionService chatSessionService;
-  private final TourBookingRepository tourBookingRepository;
   private final NotificationService notificationService;
 
   @Override
